@@ -1,0 +1,6 @@
+[book]
+authors = ["xla"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Pulzaar Spec"
