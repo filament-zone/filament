@@ -1,5 +1,5 @@
 # Mechanism
-A first sketch at a protocol for IBC coordinated, low latency, homogenous blockspace auctioning
+A first sketch at a protocol for IBC coordinated, low latency, homogenous slot auctioning
 
 
 ## Assumptions
@@ -34,7 +34,7 @@ rollup execution
 the builder has on-chain representation and can therefore be governed
 
 #### `low-intervention`
-Does not require modification of any of the core data structures
+Does not require modification of any of the core data structures ie: block header. 
 
 #### `censorship-inefficient`
 It should be inefficient and expensive to sustain a censorship attack over multiple blocks
