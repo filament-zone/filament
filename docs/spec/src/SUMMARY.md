@@ -1,6 +1,7 @@
 # Summary
 
 [Pulzaar](./pulzaar.md)
+
 - [Mechanism](./mechanism.md)
 - [Components]()
   - [Staking]()
@@ -10,3 +11,6 @@
   - [Ledger]()
   - [State]()
   - [Genesis]()
+- [Implementation]()
+  - [Rust]()
+    - [Composability](./implementation/rust/composability.md)

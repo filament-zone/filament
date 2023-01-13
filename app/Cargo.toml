@@ -1,0 +1,12 @@
+[package]
+name    = "pulzaar-app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+pulzaar-chain     = { path = "../chain" }
+
+async-trait       = { version = "0.1",  default-features = false }
+eyre              = { version = "0.6",  default-features = false }
+penumbra-storage  = { git = "https://github.com/penumbra-zone/penumbra", branch = "main" }
+tendermint        = { version = "0.28", default-features = false }
