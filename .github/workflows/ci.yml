@@ -50,6 +50,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      # FIXME(xla): Find a way to reliably cache the toolchain without leaving
+      # using stale versions of it. Ideally we want to key by the rustc_hash
+      # which is only known once we installed it.
+      # - name: Cache toolchain
+      #   uses: actions/cache@v3
+      #   id: cache-toolchain
+      #   continue-on-error: false
+      #   with:
+      #     path: |
+      #       ~/.rustup/settings.toml
+      #       ~/.rustup/toolchains/${{ matrix.toolchain }}-*
+      #       ~/.rustup/update-hashes/${{ matrix.toolchain }}-*
+      #     key: rust-toolchain_${{ matrix.os }}-${{ steps.toolchain.outputs.rustc_hash }}
+
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         id: toolchain
@@ -60,18 +74,10 @@ jobs:
           components: cargo, clippy, rustfmt
           override: true
 
-      - name: Cache toolchain
-        uses: actions/cache@v3
-        id: cache-toolchain
-        with:
-          path: |
-            ~/.rustup/settings.toml
-            ~/.rustup/toolchains/${{ matrix.toolchain }}-*
-            ~/.rustup/update-hashes/${{ matrix.toolchain }}-*
-          key: rust-toolchain_${{ matrix.os }}-${{ steps.toolchain.outputs.rustc_hash }}
-
-      - name: Cache dependencies
+      - name: Cache dependencies & tools
         uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.os }}
 
       - name: Run fmt check
         run: cargo fmt --all -- --check
@@ -82,3 +88,57 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: clippy
           args: --workspace --no-deps --all-features --all-targets -- -Dwarnings -Dnonstandard-style -Drust-2018-idioms -Dunused -Drust-2021-compatibility
+
+  test-rust:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        toolchain: [stable]
+
+    name: Test Rust
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # FIXME(xla): Find a way to reliably cache the toolchain without leaving
+      # using stale versions of it. Ideally we want to key by the rustc_hash
+      # which is only known once we installed it.
+      # - name: Cache toolchain
+      #   uses: actions/cache@v3
+      #   id: cache-toolchain
+      #   continue-on-error: false
+      #   with:
+      #     path: |
+      #       ~/.rustup/settings.toml
+      #       ~/.rustup/toolchains/${{ matrix.toolchain }}-*
+      #       ~/.rustup/update-hashes/${{ matrix.toolchain }}-*
+      #     key: rust-toolchain_${{ matrix.os }}-${{ steps.toolchain.outputs.rustc_hash }}
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        id: toolchain
+        if: steps.cache-toolchain.outputs.cache-hit != 'true'
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          components: cargo, clippy, rustfmt
+          override: true
+
+      - name: Cache dependencies & tools
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.os }}
+
+      - name: Install nextest
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: cargo install --locked cargo-nextest
+
+      # FIXME(xla): The recompiles the entire workspace regardless if the
+      # `target` directory was reconstructed from a cache. It's unclear as to
+      # why that is.
+      - name: Run tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: nextest
+          args: run --workspace --all-features --all-targets
