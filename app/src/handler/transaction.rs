@@ -8,15 +8,15 @@ use super::Handler;
 
 #[async_trait]
 impl Handler for Transaction {
-    async fn validate(&self, tx: Arc<Transaction>) -> eyre::Result<()> {
+    async fn validate(&self, _tx: Arc<Transaction>) -> eyre::Result<()> {
         todo!()
     }
 
-    async fn check(&self, state: Arc<State>) -> eyre::Result<()> {
+    async fn check(&self, _state: Arc<State>) -> eyre::Result<()> {
         todo!()
     }
 
-    async fn execute<'a>(&self, state: &mut StateTransaction<'a>) -> eyre::Result<()> {
+    async fn execute<'a>(&self, _state: &mut StateTransaction<'a>) -> eyre::Result<()> {
         todo!()
     }
 }
