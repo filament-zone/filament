@@ -1,0 +1,57 @@
+name: Docs
+on:
+  pull_request:
+    paths:
+      - "docs/**"
+  push:
+    branches:
+      - "main"
+    paths:
+      - "docs/**"
+
+jobs:
+  deploy:
+    permissions:
+      contents: read
+      deployments: write
+      pull-requests: write
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        toolchain: [stable]
+
+    name: Deploy to Cloudflare Pages
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup mdBook
+        uses: peaceiris/actions-mdbook@v1
+        with:
+          mdbook-version: '0.4.25'
+
+      - run: mdbook test docs/spec
+      - run: mdbook build docs/spec
+
+      - name: Publish Spec to Cloudflare Pages
+        id: spec-cloudflare-deploy
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: pulzaar-spec
+          directory: docs/spec/book/
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.head_ref }}
+
+      - name: Add comment with doc deploy details
+        uses: mshick/add-pr-comment@v2
+        with:
+          message-id: spec-cloudflare-deploy
+          message: |
+            | <!-- -->    | Spec preview                                                                                           |
+            |-------------|--------------------------------------------------------------------------------------------------------|
+            | Commit      | ${{ github.sha }}                                                                                      |
+            | Deploy Log  | ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}                    |
+            | Preview URL | [${{ steps.spec-cloudflare-deploy.outputs.alias }}](${{ steps.spec-cloudflare-deploy.outputs.alias }}) |
