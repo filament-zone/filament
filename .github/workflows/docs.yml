@@ -1,16 +1,12 @@
 name: Docs
 on:
   pull_request:
-    paths:
-      - "docs/**"
   push:
     branches:
       - "main"
-    paths:
-      - "docs/**"
 
 jobs:
-  deploy:
+  deploy-docs:
     permissions:
       contents: read
       deployments: write
@@ -18,10 +14,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        toolchain: [stable]
 
-    name: Deploy to Cloudflare Pages
+    name: Deploy docs
     runs-on: ${{ matrix.os }}
+    outputs:
+      spec-url: ${{ steps.spec-cloudflare-deploy.outputs.alias }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -31,11 +28,13 @@ jobs:
         with:
           mdbook-version: '0.4.25'
 
-      - run: mdbook test docs/spec
-      - run: mdbook build docs/spec
+      - name: Build Spec
+        run: |
+          mdbook test docs/spec
+          mdbook build docs/spec
 
-      - name: Publish Spec to Cloudflare Pages
-        id: spec-cloudflare-deploy
+      - id: spec-cloudflare-deploy
+        name: Publish Spec to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -45,13 +44,75 @@ jobs:
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.head_ref }}
 
-      - name: Add comment with doc deploy details
+  deploy-rustdoc:
+    permissions:
+      contents: read
+      deployments: write
+      pull-requests: write
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        toolchain: [nightly]
+
+    name: Deploy Rustdoc
+    runs-on: ${{ matrix.os }}
+    outputs:
+      rustdoc-url: ${{ steps.rustdoc-cloudflare-deploy.outputs.alias }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        id: toolchain
+        if: steps.cache-toolchain.outputs.cache-hit != 'true'
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          components: cargo, clippy, rustfmt
+          override: true
+
+      - name: Cache dependencies & tools
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.os }}
+
+      - name: Build Rustdoc
+        env:
+          RUSTDOCFLAGS: "--enable-index-page -Zunstable-options"
+        run: cargo doc --workspace --all-features --no-deps --document-private-items
+
+      - id: rustdoc-cloudflare-deploy
+        name: Publish Rustdoc to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: pulzaar-rustdoc
+          directory: ./target/doc
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.head_ref }}
+
+  summary:
+    permissions:
+      contents: read
+      deployments: write
+      pull-requests: write
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    name: Summary
+    needs: [deploy-docs, deploy-rustdoc]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Add comment with deployed preview links
         uses: mshick/add-pr-comment@v2
         with:
-          message-id: spec-cloudflare-deploy
+          message-id: deploy-summary
           message: |
-            | <!-- -->    | Spec preview                                                                                           |
-            |-------------|--------------------------------------------------------------------------------------------------------|
-            | Commit      | ${{ github.sha }}                                                                                      |
-            | Deploy Log  | ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}                    |
-            | Preview URL | [${{ steps.spec-cloudflare-deploy.outputs.alias }}](${{ steps.spec-cloudflare-deploy.outputs.alias }}) |
+            ### Previews
+            | **Site**    | **URL**                                                                                            | 
+            |-------------|----------------------------------------------------------------------------------------------------|
+            | **Rustdoc** | [${{ needs.deploy-rustdoc.outputs.rustdoc-url }}](${{ needs.deploy-rustdoc.outputs.rustdoc-url }}) |
+            | **Spec**    | [${{ needs.deploy-docs.outputs.spec-url }}](${{ needs.deploy-docs.outputs.spec-url }})             |
