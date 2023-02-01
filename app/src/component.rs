@@ -15,7 +15,7 @@ pub trait Component: Send + Sync + 'static {
     ///   tendermint (ie. in the genesis file), or if it wants to use a different one (perhaps
     ///   computed based on some application specific information in the genesis file).
     ///
-    /// https://github.com/tendermint/tendermint/blob/main/spec/abci/abci.md#initchain
+    /// <https://github.com/tendermint/tendermint/blob/main/spec/abci/abci.md#initchain>
     async fn init_chain<'a>(&self, state: &mut StateTransaction<'a>, app_state: &AppState);
 
     /// * Signals the beginning of a new block.
@@ -25,7 +25,7 @@ pub trait Component: Send + Sync + 'static {
     /// * The `LastCommitInfo` and `ByzantineValidators` can be used to determine rewards and
     ///   punishments for the validators.
     ///
-    /// https://github.com/tendermint/tendermint/blob/main/spec/abci/abci.md#initchain
+    /// <https://github.com/tendermint/tendermint/blob/main/spec/abci/abci.md#initchain>
     async fn begin_block<'a>(
         &self,
         state: &mut StateTransaction<'a>,
@@ -43,6 +43,6 @@ pub trait Component: Send + Sync + 'static {
     /// * `H+3`: `LastCommitInfo` is changed to include the altered validator set.
     /// * `consensus_param_updates` returned for block `H` apply to the consensus params for block `H+1`. For more information on the consensus parameters, see the [application spec entry on consensus parameters](https://github.com/tendermint/tendermint/blob/main/spec/abci/apps.md#consensus-parameters).
     ///
-    /// https://github.com/tendermint/tendermint/blob/main/spec/abci/abci.md#endblock
+    /// <https://github.com/tendermint/tendermint/blob/main/spec/abci/abci.md#endblock>
     async fn end_block<'a>(&self, state: &mut StateTransaction<'a>, end_block: &request::EndBlock);
 }
