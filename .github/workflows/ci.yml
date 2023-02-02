@@ -29,7 +29,9 @@ jobs:
     name: Lint Markdown
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - uses: actions/setup-node@v2
         with:
           node-version: '18.x'
@@ -41,14 +43,14 @@ jobs:
   lint-rust:
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [buildjet-8vcpu-ubuntu-2204]
         toolchain: [nightly]
 
     name: Lint Rust
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       # FIXME(xla): Find a way to reliably cache the toolchain without leaving
       # using stale versions of it. Ideally we want to key by the rustc_hash
@@ -92,14 +94,14 @@ jobs:
   test-rust:
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [buildjet-8vcpu-ubuntu-2204]
         toolchain: [stable]
 
     name: Test Rust
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       # FIXME(xla): Find a way to reliably cache the toolchain without leaving
       # using stale versions of it. Ideally we want to key by the rustc_hash
