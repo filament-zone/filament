@@ -1,8 +1,12 @@
 {
   "scripts": {
-    "markdownlint": "markdownlint **/*.md --ignore node_modules"
+    "markdownlint": "markdownlint **/*.md --ignore node_modules --ignore target",
+    "prepare": "husky install"
   },
   "devDependencies": {
+    "@commitlint/cli": "^17.4.2",
+    "@commitlint/config-conventional": "^17.4.2",
+    "husky": "^8.0.0",
     "markdownlint-cli": "^0.33.0"
   }
 }
