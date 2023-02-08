@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package pulzaar.core.stake.v1alpha1;
+
+option go_package = "github.com/pulzaar-zone/pulzaar/proto/go-proto";
+
+// TODO(xla): Fill out and document.
+message Delegate {}
+
+// TODO(xla): Fill out and document.
+message Undelegate {}

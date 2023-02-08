@@ -1027,7 +1027,7 @@ checksum = "19b17cddbe7ec3f8bc800887bab5e717348c95ea2ca0b1bf0837fb964dc67099"
 [[package]]
 name = "penumbra-storage"
 version = "0.1.0"
-source = "git+https://github.com/penumbra-zone/penumbra?branch=main#3f6013a95669bcbd7de475aaa7ac5dd13053c79f"
+source = "git+https://github.com/penumbra-zone/penumbra?branch=main#adb8fb120bb711c58d07e4e667701322c4eaa601"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -1231,12 +1231,12 @@ dependencies = [
 [[package]]
 name = "pulzaar-chain"
 version = "0.1.0"
+
+[[package]]
+name = "pulzaar-proto"
+version = "0.1.0"
 dependencies = [
- "async-trait",
- "eyre",
- "hex",
- "penumbra-storage",
- "sha2 0.10.6",
+ "prost",
 ]
 
 [[package]]

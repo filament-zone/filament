@@ -30,7 +30,7 @@ of the ABCI. Core network features will be encapsulated here, e.g. banking,
 governance, staking, etc.
 
 ``` rust, ignore
-{{#include ../../../../../app/src/component.rs:8:41}}
+{{#include ../../../../../app/src/component.rs:8:48}}
 ```
 
 ## Handler
