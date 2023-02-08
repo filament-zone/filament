@@ -8,6 +8,7 @@
   - [Governance]()
   - [IBC]()
 - [Chain]()
+  - [Transaction](./chain/transaction.md)
   - [Ledger]()
   - [State]()
   - [Genesis]()
