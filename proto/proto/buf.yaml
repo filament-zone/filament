@@ -1,0 +1,9 @@
+version: v1
+name: buf.build/pulzaar-zone/pulzaar
+deps:
+breaking:
+  use:
+    - FILE
+lint:
+  use:
+    - DEFAULT
