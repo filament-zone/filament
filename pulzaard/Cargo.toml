@@ -1,0 +1,34 @@
+[package]
+name                    = "pulzaard"
+version                 = "0.1.0"
+description             = "Node daemon for participants in the Pulzaar Zone"
+authors.workspace       = true
+edition.workspace       = true
+repository.workspace    = true
+homepage.workspace      = true
+license.workspace       = true
+rust-version.workspace  = true
+publish.workspace       = true
+
+[dependencies]
+pulzaar-app                 = { path = "../app" }
+pulzaar-chain               = { path = "../chain" }
+
+bytes                       = { workspace = true }
+console-subscriber          = { workspace = true }
+directories                 = { workspace = true }
+eyre                        = { workspace = true }
+futures                     = { workspace = true }
+hex                         = { workspace = true, features = [ "alloc" ] }
+metrics-exporter-prometheus = { workspace = true, features = [ "http-listener" ] }
+metrics-tracing-context     = { workspace = true }
+metrics-util                = { workspace = true }
+penumbra-storage            = { workspace = true }
+sha2                        = { workspace = true }
+tendermint                  = { workspace = true }
+tokio                       = { workspace = true, features = [ "net", "macros", "rt-multi-thread", "tracing" ] }
+tokio-util                  = { workspace = true }
+tower-abci                  = { workspace = true }
+tower-service               = { workspace = true }
+tracing                     = { workspace = true }
+tracing-subscriber          = { workspace = true, features = [ "ansi", "env-filter", "fmt", "registry", "std" ] }

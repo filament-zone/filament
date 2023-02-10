@@ -34,3 +34,8 @@ fn plz_version() -> eyre::Result<()> {
 fn plz_cmd_not_found() -> eyre::Result<()> {
     test("docs/plz-cmd-not-found.md", Path::new("."), vec![])
 }
+
+#[test]
+fn plz_node() -> eyre::Result<()> {
+    test("docs/plz-node.md", Path::new("."), vec![])
+}

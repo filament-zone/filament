@@ -1,0 +1,8 @@
+.github
+theme
+book.toml
+*.md
+Dockerfile*
+docker-compose*
+*.json
+target/**

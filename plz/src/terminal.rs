@@ -4,7 +4,7 @@ use dialoguer::console::style;
 
 mod args;
 
-use args::Args;
+pub use args::Args;
 
 pub trait Command<A: Args> {
     fn run(self, args: A) -> eyre::Result<()>;

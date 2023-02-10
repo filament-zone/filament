@@ -1,6 +1,11 @@
 use std::ffi::OsString;
 
-use crate::config::{DESCRIPTION, GIT_HEAD, NAME, VERSION};
+use crate::{
+    config::{DESCRIPTION, GIT_HEAD, NAME, VERSION},
+    terminal::Args as _,
+};
+
+mod node;
 
 #[derive(Debug)]
 pub enum Root {
@@ -43,8 +48,12 @@ fn print_version() -> eyre::Result<()> {
     Ok(())
 }
 
-fn run_cmd(cmd: &str, _args: &[OsString]) -> eyre::Result<()> {
+fn run_cmd(cmd: &str, args: &[OsString]) -> eyre::Result<()> {
     match cmd {
+        "node" => {
+            let (opts, _) = pulzaard::Config::from_args(args.to_vec())?;
+            node::run(opts)
+        },
         "version" => print_version(),
 
         _ => Err(eyre::eyre!("\"{cmd}\" is not a supported command")),

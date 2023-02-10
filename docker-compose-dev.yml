@@ -1,0 +1,47 @@
+version: "3.7"
+services:
+  pulzaard:
+    container_name: pulzaard
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      # - RUST_LOG=${RUST_LOG:-warn,pulzaard=debug,pulzaar=debug}
+      - RUST_BACKTRACE=${RUST_LOG:-full}
+      - RUST_LOG=${RUST_LOG:-debug}
+    volumes:
+      - ~/.pulzaar/devnet/pulzaard:/pulzaard
+    command: /usr/bin/pulzaard --tendermint-addr http://192.167.10.11:26657
+    restart: on-failure
+    networks:
+      localnet:
+        ipv4_address: 192.167.10.10
+    ports:
+      - "26658:26658"
+
+  tendermint:
+    image: "tendermint/tendermint:v0.34.23"
+    container_name: tendermint
+    ports:
+      - "26656:26656"
+      - "26657:26657"
+    volumes:
+      - ~/.pulzaar/devnet/tendermint:/tendermint
+    command: start --proxy_app=tcp://pulzaard:26658
+    environment:
+      - ID=0
+      - LOG=${LOG:-tendermint.log}
+    depends_on:
+      - pulzaard
+    networks:
+      localnet:
+        ipv4_address: 192.167.10.11
+
+networks:
+  localnet:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.167.10.0/16
+
