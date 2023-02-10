@@ -1,12 +1,8 @@
 [workspace]
 resolver = "2"
 
-exclude = [
-  "tools/proto-build"
-]
-
 members = [
   "app",
   "chain",
-  "proto"
+  "encoding"
 ]

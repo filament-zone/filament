@@ -1,12 +1,16 @@
+use serde::{Deserialize, Serialize};
+
 use crate::{fee::Fee, input::Input};
 
 /// A Pulzaar transactin.
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct Transaction {
     body: Body,
     // TODO(xla): Figure out signature schemes and layout.
 }
 
 /// Body of a Pulzaar transaction.
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct Body {
     // List of intents carried by the transaction.
     inputs: Vec<Input>,

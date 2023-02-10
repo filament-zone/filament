@@ -40,32 +40,6 @@ jobs:
       - uses: xt0rted/markdownlint-problem-matcher@v2
       - run: npm run markdownlint
 
-  lint-proto:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-
-    name: Lint Protobuf definitions
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Setup buf
-        uses: bufbuild/buf-setup-action@v1
-
-      - name: Lint protobuf
-        uses: bufbuild/buf-lint-action@v1
-        with:
-          input: "proto"
-
-      - name: Check for breaking changes in Protobuf
-        uses: bufbuild/buf-breaking-action@v1
-        with:
-          input: "proto"
-          # The 'main' branch of the GitHub repository that defines the module.
-          against: "https://github.com/${GITHUB_REPOSITORY}.git#branch=main"
-
   lint-rust:
     strategy:
       matrix:
@@ -170,55 +144,3 @@ jobs:
         with:
           command: nextest
           args: run --workspace --all-features --all-targets
-
-  lint-tools:
-    strategy:
-      matrix:
-        os: [buildjet-8vcpu-ubuntu-2204]
-        toolchain: [nightly]
-
-    name: Lint Tools
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # FIXME(xla): Find a way to reliably cache the toolchain without leaving
-      # using stale versions of it. Ideally we want to key by the rustc_hash
-      # which is only known once we installed it.
-      # - name: Cache toolchain
-      #   uses: actions/cache@v3
-      #   id: cache-toolchain
-      #   continue-on-error: false
-      #   with:
-      #     path: |
-      #       ~/.rustup/settings.toml
-      #       ~/.rustup/toolchains/${{ matrix.toolchain }}-*
-      #       ~/.rustup/update-hashes/${{ matrix.toolchain }}-*
-      #     key: rust-toolchain_${{ matrix.os }}-${{ steps.toolchain.outputs.rustc_hash }}
-
-      - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
-        id: toolchain
-        if: steps.cache-toolchain.outputs.cache-hit != 'true'
-        with:
-          profile: minimal
-          toolchain: ${{ matrix.toolchain }}
-          components: cargo, clippy, rustfmt
-          override: true
-
-      - name: Cache dependencies & tools
-        uses: Swatinem/rust-cache@v2
-        with:
-          key: ${{ matrix.os }}
-
-      - name: Run fmt check
-        run: cargo fmt --manifest-path ./tools/Cargo.toml --all -- --check
-
-      - name: Run clippy
-        uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          name: clippy
-          args: --manifest-path ./tools/Cargo.toml --workspace --no-deps --all-features --all-targets -- -Dwarnings -Dnonstandard-style -Drust-2018-idioms -Dunused -Drust-2021-compatibility
-

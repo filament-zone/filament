@@ -1,0 +1,18 @@
+[package]
+name    = "pulzaar-encoding"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bcs               = { version = "0.1",  default-features = false }
+eyre              = { version = "0.6",  default-features = false }
+futures           = { version = "0.3",  default-features = false }
+penumbra-storage  = { git = "https://github.com/penumbra-zone/penumbra", branch = "main" }
+serde             = { version = "1.0",  default-features = false, features = [ "derive" ] }
+
+
+[dev-dependencies]
+pretty_assertions = { version = "1.3",  default-features = false, features = [ "alloc" ] }
+rand              = { version = "0.8",  default-features = false }
+tempfile          = { version = "3.3",  default-features = false }
+tokio             = { version = "1.25", default-features = false, features = [ "macros", "rt", "rt-multi-thread" ] }
