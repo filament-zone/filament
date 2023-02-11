@@ -6,3 +6,23 @@ members = [
   "chain",
   "encoding"
 ]
+
+[workspace.dependencies]
+async-trait       = { version = "0.1",  default-features = false }
+bcs               = { version = "0.1",  default-features = false }
+eyre              = { version = "0.6",  default-features = false }
+futures           = { version = "0.3",  default-features = false }
+penumbra-storage  = { git = "https://github.com/penumbra-zone/penumbra", branch = "main" }
+pretty_assertions = { version = "1.3",  default-features = false }
+rand              = { version = "0.8",  default-features = false }
+serde             = { version = "1.0",  default-features = false }
+tempfile          = { version = "3.3",  default-features = false }
+tendermint        = { version = "0.28", default-features = false }
+tokio             = { version = "1.25", default-features = false }
+
+[workspace.package]
+authors     = ["Pulzaar Team <core@pulzaar.zone>"]
+edition     = "2021"
+homepage    = "https://pulzaar.zone"
+repository  = "https://github.com/pulzaar-zone/pulzaar"
+publish     = false
