@@ -78,6 +78,7 @@ jobs:
 
       - name: Cache dependencies & tools
         uses: Swatinem/rust-cache@v2
+        timeout-minutes: 1
         with:
           key: ${{ matrix.os }}
 
@@ -129,6 +130,7 @@ jobs:
 
       - name: Cache dependencies & tools
         uses: Swatinem/rust-cache@v2
+        timeout-minutes: 1
         with:
           key: ${{ matrix.os }}
 
