@@ -1,0 +1,28 @@
+[package]
+name                  = "plz"
+version               = "0.1.0"
+authors.workspace     = true
+edition.workspace     = true
+homepage.workspace    = true
+repository.workspace  = true
+publish.workspace     = true
+
+build                 = "../build.rs" 
+
+[[bin]]
+name = "plz"
+path = "src/main.rs"
+
+[dependencies]
+dialoguer = { workspace = true }
+eyre      = { workspace = true, features = [ "auto-install" ] }
+lexopt    = { workspace = true }
+
+[dev-dependencies]
+log                 = { workspace = true }
+pretty_assertions   = { workspace = true }
+radicle-md-testing  = { git = "https://github.com/xla/heartwood", branch = "xla/extract-testing-crate" }
+shlex               = { workspace = true }
+snapbox             = { workspace = true }
+tempfile            = { workspace = true }
+thiserror           = { workspace = true }

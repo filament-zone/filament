@@ -1,6 +1,7 @@
 {
   "scripts": {
     "markdownlint": "markdownlint **/*.md --ignore node_modules --ignore target",
+    "rustlint": "cargo +nightly fmt --all --check",
     "prepare": "husky install"
   },
   "devDependencies": {

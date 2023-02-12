@@ -78,7 +78,7 @@ jobs:
 
       - name: Cache dependencies & tools
         uses: Swatinem/rust-cache@v2
-        timeout-minutes: 1
+        timeout-minutes: 5
         with:
           key: ${{ matrix.os }}
 
@@ -130,13 +130,16 @@ jobs:
 
       - name: Cache dependencies & tools
         uses: Swatinem/rust-cache@v2
-        timeout-minutes: 1
+        timeout-minutes: 5
         with:
           key: ${{ matrix.os }}
 
       - name: Install nextest
         if: steps.cache-deps.outputs.cache-hit != 'true'
         run: cargo install --locked cargo-nextest
+
+      - name: Install plz
+        run: cargo install --force --path ./plz
 
       # FIXME(xla): The recompiles the entire workspace regardless if the
       # `target` directory was reconstructed from a cache. It's unclear as to
