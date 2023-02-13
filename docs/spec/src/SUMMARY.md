@@ -12,6 +12,7 @@
   - [Ledger]()
   - [State]()
   - [Genesis]()
+- [Testnets](./testnets.md)
 - [Implementation]()
   - [Rust]()
     - [Composability](./implementation/rust/composability.md)
