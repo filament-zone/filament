@@ -1243,6 +1243,7 @@ dependencies = [
  "dialoguer",
  "eyre",
  "lexopt",
+ "pulzaar-config",
  "radicle-cli-test",
  "tempfile",
 ]
@@ -1397,6 +1398,10 @@ version = "0.1.0"
 dependencies = [
  "serde",
 ]
+
+[[package]]
+name = "pulzaar-config"
+version = "0.1.0"
 
 [[package]]
 name = "pulzaar-encoding"
