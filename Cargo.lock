@@ -1243,13 +1243,8 @@ dependencies = [
  "dialoguer",
  "eyre",
  "lexopt",
- "log",
- "pretty_assertions",
- "radicle-md-testing",
- "shlex",
- "snapbox",
+ "radicle-cli-test",
  "tempfile",
- "thiserror",
 ]
 
 [[package]]
@@ -1449,9 +1444,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "radicle-md-testing"
+name = "radicle-cli-test"
 version = "0.1.0"
-source = "git+https://github.com/xla/heartwood?branch=xla/extract-testing-crate#13e2de4f0773aa4dcbe80b318c89580e030b3c37"
+source = "git+https://github.com/xla/heartwood?branch=xla/extract-testing-crate#97f7064094d97ae694ce926d310cf7db6ec4a9e0"
 dependencies = [
  "log",
  "pretty_assertions",

@@ -1,6 +1,6 @@
 use std::{path::Path, vec};
 
-use radicle_md_testing::TestFormula;
+use radicle_cli_test::TestFormula;
 
 fn test<'a>(
     test: impl AsRef<Path>,
