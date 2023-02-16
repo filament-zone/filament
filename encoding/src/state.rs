@@ -5,6 +5,8 @@ use futures::future::{FutureExt as _, TryFutureExt as _};
 use penumbra_storage::{StateRead, StateWrite};
 use serde::{de::DeserializeOwned, Serialize};
 
+use crate::{from_bytes, to_bytes};
+
 pub trait StateReadBcs: StateRead + Send + Sync {
     fn get_bcs<'a, T>(
         &self,
@@ -19,8 +21,8 @@ pub trait StateReadBcs: StateRead + Send + Sync {
                 match maybe_bytes {
                     None => Ok(None),
                     Some(bytes) => {
-                        let v = bcs::from_bytes::<T>(&bytes)
-                            .wrap_err("failed to decode bcs from bytes")?;
+                        let v =
+                            from_bytes::<T>(&bytes).wrap_err("failed to decode bcs from bytes")?;
                         Ok(Some(v))
                     },
                 }
@@ -36,7 +38,7 @@ pub trait StateWriteBcs: StateWrite + Send + Sync {
     where
         T: ?Sized + Serialize,
     {
-        self.put_raw(key, bcs::to_bytes(value)?);
+        self.put_raw(key, to_bytes(value)?);
 
         Ok(())
     }
@@ -46,7 +48,7 @@ impl<T: StateWrite + ?Sized> StateWriteBcs for T {}
 
 #[cfg(test)]
 mod test {
-    use penumbra_storage::Storage;
+    use penumbra_storage::{StateDelta, Storage};
     use pretty_assertions::assert_eq;
     use serde::{Deserialize, Serialize};
     use tempfile::tempdir;
@@ -77,8 +79,8 @@ mod test {
             let storage = Storage::load(path.clone())
                 .await
                 .map_err(|e| eyre::eyre!(e))?;
-            let mut state = storage.latest_state();
-            let mut state_tx = state.begin_transaction();
+            let mut state = StateDelta::new(storage.latest_snapshot());
+            let mut state_tx = StateDelta::new(&mut state);
 
             state_tx.put_bcs(key.to_string(), &obj)?;
             state_tx.apply();
@@ -88,9 +90,9 @@ mod test {
 
         // Retrieve value from storage.
         let storage = Storage::load(path).await.map_err(|e| eyre::eyre!(e))?;
-        let state = storage.latest_state();
+        let snapshot = storage.latest_snapshot();
 
-        let v: Object = state.get_bcs(key).await?.unwrap();
+        let v: Object = snapshot.get_bcs(key).await?.unwrap();
 
         assert_eq!(v, obj);
 
