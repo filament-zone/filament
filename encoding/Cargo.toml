@@ -1,11 +1,13 @@
 [package]
-name                  = "pulzaar-encoding"
-version               = "0.1.0"
-authors.workspace     = true
-edition.workspace     = true
-homepage.workspace    = true
-repository.workspace  = true
-publish.workspace     = true
+name                    = "pulzaar-encoding"
+version                 = "0.1.0"
+authors.workspace       = true
+edition.workspace       = true
+repository.workspace    = true
+homepage.workspace      = true
+license.workspace       = true
+rust-version.workspace  = true
+publish.workspace       = true
 
 [dependencies]
 bcs               = { workspace = true }
@@ -13,10 +15,11 @@ eyre              = { workspace = true }
 futures           = { workspace = true }
 penumbra-storage  = { workspace = true }
 serde             = { workspace = true }
+thiserror         = { workspace = true }
 
 
 [dev-dependencies]
 pretty_assertions = { workspace = true, features = [ "alloc" ] }
-rand              = { workspace = true }
+rand              = { workspace = true, features = [ "std_rng" ] }
 tempfile          = { workspace = true }
 tokio             = { workspace = true, features = [ "macros", "rt", "rt-multi-thread" ] }

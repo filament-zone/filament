@@ -1,11 +1,22 @@
 use async_trait::async_trait;
-use penumbra_storage::StateTransaction;
+use penumbra_storage::StateWrite;
 use pulzaar_chain::genesis::AppState;
-use tendermint::abci::request;
+use tendermint::abci::request::{BeginBlock, EndBlock};
+
+mod staking;
+
+pub use staking::Staking;
+
+pub enum Component {
+    Staking(Staking),
+}
 
 /// A component to be called for chain and block related ABCI calls.
 #[async_trait]
-pub trait Component: Send + Sync + 'static {
+pub trait ABCIComponent<S>: Send + Sync + 'static
+where
+    S: StateWrite,
+{
     /// * Called once upon genesis.
     /// * If ResponseInitChain.Validators is empty, the initial validator set will be the
     ///   RequestInitChain.Validators
@@ -16,7 +27,7 @@ pub trait Component: Send + Sync + 'static {
     ///   computed based on some application specific information in the genesis file).
     ///
     /// <https://github.com/tendermint/tendermint/blob/main/spec/abci/abci.md#initchain>
-    async fn init_chain<'a>(&self, state: &mut StateTransaction<'a>, app_state: &AppState);
+    async fn init_chain(&self, state: &mut S, app_state: &AppState);
 
     /// * Signals the beginning of a new block.
     /// * Called prior to any `DeliverTx` method calls.
@@ -26,11 +37,7 @@ pub trait Component: Send + Sync + 'static {
     ///   punishments for the validators.
     ///
     /// <https://github.com/tendermint/tendermint/blob/main/spec/abci/abci.md#initchain>
-    async fn begin_block<'a>(
-        &self,
-        state: &mut StateTransaction<'a>,
-        begin_block: &request::BeginBlock,
-    );
+    async fn begin_block(&self, state: &mut S, begin_blocke: &BeginBlock);
 
     /// * Signals the end of a block.
     /// * Called after all the transactions for the current block have been delivered, prior to the
@@ -44,5 +51,5 @@ pub trait Component: Send + Sync + 'static {
     /// * `consensus_param_updates` returned for block `H` apply to the consensus params for block `H+1`. For more information on the consensus parameters, see the [application spec entry on consensus parameters](https://github.com/tendermint/tendermint/blob/main/spec/abci/apps.md#consensus-parameters).
     ///
     /// <https://github.com/tendermint/tendermint/blob/main/spec/abci/abci.md#endblock>
-    async fn end_block<'a>(&self, state: &mut StateTransaction<'a>, end_block: &request::EndBlock);
+    async fn end_block(&self, state: &mut S, end_block: &EndBlock);
 }
