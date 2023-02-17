@@ -1450,8 +1450,10 @@ dependencies = [
  "eyre",
  "lexopt",
  "pulzaar-config",
+ "pulzaar-node",
  "radicle-cli-test",
  "tempfile",
+ "tokio",
 ]
 
 [[package]]
@@ -1630,7 +1632,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pulzaarnode"
+name = "pulzaar-node"
 version = "0.1.0"
 dependencies = [
  "bytes",

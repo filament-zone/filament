@@ -2,6 +2,8 @@ use std::ffi::OsString;
 
 use crate::config::{DESCRIPTION, GIT_HEAD, NAME, VERSION};
 
+mod node;
+
 #[derive(Debug)]
 pub enum Root {
     Help,
@@ -43,8 +45,9 @@ fn print_version() -> eyre::Result<()> {
     Ok(())
 }
 
-fn run_cmd(cmd: &str, _args: &[OsString]) -> eyre::Result<()> {
+fn run_cmd(cmd: &str, args: &[OsString]) -> eyre::Result<()> {
     match cmd {
+        "node" => node::run(args),
         "version" => print_version(),
 
         _ => Err(eyre::eyre!("\"{cmd}\" is not a supported command")),

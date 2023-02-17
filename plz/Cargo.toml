@@ -13,10 +13,12 @@ path = "src/main.rs"
 
 [dependencies]
 pulzaar-config  = { path = "../config" }
+pulzaar-node    = { path = "../node" }
 
 dialoguer       = { workspace = true }
 eyre            = { workspace = true, features = [ "auto-install" ] }
 lexopt          = { workspace = true }
+tokio           = { workspace = true, features = [ "rt-multi-thread" ] }
 
 [dev-dependencies]
 radicle-cli-test  = { workspace = true }
