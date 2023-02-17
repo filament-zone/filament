@@ -6,6 +6,7 @@ use pulzaar_chain::{Input, Transaction};
 
 use crate::handler::Handler;
 
+mod assets;
 mod delegate;
 mod undelegate;
 
@@ -15,6 +16,8 @@ impl Handler for Input {
         match self {
             Self::Delegate(input) => input.validate(tx),
             Self::Undelegate(input) => input.validate(tx),
+
+            Self::Transfer(input) => input.validate(tx),
         }
         .await
     }
@@ -23,6 +26,8 @@ impl Handler for Input {
         match self {
             Self::Delegate(input) => input.check(state),
             Self::Undelegate(input) => input.check(state),
+
+            Self::Transfer(input) => input.check(state),
         }
         .await
     }
@@ -31,6 +36,8 @@ impl Handler for Input {
         match self {
             Self::Delegate(input) => input.execute(state),
             Self::Undelegate(input) => input.execute(state),
+
+            Self::Transfer(input) => input.execute(state),
         }
         .await
     }

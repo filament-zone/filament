@@ -13,6 +13,8 @@ publish.workspace       = true
 pulzaar-encoding = { path = "../encoding" }
 
 async-trait       = { workspace = true }
+cosmrs            = { workspace = true }
+ed25519-consensus = { workspace = true, features = [ "serde", "std" ] }
 eyre              = { workspace = true }
 hex               = { workspace = true, features = [ "alloc" ] }
 penumbra-storage  = { workspace = true }
