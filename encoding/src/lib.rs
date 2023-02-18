@@ -1,3 +1,4 @@
+mod bech32;
 mod convert;
 mod error;
 mod state;

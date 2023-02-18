@@ -10,8 +10,11 @@ rust-version.workspace  = true
 publish.workspace       = true
 
 [dependencies]
+pulzaar-crypto    = { path = "../crypto" }
+
 bcs               = { workspace = true }
-eyre              = { workspace = true }
+bech32            = { workspace = true, features = [ "std" ]}
+eyre              = { workspace = true, features = [ "auto-install" ] }
 futures           = { workspace = true }
 penumbra-storage  = { workspace = true }
 serde             = { workspace = true }
