@@ -9,7 +9,7 @@ pub struct Asset {
 
 // TODO(xla): Needs to get substantially more sophisticated to support stable and transparent use
 // of ibc assets.
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct Id(pub String);
 
 /// Denominiation of an asset.
