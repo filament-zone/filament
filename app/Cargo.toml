@@ -15,6 +15,8 @@ pulzaar-encoding  = { path = "../encoding" }
 
 async-trait       = { workspace = true }
 eyre              = { workspace = true }
+hex               = { workspace = true, features = [ "alloc" ] }
 penumbra-storage  = { workspace = true }
+sha2              = { workspace = true }
 tendermint        = { workspace = true }
 tracing           = { workspace = true }

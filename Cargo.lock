@@ -1624,9 +1624,11 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "eyre",
+ "hex",
  "penumbra-storage",
  "pulzaar-chain",
  "pulzaar-encoding",
+ "sha2 0.10.6",
  "tendermint",
  "tracing",
 ]
@@ -1635,15 +1637,10 @@ dependencies = [
 name = "pulzaar-chain"
 version = "0.1.0"
 dependencies = [
- "async-trait",
  "eyre",
- "hex",
- "penumbra-storage",
  "pulzaar-crypto",
  "pulzaar-encoding",
  "serde",
- "sha2 0.10.6",
- "tendermint",
 ]
 
 [[package]]

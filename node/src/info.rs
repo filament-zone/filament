@@ -3,7 +3,7 @@ use std::pin::Pin;
 use bytes::Bytes;
 use futures::{Future, FutureExt as _};
 use penumbra_storage::Storage;
-use pulzaar_chain::AppHashRead as _;
+use pulzaar_app::AppHashRead as _;
 use tendermint::abci::{request, response, InfoRequest, InfoResponse};
 use tokio::sync::{mpsc, oneshot};
 use tokio_util::sync::PollSender;

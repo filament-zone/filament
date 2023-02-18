@@ -1,7 +1,22 @@
 use async_trait::async_trait;
-use penumbra_storage::StateWrite;
-use pulzaar_encoding::StateWriteBcs as _;
+use penumbra_storage::Snapshot;
+use pulzaar_encoding::StateWriteEncode;
 use tendermint::Time;
+
+use crate::AppHash;
+
+#[async_trait]
+pub trait AppHashRead {
+    async fn app_hash(&self) -> eyre::Result<AppHash>;
+}
+
+#[async_trait]
+impl AppHashRead for Snapshot {
+    async fn app_hash(&self) -> eyre::Result<AppHash> {
+        let root = self.root_hash().await.map_err(|err| eyre::eyre!(err))?;
+        Ok(AppHash::from(root))
+    }
+}
 
 pub fn block_height() -> &'static str {
     "block_height"
@@ -12,7 +27,7 @@ pub fn block_timestamp() -> &'static str {
 }
 
 #[async_trait]
-pub trait StateWriteExt: StateWrite {
+pub trait StateWriteExt: StateWriteEncode {
     /// Writes the block height to the JMT
     fn put_block_height(&mut self, height: u64) -> eyre::Result<()> {
         self.put_bcs(block_height().into(), &height)
@@ -24,4 +39,4 @@ pub trait StateWriteExt: StateWrite {
     }
 }
 
-impl<T: StateWrite + ?Sized> StateWriteExt for T {}
+impl<T: StateWriteEncode + ?Sized> StateWriteExt for T {}

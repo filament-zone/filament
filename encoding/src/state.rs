@@ -7,7 +7,7 @@ use serde::{de::DeserializeOwned, Serialize};
 
 use crate::{from_bytes, to_bytes};
 
-pub trait StateReadBcs: StateRead + Send + Sync {
+pub trait StateReadDecode: StateRead + Send + Sync {
     fn get_bcs<'a, T>(
         &self,
         key: &'a str,
@@ -31,9 +31,9 @@ pub trait StateReadBcs: StateRead + Send + Sync {
     }
 }
 
-impl<T: StateRead + ?Sized> StateReadBcs for T {}
+impl<T: StateRead + ?Sized> StateReadDecode for T {}
 
-pub trait StateWriteBcs: StateWrite + Send + Sync {
+pub trait StateWriteEncode: StateWrite + Send + Sync {
     fn put_bcs<T>(&mut self, key: String, value: &T) -> eyre::Result<()>
     where
         T: ?Sized + Serialize,
@@ -44,7 +44,7 @@ pub trait StateWriteBcs: StateWrite + Send + Sync {
     }
 }
 
-impl<T: StateWrite + ?Sized> StateWriteBcs for T {}
+impl<T: StateWrite + ?Sized> StateWriteEncode for T {}
 
 #[cfg(test)]
 mod test {
@@ -53,7 +53,7 @@ mod test {
     use serde::{Deserialize, Serialize};
     use tempfile::tempdir;
 
-    use super::{StateReadBcs as _, StateWriteBcs as _};
+    use super::{StateReadDecode as _, StateWriteEncode as _};
 
     #[derive(Debug, PartialEq, Deserialize, Serialize)]
     struct Object {

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use penumbra_storage::{ArcStateDeltaExt as _, Snapshot, StateDelta, Storage};
-use pulzaar_chain::{genesis::AppState, AppHash, StateWriteExt as _, Transaction};
+use pulzaar_chain::{genesis::AppState, Transaction};
 use pulzaar_encoding as encoding;
 use tendermint::{
     abci::{self, request, types::ValidatorUpdate},
@@ -12,6 +12,8 @@ use tracing::instrument;
 use crate::{
     component::{ABCIComponent as _, Component},
     handler::Handler as _,
+    state::StateWriteExt as _,
+    AppHash,
 };
 
 /// The Pulzaar ABCI application modeled as stack of [`Component`]s.
