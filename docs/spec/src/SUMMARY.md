@@ -12,6 +12,7 @@
   - [Ledger]()
   - [State]()
   - [Genesis]()
+- [Encoding](./encoding.md)
 - [Testnets](./testnets.md)
 - [Implementation]()
   - [Rust]()
