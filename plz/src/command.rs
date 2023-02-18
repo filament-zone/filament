@@ -2,6 +2,7 @@ use std::ffi::OsString;
 
 use crate::config::{DESCRIPTION, GIT_HEAD, NAME, VERSION};
 
+mod key;
 mod node;
 
 #[derive(Debug)]
@@ -47,6 +48,7 @@ fn print_version() -> eyre::Result<()> {
 
 fn run_cmd(cmd: &str, args: &[OsString]) -> eyre::Result<()> {
     match cmd {
+        "key" => key::generate(args),
         "node" => node::run(args),
         "version" => print_version(),
 

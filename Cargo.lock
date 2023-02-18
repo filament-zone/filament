@@ -1484,8 +1484,11 @@ dependencies = [
  "eyre",
  "lexopt",
  "pulzaar-config",
+ "pulzaar-crypto",
+ "pulzaar-encoding",
  "pulzaar-node",
  "radicle-cli-test",
+ "rand",
  "tempfile",
  "tokio",
 ]

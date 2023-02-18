@@ -9,9 +9,12 @@ pub enum Error {
     #[error(transparent)]
     Ed25519(#[from] pulzaar_crypto::Ed25519Error),
 
-    #[error("Unexpected bech32 prefix")]
+    #[error("unexpected bech32 prefix")]
     Bech32UnexpectedPrefix,
 
-    #[error("Unexpected bech32 variant")]
+    #[error("unexpected bech32 variant")]
     Bech32UnexpectedVariant,
+
+    #[error("invalid input to parse type")]
+    Bech32Conversion,
 }

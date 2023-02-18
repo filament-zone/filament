@@ -1,47 +1,29 @@
 use bech32::{self, FromBase32, ToBase32, Variant};
-use pulzaar_crypto::{Address, VerificationKey};
+use pulzaar_crypto::{Address, SigningKey};
 
 use crate::Error;
 
-pub const BECH32_ADDRESS_PREFIX: &str = "plzaddr";
+const BECH32_ADDRESS_PREFIX: &str = "plzaddr";
+const BECH32_SIGNKEY_PREFIX: &str = "plzkey";
 
-pub trait ToBech32 {
-    type Err;
-
-    fn to_bech32(&self) -> Result<String, Self::Err>;
-}
-
-impl ToBech32 for Address {
-    type Err = Error;
-
-    fn to_bech32(&self) -> Result<String, Self::Err> {
-        bech32::encode(
-            BECH32_ADDRESS_PREFIX,
-            self.0.as_bytes().to_base32(),
-            Variant::Bech32m,
-        )
-        .map_err(Error::from)
+pub trait ToBech32: AsRef<[u8]> {
+    const PREFIX: &'static str;
+    fn to_bech32(&self) -> Result<String, Error> {
+        bech32::encode(Self::PREFIX, self.as_ref().to_base32(), Variant::Bech32m)
+            .map_err(Error::from)
     }
 }
 
-pub trait FromBech32: Sized {
-    type Err;
+pub trait FromBech32: Sized + for<'a> TryFrom<&'a [u8]> {
+    const PREFIX: &'static str;
 
-    fn from_bech32<S>(s: S) -> Result<Self, Self::Err>
-    where
-        S: Into<String>;
-}
-
-impl FromBech32 for Address {
-    type Err = Error;
-
-    fn from_bech32<S>(address: S) -> Result<Self, Self::Err>
+    fn from_bech32<S>(s: S) -> Result<Self, Error>
     where
         S: Into<String>,
     {
-        let (hrp, data, variant) = bech32::decode(&address.into())?;
+        let (hrp, data, variant) = bech32::decode(&s.into())?;
 
-        if hrp != BECH32_ADDRESS_PREFIX {
+        if hrp != Self::PREFIX {
             return Err(Error::Bech32UnexpectedPrefix);
         }
 
@@ -50,10 +32,26 @@ impl FromBech32 for Address {
         }
 
         let data = Vec::<u8>::from_base32(&data)?;
-        let vk = VerificationKey::try_from(data.as_slice())?;
+        let data = data.as_slice();
 
-        Ok(Address(vk))
+        Self::try_from(data).map_err(|_err| Error::Bech32Conversion)
     }
+}
+
+impl ToBech32 for Address {
+    const PREFIX: &'static str = BECH32_ADDRESS_PREFIX;
+}
+
+impl FromBech32 for Address {
+    const PREFIX: &'static str = BECH32_ADDRESS_PREFIX;
+}
+
+impl ToBech32 for SigningKey {
+    const PREFIX: &'static str = BECH32_SIGNKEY_PREFIX;
+}
+
+impl FromBech32 for SigningKey {
+    const PREFIX: &'static str = BECH32_SIGNKEY_PREFIX;
 }
 
 #[cfg(test)]
@@ -69,7 +67,14 @@ mod tests {
         let address = Address(VerificationKey::from(&SigningKey::new(thread_rng())));
         let encoded = address.to_bech32().unwrap();
         let decoded = Address::from_bech32(encoded).unwrap();
-
         assert_eq!(address, decoded);
+    }
+
+    #[test]
+    fn signing_key_bech32_roundtrip() {
+        let sk = SigningKey::new(thread_rng());
+        let encoded = sk.to_bech32().unwrap();
+        let decoded = SigningKey::from_bech32(encoded).unwrap();
+        assert_eq!(sk.to_bytes(), decoded.to_bytes());
     }
 }
