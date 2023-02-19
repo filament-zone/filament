@@ -11,6 +11,7 @@ mod transaction;
 pub mod genesis;
 pub mod input;
 
+pub use account::Account;
 pub use amount::Amount;
 pub use asset::Asset;
 pub use fee::Fee;

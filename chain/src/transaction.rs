@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{fee::Fee, input::Input};
+use crate::input::Input;
 
 /// A Pulzaar transactin.
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
@@ -18,16 +18,17 @@ impl Transaction {
 /// Body of a Pulzaar transaction.
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct Body {
-    // List of intents carried by the transaction.
+    /// List of inputs carried by the transaction to advance the state machine.
     inputs: Vec<Input>,
 
-    // Intended chain for the transaction to land on, to be included to prevent replays on other
-    // chains.
+    /// Intended chain for the transaction to land on, to be included to prevent replays on other
+    /// chains.
     chain_id: String,
-    // Maximum height until the transaction is valid, doesn't expire if the value is zero.
+    /// Maximum height until the transaction is valid, doesn't expire if the value is zero.
     max_height: u64,
 
-    // Fees of the transaction.
-    // TODO(xla): Does this belong in the body?
-    fee: Fee,
+    /// Account id to match tx signers account.
+    account_id: u64,
+    /// Account sequence to match tx signers account state.
+    sequence: u64,
 }
