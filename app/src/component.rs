@@ -3,7 +3,8 @@ use penumbra_storage::StateWrite;
 use pulzaar_chain::genesis::AppState;
 use tendermint::abci::request::{BeginBlock, EndBlock};
 
-mod staking;
+pub mod accounts;
+pub mod staking;
 
 pub use staking::Staking;
 

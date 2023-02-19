@@ -1629,10 +1629,15 @@ dependencies = [
  "eyre",
  "hex",
  "penumbra-storage",
+ "pretty_assertions",
  "pulzaar-chain",
+ "pulzaar-crypto",
  "pulzaar-encoding",
+ "rand",
  "sha2 0.10.6",
+ "tempfile",
  "tendermint",
+ "tokio",
  "tracing",
 ]
 
@@ -1644,6 +1649,7 @@ dependencies = [
  "pulzaar-crypto",
  "pulzaar-encoding",
  "serde",
+ "sha2 0.10.6",
 ]
 
 [[package]]

@@ -1,13 +1,14 @@
-use pulzaar_crypto::{Signature, VerificationKey};
+use pulzaar_crypto::{SignBytes, Signature, VerificationKey};
 use serde::{Deserialize, Serialize};
+use sha2::{Digest as _, Sha256};
 
 use crate::input::Input;
 
 /// A Pulzaar transactin.
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct Transaction {
-    auth: Auth,
-    body: Body,
+    pub auth: Auth,
+    pub body: Body,
 }
 
 impl Transaction {
@@ -18,7 +19,7 @@ impl Transaction {
 
 /// Authnetication information.
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
-enum Auth {
+pub enum Auth {
     /// Single signature.
     Ed25519 {
         verification_key: VerificationKey,
@@ -27,19 +28,28 @@ enum Auth {
 }
 
 /// Body of a Pulzaar transaction.
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct Body {
     /// List of inputs carried by the transaction to advance the state machine.
-    inputs: Vec<Input>,
+    // TODO(xla): Use a container that can't be constructed without at least one element. e.g: https://github.com/cloudhead/nonempty
+    pub inputs: Vec<Input>,
 
     /// Intended chain for the transaction to land on, to be included to prevent replays on other
     /// chains.
-    chain_id: String,
-    /// Maximum height until the transaction is valid, doesn't expire if the value is zero.
-    max_height: u64,
+    pub chain_id: String,
+    /// Maximum height until the transaction is valid.
+    pub max_height: Option<u64>,
 
     /// Account id to match tx signers account.
-    account_id: u64,
+    pub account_id: u64,
     /// Account sequence to match tx signers account state.
-    sequence: u64,
+    pub sequence: u64,
+}
+
+impl SignBytes for Body {
+    fn sign_bytes(&self) -> eyre::Result<Vec<u8>> {
+        let mut hasher = Sha256::new();
+        hasher.update(pulzaar_encoding::to_bytes(&self)?);
+        Ok(hasher.finalize().to_vec())
+    }
 }

@@ -11,6 +11,7 @@ publish.workspace       = true
 
 [dependencies]
 pulzaar-chain     = { path = "../chain" }
+pulzaar-crypto    = { path = "../crypto" }
 pulzaar-encoding  = { path = "../encoding" }
 
 async-trait       = { workspace = true }
@@ -20,3 +21,9 @@ penumbra-storage  = { workspace = true }
 sha2              = { workspace = true }
 tendermint        = { workspace = true }
 tracing           = { workspace = true }
+
+[dev-dependencies]
+pretty_assertions = { workspace = true }
+rand              = { workspace = true, features = [ "std_rng" ] }
+tempfile          = { workspace = true }
+tokio             = { workspace = true, features = [ "macros" ] }

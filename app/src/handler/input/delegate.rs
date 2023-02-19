@@ -9,7 +9,8 @@ use crate::handler::Handler;
 #[async_trait]
 impl Handler for Delegate {
     async fn validate(&self, _tx: Arc<Transaction>) -> eyre::Result<()> {
-        todo!()
+        // Nothing to assert at this stage.
+        Ok(())
     }
 
     async fn check<S: StateRead>(&self, _state: Arc<S>) -> eyre::Result<()> {

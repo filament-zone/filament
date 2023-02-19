@@ -11,7 +11,7 @@ pub trait StateReadDecode: StateRead + Send + Sync {
     fn get_bcs<'a, T>(
         &self,
         key: &'a str,
-    ) -> Pin<Box<dyn Future<Output = eyre::Result<Option<T>>> + 'a>>
+    ) -> Pin<Box<dyn Future<Output = eyre::Result<Option<T>>> + Send + 'a>>
     where
         T: DeserializeOwned,
     {

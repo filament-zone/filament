@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use penumbra_storage::Snapshot;
+use pulzaar_crypto::Address;
 use pulzaar_encoding::StateWriteEncode;
 use tendermint::Time;
 
@@ -40,3 +41,13 @@ pub trait StateWriteExt: StateWriteEncode {
 }
 
 impl<T: StateWriteEncode + ?Sized> StateWriteExt for T {}
+
+pub trait StateKey {
+    fn state_key(&self) -> String;
+}
+
+impl StateKey for Address {
+    fn state_key(&self) -> String {
+        hex::encode(self)
+    }
+}

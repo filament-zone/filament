@@ -5,15 +5,15 @@ use crate::{Ed25519Error, VerificationKey};
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct Address(pub VerificationKey);
 
-impl From<VerificationKey> for Address {
-    fn from(vk: VerificationKey) -> Self {
-        Self(vk)
-    }
-}
-
 impl AsRef<[u8]> for Address {
     fn as_ref(&self) -> &[u8] {
         self.0.as_ref()
+    }
+}
+
+impl From<VerificationKey> for Address {
+    fn from(vk: VerificationKey) -> Self {
+        Self(vk)
     }
 }
 

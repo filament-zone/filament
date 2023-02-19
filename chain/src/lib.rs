@@ -17,4 +17,4 @@ pub use asset::Asset;
 pub use fee::Fee;
 pub use funds::Funds;
 pub use input::Input;
-pub use transaction::Transaction;
+pub use transaction::{Auth, Body as TransactionBody, Transaction};
