@@ -1,3 +1,4 @@
+use pulzaar_crypto::{Signature, VerificationKey};
 use serde::{Deserialize, Serialize};
 
 use crate::input::Input;
@@ -5,14 +6,24 @@ use crate::input::Input;
 /// A Pulzaar transactin.
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct Transaction {
+    auth: Auth,
     body: Body,
-    // TODO(xla): Figure out signature schemes and layout.
 }
 
 impl Transaction {
     pub fn inputs(&self) -> impl Iterator<Item = &Input> {
         self.body.inputs.iter()
     }
+}
+
+/// Authnetication information.
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
+enum Auth {
+    /// Single signature.
+    Ed25519 {
+        verification_key: VerificationKey,
+        signature: Signature,
+    },
 }
 
 /// Body of a Pulzaar transaction.
