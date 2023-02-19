@@ -13,7 +13,7 @@ publish.workspace       = true
 pulzaar-crypto    = { path = "../crypto" }
 pulzaar-encoding  = { path = "../encoding" }
 
-eyre              = { workspace = true }
+eyre              = { workspace = true, features = [ "auto-install" ] }
 serde             = { workspace = true, features = [ "derive" ] }
 sha2              = { workspace = true }
 

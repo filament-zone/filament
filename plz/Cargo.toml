@@ -18,11 +18,14 @@ pulzaar-crypto    = { path = "../crypto" }
 pulzaar-encoding  = { path = "../encoding" }
 pulzaar-node      = { path = "../node" }
 
-dialoguer         = { workspace = true }
-eyre              = { workspace = true, features = [ "auto-install" ] }
-lexopt            = { workspace = true }
-rand              = { workspace = true, features = [ "std_rng" ] }
-tokio             = { workspace = true, features = [ "rt-multi-thread" ] }
+dialoguer       = { workspace = true }
+directories     = { workspace = true }
+eyre            = { workspace = true, features = [ "auto-install" ] }
+lexopt          = { workspace = true }
+rand            = { workspace = true, features = [ "std_rng" ] }
+tendermint      = { workspace = true }
+tendermint-rpc  = { workspace = true, features = [ "http-client" ] }
+tokio           = { workspace = true, features = [ "rt-multi-thread" ] }
 
 [dev-dependencies]
 radicle-cli-test  = { workspace = true }

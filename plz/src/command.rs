@@ -1,9 +1,12 @@
 use std::ffi::OsString;
 
+use directories::ProjectDirs;
+
 use crate::config::{DESCRIPTION, GIT_HEAD, NAME, VERSION};
 
 mod key;
 mod node;
+mod transfer;
 
 #[derive(Debug)]
 pub enum Root {
@@ -31,6 +34,10 @@ impl Root {
     }
 }
 
+fn plz_dirs() -> eyre::Result<ProjectDirs> {
+    ProjectDirs::from("zone", "pulzaar", "plz").ok_or(eyre::eyre!("no $HOME directory found"))
+}
+
 fn print_usage() -> eyre::Result<()> {
     println!("{DESCRIPTION}");
     println!();
@@ -50,6 +57,7 @@ fn run_cmd(cmd: &str, args: &[OsString]) -> eyre::Result<()> {
     match cmd {
         "key" => key::generate(args),
         "node" => node::run(args),
+        "transfer" => transfer::run(args),
         "version" => print_version(),
 
         _ => Err(eyre::eyre!("\"{cmd}\" is not a supported command")),
