@@ -14,7 +14,9 @@ impl Handler for Delegate {
     }
 
     async fn check<S: StateRead>(&self, _state: Arc<S>) -> eyre::Result<()> {
-        todo!()
+        // TODO(xla): Implement properly, we pass just for the convenience of having an input that
+        // succeeds.
+        Ok(())
     }
 
     async fn execute<S: StateWrite>(&self, _state: &mut S) -> eyre::Result<()> {
