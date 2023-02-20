@@ -20,6 +20,8 @@ impl Handler for Delegate {
     }
 
     async fn execute<S: StateWrite>(&self, _state: &mut S) -> eyre::Result<()> {
-        todo!()
+        // TODO(xla): Implement properly, we pass just for the convenience of having an input that
+        // succeeds.
+        Ok(())
     }
 }

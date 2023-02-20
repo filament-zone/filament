@@ -6,7 +6,10 @@ use pulzaar_chain::{Account, Auth, ChainParameters, Transaction};
 use pulzaar_crypto::{Address, SignBytes};
 
 use super::Handler;
-use crate::{component::accounts::AccountsRead as _, state::StateReadExt as _};
+use crate::{
+    component::accounts::{AccountsRead as _, AccountsWrite},
+    state::StateReadExt as _,
+};
 
 #[async_trait]
 impl Handler for Transaction {
@@ -97,9 +100,8 @@ impl Handler for Transaction {
             input.execute(state).await?;
         }
 
-        // TODO(xla): Update sequence number on accounts.
-
-        Ok(())
+        let address = Address::from(&self.auth);
+        state.increment_sequence(&address).await
     }
 }
 
@@ -535,9 +537,9 @@ mod test {
             let mut state = StateDelta::new(storage.latest_snapshot());
             let mut state_tx = StateDelta::new(&mut state);
 
-            state_tx.increment_sequence(&address).await?;
-            state_tx.apply();
+            tx.execute(&mut state_tx).await?;
 
+            state_tx.apply();
             storage.commit(state).await.map_err(|e| eyre::eyre!(e))?;
         }
 
