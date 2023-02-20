@@ -1,8 +1,8 @@
-use pulzaar_crypto::{Address, SignBytes, Signature, VerificationKey};
+use pulzaar_crypto::{SignBytes, Signature, VerificationKey};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest as _, Sha256};
 
-use crate::{input::Input, ChainId};
+use crate::{input::Input, Address, ChainId};
 
 /// A Pulzaar transactin.
 #[derive(Debug, PartialEq, Deserialize, Serialize)]

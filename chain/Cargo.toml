@@ -16,3 +16,7 @@ pulzaar-encoding  = { path = "../encoding" }
 eyre              = { workspace = true }
 serde             = { workspace = true, features = [ "derive" ] }
 sha2              = { workspace = true }
+
+[dev-dependencies]
+pretty_assertions = { workspace = true, features = [ "alloc" ] }
+rand              = { workspace = true, features = [ "std_rng" ] }

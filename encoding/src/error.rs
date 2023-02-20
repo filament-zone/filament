@@ -6,9 +6,6 @@ pub enum Error {
     #[error(transparent)]
     Bech32(#[from] bech32::Error),
 
-    #[error(transparent)]
-    Ed25519(#[from] pulzaar_crypto::Ed25519Error),
-
     #[error("unexpected bech32 prefix")]
     Bech32UnexpectedPrefix,
 

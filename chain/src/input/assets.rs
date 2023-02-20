@@ -1,7 +1,6 @@
-use pulzaar_crypto::Address;
 use serde::{Deserialize, Serialize};
 
-use crate::Funds;
+use crate::{Address, Funds};
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct Transfer {

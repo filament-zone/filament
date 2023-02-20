@@ -1,4 +1,4 @@
-use pulzaar_crypto::Address;
+use pulzaar_chain::Address;
 
 pub trait StateKey {
     fn state_key(&self) -> String;

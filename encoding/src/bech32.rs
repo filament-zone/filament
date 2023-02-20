@@ -1,10 +1,6 @@
 use bech32::{self, FromBase32, ToBase32, Variant};
-use pulzaar_crypto::{Address, SigningKey};
 
 use crate::Error;
-
-const BECH32_ADDRESS_PREFIX: &str = "plzaddr";
-const BECH32_SIGNKEY_PREFIX: &str = "plzkey";
 
 pub trait ToBech32: AsRef<[u8]> {
     const PREFIX: &'static str;
@@ -35,46 +31,5 @@ pub trait FromBech32: Sized + for<'a> TryFrom<&'a [u8]> {
         let data = data.as_slice();
 
         Self::try_from(data).map_err(|_err| Error::Bech32Conversion)
-    }
-}
-
-impl ToBech32 for Address {
-    const PREFIX: &'static str = BECH32_ADDRESS_PREFIX;
-}
-
-impl FromBech32 for Address {
-    const PREFIX: &'static str = BECH32_ADDRESS_PREFIX;
-}
-
-impl ToBech32 for SigningKey {
-    const PREFIX: &'static str = BECH32_SIGNKEY_PREFIX;
-}
-
-impl FromBech32 for SigningKey {
-    const PREFIX: &'static str = BECH32_SIGNKEY_PREFIX;
-}
-
-#[cfg(test)]
-mod tests {
-    use pretty_assertions::assert_eq;
-    use pulzaar_crypto::{SigningKey, VerificationKey};
-    use rand::thread_rng;
-
-    use super::*;
-
-    #[test]
-    fn address_bech32_roundtrip() {
-        let address = Address(VerificationKey::from(&SigningKey::new(thread_rng())));
-        let encoded = address.to_bech32().unwrap();
-        let decoded = Address::from_bech32(encoded).unwrap();
-        assert_eq!(address, decoded);
-    }
-
-    #[test]
-    fn signing_key_bech32_roundtrip() {
-        let sk = SigningKey::new(thread_rng());
-        let encoded = sk.to_bech32().unwrap();
-        let decoded = SigningKey::from_bech32(encoded).unwrap();
-        assert_eq!(sk.to_bytes(), decoded.to_bytes());
     }
 }

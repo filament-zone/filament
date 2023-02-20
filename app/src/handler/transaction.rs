@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use penumbra_storage::{StateRead, StateWrite};
-use pulzaar_chain::{Account, Auth, ChainParameters, Transaction};
-use pulzaar_crypto::{Address, SignBytes};
+use pulzaar_chain::{Account, Address, Auth, ChainParameters, Transaction};
+use pulzaar_crypto::SignBytes;
 
 use super::Handler;
 use crate::{
@@ -112,6 +112,7 @@ mod test {
     use penumbra_storage::{StateDelta, Storage};
     use pulzaar_chain::{
         input,
+        Address,
         Auth,
         ChainId,
         ChainParameters,
@@ -119,7 +120,7 @@ mod test {
         Transaction,
         TransactionBody,
     };
-    use pulzaar_crypto::{Address, SignBytes, SigningKey};
+    use pulzaar_crypto::{SignBytes, SigningKey};
     use rand::thread_rng;
     use tempfile::tempdir;
 

@@ -1483,6 +1483,7 @@ dependencies = [
  "dialoguer",
  "eyre",
  "lexopt",
+ "pulzaar-chain",
  "pulzaar-config",
  "pulzaar-crypto",
  "pulzaar-encoding",
@@ -1646,8 +1647,10 @@ name = "pulzaar-chain"
 version = "0.1.0"
 dependencies = [
  "eyre",
+ "pretty_assertions",
  "pulzaar-crypto",
  "pulzaar-encoding",
+ "rand",
  "serde",
  "sha2 0.10.6",
 ]
@@ -1676,7 +1679,6 @@ dependencies = [
  "futures",
  "penumbra-storage",
  "pretty_assertions",
- "pulzaar-crypto",
  "rand",
  "serde",
  "tempfile",

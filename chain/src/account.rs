@@ -1,5 +1,6 @@
-use pulzaar_crypto::Address;
 use serde::{Deserialize, Serialize};
+
+use crate::Address;
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub enum Account {
