@@ -1,8 +1,16 @@
 use serde::{Deserialize, Serialize};
 
-use crate::ChainParameters;
+use crate::{Address, Amount, ChainParameters};
 
-#[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct AppState {
+    pub allocations: Vec<Allocation>,
     pub chain_parameters: ChainParameters,
+}
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub struct Allocation {
+    pub address: Address,
+    pub denom: String,
+    pub amount: Amount,
 }

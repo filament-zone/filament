@@ -136,6 +136,7 @@ impl Worker {
     ) -> eyre::Result<response::InitChain> {
         // TODO(xla): Deserialize app state.
         let app_state = AppState {
+            allocations: vec![],
             chain_parameters: ChainParameters {
                 chain_id: ChainId::try_from("pulzaar-devnet".to_string())?,
                 epoch_duration: 0,

@@ -4,11 +4,16 @@ use pulzaar_chain::genesis::AppState;
 use tendermint::abci::request::{BeginBlock, EndBlock};
 
 pub mod accounts;
+pub mod assets;
 pub mod staking;
 
+pub use accounts::Accounts;
+pub use assets::Assets;
 pub use staking::Staking;
 
 pub enum Component {
+    Accounts(Accounts),
+    Assets(Assets),
     Staking(Staking),
 }
 

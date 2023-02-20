@@ -1,4 +1,4 @@
-use pulzaar_chain::Address;
+use pulzaar_chain::{Address, AssetId};
 
 pub trait StateKey {
     fn state_key(&self) -> String;
@@ -7,6 +7,14 @@ pub trait StateKey {
 impl StateKey for Address {
     fn state_key(&self) -> String {
         hex::encode(self)
+    }
+}
+
+impl StateKey for AssetId {
+    fn state_key(&self) -> String {
+        // FIXME(xla): Conversion here should be safe and respect character set that is tolerated in
+        // state keys.
+        self.0.clone()
     }
 }
 

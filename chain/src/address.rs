@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 const BECH32_ADDRESS_PREFIX: &str = "plzaddr";
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub struct Address(pub VerificationKey);
+pub struct Address(VerificationKey);
 
 impl AsRef<[u8]> for Address {
     fn as_ref(&self) -> &[u8] {

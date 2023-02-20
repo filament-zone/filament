@@ -14,7 +14,7 @@ pub struct Id(pub String);
 
 /// Denominiation of an asset.
 // TODO(xla): Document.
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct Denom {
     id: Id,
     base: String,
@@ -22,7 +22,7 @@ pub struct Denom {
 }
 
 // TODO(xla): Document.
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct Unit {
     pub exponent: u8,
     pub denom: String,

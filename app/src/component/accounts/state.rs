@@ -1,6 +1,3 @@
-// FIXME(xla): Remove.
-#![allow(dead_code)]
-
 use async_trait::async_trait;
 use pulzaar_chain::{Account, Address};
 use pulzaar_encoding::{StateReadDecode, StateWriteEncode};

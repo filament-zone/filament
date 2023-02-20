@@ -1,6 +1,3 @@
-// FIXME(xla): Remvoe.
-#![allow(dead_code)]
-
 mod account;
 mod address;
 mod amount;
@@ -17,7 +14,7 @@ pub mod input;
 pub use account::Account;
 pub use address::Address;
 pub use amount::Amount;
-pub use asset::Asset;
+pub use asset::{Asset, Denom, Id as AssetId};
 pub use chain_id::ChainId;
 pub use fee::Fee;
 pub use funds::Funds;

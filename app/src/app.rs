@@ -43,6 +43,8 @@ impl App {
 
         for component in &self.components {
             match component {
+                Component::Accounts(cmp) => cmp.init_chain(&mut state_tx, app_state).await,
+                Component::Assets(cmp) => cmp.init_chain(&mut state_tx, app_state).await,
                 Component::Staking(cmp) => cmp.init_chain(&mut state_tx, app_state).await,
             }
         }
@@ -64,6 +66,8 @@ impl App {
 
         for component in &self.components {
             match component {
+                Component::Accounts(cmp) => cmp.begin_block(&mut state_tx, begin_block).await,
+                Component::Assets(cmp) => cmp.begin_block(&mut state_tx, begin_block).await,
                 Component::Staking(cmp) => cmp.begin_block(&mut state_tx, begin_block).await,
             }
         }
@@ -104,6 +108,8 @@ impl App {
 
         for component in &self.components {
             match component {
+                Component::Accounts(cmp) => cmp.end_block(&mut state_tx, end_block).await,
+                Component::Assets(cmp) => cmp.end_block(&mut state_tx, end_block).await,
                 Component::Staking(cmp) => cmp.end_block(&mut state_tx, end_block).await,
             }
         }

@@ -1,28 +1,30 @@
 use async_trait::async_trait;
 use penumbra_storage::StateWrite;
-use pulzaar_chain::genesis::AppState;
+use pulzaar_chain::{genesis::AppState, AssetId};
 use tendermint::abci::request::{BeginBlock, EndBlock};
 
 use crate::component::ABCIComponent;
 
 mod state;
 
-pub use state::{AccountsRead, AccountsWrite};
+pub use state::{AssetsRead, AssetsWrite};
 
-pub struct Accounts {}
+pub struct Assets {}
 
 #[async_trait]
-impl<S> ABCIComponent<S> for Accounts
+impl<S> ABCIComponent<S> for Assets
 where
     S: StateWrite,
 {
     async fn init_chain(&self, state: &mut S, app_state: &AppState) {
+        // Store account allocations.
         for allocation in &app_state.allocations {
+            let asset_id = AssetId(allocation.denom.clone());
+
             // FIXME(xla): ABCI does not allow for errors to be returned during chain
             // initialisation. Which leaves aborting the program as only alternative for now.
             state
-                .create_account(allocation.address.clone())
-                .await
+                .put_balance(&allocation.address, &asset_id, allocation.amount)
                 .unwrap();
         }
     }
@@ -35,10 +37,12 @@ where
 #[cfg(test)]
 mod test {
     use penumbra_storage::{StateDelta, Storage};
+    use pretty_assertions::assert_eq;
     use pulzaar_chain::{
         genesis::{Allocation, AppState},
         Address,
         Amount,
+        AssetId,
         ChainId,
         ChainParameters,
     };
@@ -46,8 +50,8 @@ mod test {
     use rand::{thread_rng, Rng as _};
     use tempfile::tempdir;
 
-    use super::Accounts;
-    use crate::component::{accounts::AccountsRead, ABCIComponent as _};
+    use super::Assets;
+    use crate::component::{assets::AssetsRead as _, ABCIComponent as _};
 
     #[tokio::test]
     async fn init_chain_allocations() -> eyre::Result<()> {
@@ -58,45 +62,43 @@ mod test {
             .map_err(|e| eyre::eyre!(e))?;
 
         let amount = thread_rng().gen_range(0..16);
-        let addresses: Vec<Address> = (0..amount)
+        let allocations = (0..amount)
             .map(|_| {
                 let sk = SigningKey::new(thread_rng());
                 Address::from(sk.verification_key())
             })
-            .collect();
-        let allocations = addresses
-            .iter()
             .map(|address| Allocation {
-                address: address.clone(),
+                address,
                 denom: "upulzaar".to_string(),
                 amount: Amount::from(1000),
             })
-            .collect();
+            .collect::<Vec<_>>();
 
-        // Run init chain on the Accounts component with a populated set of allocations.
+        // Run init chain on the Assets component with a populated set of allocations.
         {
             let mut state = StateDelta::new(storage.latest_snapshot());
 
             let app_state = AppState {
-                allocations,
+                allocations: allocations.clone(),
                 chain_parameters: ChainParameters {
                     chain_id: ChainId::try_from("inprocess-testnet".to_string())?,
                     epoch_duration: 1024,
                 },
             };
 
-            let accounts = Accounts {};
-            accounts.init_chain(&mut state, &app_state).await;
+            let assets = Assets {};
+            assets.init_chain(&mut state, &app_state).await;
 
             storage.commit(state).await.map_err(|e| eyre::eyre!(e))?;
         }
 
-        // Assert that for every address in the genesis allocation there is an account in the
-        // state.
+        // Assert that for every allocation there is a corresponding balance in the state.
         let state = StateDelta::new(storage.latest_snapshot());
 
-        for addr in &addresses {
-            assert!(state.account(addr).await?.is_some());
+        for allocation in &allocations {
+            let id = AssetId(allocation.denom.clone());
+            let balance = state.get_balance(&allocation.address, &id).await?;
+            assert_eq!(balance, Some(allocation.amount));
         }
 
         Ok(())
