@@ -33,6 +33,17 @@ impl<T: StateReadDecode + ?Sized> AccountsRead for T {}
 
 #[async_trait]
 pub trait AccountsWrite: StateWriteEncode {
+    async fn increment_id(&mut self) -> eyre::Result<u64> {
+        let old = self
+            .get_bcs::<u64>(&state_key::next_account_id())
+            .await?
+            .unwrap_or_default();
+        let new = old + 1;
+        self.put_bcs(state_key::next_account_id(), &new)?;
+
+        Ok(old)
+    }
+
     async fn create_account(&mut self, address: Address) -> eyre::Result<()> {
         let key = state_key::by_address(&address);
         if self.get_bcs::<Account>(&key).await?.is_some() {
@@ -52,15 +63,23 @@ pub trait AccountsWrite: StateWriteEncode {
         )
     }
 
-    async fn increment_id(&mut self) -> eyre::Result<u64> {
-        let old = self
-            .get_bcs::<u64>(&state_key::next_account_id())
-            .await?
-            .unwrap_or_default();
-        let new = old + 1;
-        self.put_bcs(state_key::next_account_id(), &new)?;
+    async fn increment_sequence(&mut self, address: &Address) -> eyre::Result<()> {
+        let key = state_key::by_address(address);
+        let account = match self.get_bcs::<Account>(&key).await? {
+            None => return Err(eyre::eyre!("account doesn't exist: {address:?}")),
+            Some(account) => account,
+        };
 
-        Ok(old)
+        match account {
+            Account::Single { id, sequence, .. } => self.put_bcs(
+                key,
+                &Account::Single {
+                    address: address.clone(),
+                    id,
+                    sequence: sequence + 1,
+                },
+            ),
+        }
     }
 }
 

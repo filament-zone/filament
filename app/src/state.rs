@@ -19,6 +19,10 @@ pub trait StateReadExt: StateReadDecode {
         self.get_bcs::<ChainParameters>(state_key::chain_parameters())
             .await
     }
+
+    async fn get_current_height(&self) -> eyre::Result<u64> {
+        Ok(self.get_block_height().await?.unwrap_or_default() + 1)
+    }
 }
 
 impl<T: StateReadDecode + ?Sized> StateReadExt for T {}
@@ -51,6 +55,33 @@ mod test {
     use tendermint::Time;
 
     use super::{StateReadExt as _, StateWriteExt as _};
+
+    #[tokio::test]
+    async fn get_current_height() -> eyre::Result<()> {
+        let dir = tempdir()?;
+        let path = dir.into_path();
+        let storage = Storage::load(path.clone())
+            .await
+            .map_err(|e| eyre::eyre!(e))?;
+
+        {
+            let mut state = StateDelta::new(storage.latest_snapshot());
+            let mut state_tx = StateDelta::new(&mut state);
+
+            state_tx.put_block_height(123)?;
+
+            state_tx.apply();
+            storage.commit(state).await.unwrap();
+        }
+
+        // Current height should be one up from the last height stored in the state.
+        let state = StateDelta::new(storage.latest_snapshot());
+        let current_height = state.get_current_height().await?;
+
+        assert_eq!(current_height, 124);
+
+        Ok(())
+    }
 
     #[tokio::test]
     async fn put_block_height() -> eyre::Result<()> {

@@ -1,4 +1,4 @@
-use pulzaar_crypto::{SignBytes, Signature, VerificationKey};
+use pulzaar_crypto::{Address, SignBytes, Signature, VerificationKey};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest as _, Sha256};
 
@@ -25,6 +25,16 @@ pub enum Auth {
         verification_key: VerificationKey,
         signature: Signature,
     },
+}
+
+impl From<&Auth> for Address {
+    fn from(auth: &Auth) -> Self {
+        match auth {
+            Auth::Ed25519 {
+                verification_key, ..
+            } => Address::from(*verification_key),
+        }
+    }
 }
 
 /// Body of a Pulzaar transaction.

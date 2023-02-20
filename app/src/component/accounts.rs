@@ -1,3 +1,3 @@
 mod state;
 
-pub use state::AccountsRead;
+pub use state::{AccountsRead, AccountsWrite};
