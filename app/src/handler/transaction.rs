@@ -51,6 +51,8 @@ impl Handler for Transaction {
             input.execute(state).await?;
         }
 
+        // TODO(xla): Update sequence number on accounts.
+
         Ok(())
     }
 }
@@ -59,7 +61,7 @@ impl Handler for Transaction {
 mod test {
     use std::sync::Arc;
 
-    use pulzaar_chain::{input, Auth, Input, Transaction, TransactionBody};
+    use pulzaar_chain::{input, Auth, ChainId, Input, Transaction, TransactionBody};
     use pulzaar_crypto::{SignBytes, SigningKey};
     use rand::thread_rng;
 
@@ -70,7 +72,7 @@ mod test {
         let signer = SigningKey::new(thread_rng());
         let body = TransactionBody {
             inputs: vec![],
-            chain_id: "test".to_string(),
+            chain_id: ChainId::try_from("test".to_string())?,
             max_height: None,
             account_id: 0,
             sequence: 0,
@@ -95,7 +97,7 @@ mod test {
         let signer = SigningKey::new(thread_rng());
         let body = TransactionBody {
             inputs: vec![Input::Delegate(input::Delegate {})],
-            chain_id: "test".to_string(),
+            chain_id: ChainId::try_from("test".to_string())?,
             max_height: None,
             account_id: 0,
             sequence: 0,
@@ -129,6 +131,11 @@ mod test {
             assert!(tx.validate(tx.clone()).await.is_err());
         }
 
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn check_chain_id() -> eyre::Result<()> {
         Ok(())
     }
 }

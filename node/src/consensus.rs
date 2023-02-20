@@ -3,7 +3,7 @@ use std::{future::Future, pin::Pin};
 use futures::FutureExt as _;
 use penumbra_storage::Storage;
 use pulzaar_app::App;
-use pulzaar_chain::genesis::AppState;
+use pulzaar_chain::{genesis::AppState, ChainId, ChainParameters};
 use tendermint::abci::{self, request, response, ConsensusRequest, ConsensusResponse};
 use tokio::sync::{mpsc, oneshot};
 use tokio_util::sync::PollSender;
@@ -135,7 +135,12 @@ impl Worker {
         init_chain: request::InitChain,
     ) -> eyre::Result<response::InitChain> {
         // TODO(xla): Deserialize app state.
-        let app_state = AppState {};
+        let app_state = AppState {
+            chain_parameters: ChainParameters {
+                chain_id: ChainId::try_from("pulzaar-devnet".to_string())?,
+                epoch_duration: 0,
+            },
+        };
 
         // TODO(xla): Error if storage is not at height 0.
 

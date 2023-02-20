@@ -1,4 +1,5 @@
-use penumbra_storage::RootHash;
+use async_trait::async_trait;
+use penumbra_storage::{RootHash, Snapshot};
 use sha2::{Digest as _, Sha256};
 
 static APPHASH_DOMSEP: &str = "PulzaarAppHash";
@@ -21,5 +22,18 @@ impl std::fmt::Debug for AppHash {
         f.debug_tuple("AppHash")
             .field(&hex::encode(self.0))
             .finish()
+    }
+}
+
+#[async_trait]
+pub trait AppHashRead {
+    async fn app_hash(&self) -> eyre::Result<AppHash>;
+}
+
+#[async_trait]
+impl AppHashRead for Snapshot {
+    async fn app_hash(&self) -> eyre::Result<AppHash> {
+        let root = self.root_hash().await.map_err(|err| eyre::eyre!(err))?;
+        Ok(AppHash::from(root))
     }
 }

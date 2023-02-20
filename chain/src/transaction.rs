@@ -2,7 +2,7 @@ use pulzaar_crypto::{SignBytes, Signature, VerificationKey};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest as _, Sha256};
 
-use crate::input::Input;
+use crate::{input::Input, ChainId};
 
 /// A Pulzaar transactin.
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
@@ -36,7 +36,7 @@ pub struct Body {
 
     /// Intended chain for the transaction to land on, to be included to prevent replays on other
     /// chains.
-    pub chain_id: String,
+    pub chain_id: ChainId,
     /// Maximum height until the transaction is valid.
     pub max_height: Option<u64>,
 

@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use crate::ChainParameters;
+use crate::ChainId;
 
 #[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize)]
-pub struct AppState {
-    pub chain_parameters: ChainParameters,
+pub struct ChainParameters {
+    pub chain_id: ChainId,
+    pub epoch_duration: u64,
 }

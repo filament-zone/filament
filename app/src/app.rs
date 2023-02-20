@@ -37,6 +37,10 @@ impl App {
             .try_begin_transaction()
             .expect("state Arc should not be referenced elsewhere");
 
+        state_tx
+            .put_chain_parameters(&app_state.chain_parameters)
+            .unwrap();
+
         for component in &self.components {
             match component {
                 Component::Staking(cmp) => cmp.init_chain(&mut state_tx, app_state).await,
