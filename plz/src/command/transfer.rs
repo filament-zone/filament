@@ -1,7 +1,9 @@
 use std::{ffi::OsString, fs};
 
+use pulzaar_app::accounts;
 use pulzaar_chain::{
     input::Transfer,
+    Account,
     Address,
     Amount,
     Auth,
@@ -11,7 +13,7 @@ use pulzaar_chain::{
     TransactionBody,
 };
 use pulzaar_crypto::{SignBytes, SigningKey};
-use pulzaar_encoding::{to_bytes, FromBech32};
+use pulzaar_encoding::{from_bytes, to_bytes, FromBech32 as _};
 use tendermint_rpc::{Client as _, HttpClient};
 use tokio::runtime::Runtime;
 
@@ -70,7 +72,19 @@ pub fn run(args: &[OsString]) -> eyre::Result<()> {
         Err(e) => return Err(eyre::eyre!("parsing funds failed: {:?}", e)),
     };
 
-    // TODO(tsenart): Read sequence number and account_number from full node.
+    // TODO(tsenart): Make node URI a flag.
+    let rt = Runtime::new()?;
+    let client = HttpClient::new("http://127.0.0.1:26657")?;
+    let path = Some("/accounts".to_string());
+    let data = to_bytes(&accounts::Query::AccountByAddress(from.clone()))?;
+    let query = client.abci_query(path, data, None, false);
+    let res = rt.block_on(query)?;
+
+    if res.code.is_err() {
+        eyre::bail!("ABCI account query error {:?}", res);
+    }
+
+    let account: Account = from_bytes(&res.value)?;
 
     let transfer = Transfer {
         from,
@@ -78,12 +92,13 @@ pub fn run(args: &[OsString]) -> eyre::Result<()> {
         denom,
         amount,
     };
+
     let body = TransactionBody {
         inputs: vec![Input::Transfer(transfer)],
         chain_id,
         max_height: None,
-        account_id: 0,
-        sequence: 0,
+        account_id: account.id(),
+        sequence: account.sequence(),
     };
 
     let sign_bytes = body.sign_bytes()?;
@@ -97,11 +112,8 @@ pub fn run(args: &[OsString]) -> eyre::Result<()> {
     };
     let tx_bytes = to_bytes(&tx)?;
 
-    // TODO(tsenart): Make node URI a flag.
-    let client = HttpClient::new("http://127.0.0.1:26657")?;
-    let req = client.broadcast_tx_commit::<Vec<u8>>(tx_bytes);
-    let rt = Runtime::new()?;
-    let res = rt.block_on(req)?;
+    let broadcast = client.broadcast_tx_commit::<Vec<u8>>(tx_bytes);
+    let res = rt.block_on(broadcast)?;
 
     println!("{:?}", res);
 

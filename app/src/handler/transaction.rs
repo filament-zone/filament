@@ -67,6 +67,7 @@ impl Handler for Transaction {
         // Check for account existence and id match.
         let address = Address::from(&self.auth);
         let sequence = match state.account(&address).await? {
+            None => return Err(eyre::eyre!("account doesn't exist: {address:?}")),
             Some(Account::Single { id, .. }) if id != self.body.account_id => {
                 return Err(eyre::eyre!(
                     "account id mismatch: {} != {}",
@@ -74,7 +75,6 @@ impl Handler for Transaction {
                     self.body.account_id
                 ))
             },
-            None => return Err(eyre::eyre!("account doesn't exist: {address:?}")),
             Some(Account::Single { sequence, .. }) => sequence,
         };
 

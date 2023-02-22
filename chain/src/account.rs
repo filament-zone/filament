@@ -11,3 +11,23 @@ pub enum Account {
         sequence: u64,
     },
 }
+
+impl Account {
+    pub fn address(&self) -> &Address {
+        match self {
+            Account::Single { address, .. } => address,
+        }
+    }
+
+    pub fn id(&self) -> u64 {
+        match self {
+            Account::Single { id, .. } => *id,
+        }
+    }
+
+    pub fn sequence(&self) -> u64 {
+        match self {
+            Account::Single { sequence, .. } => *sequence,
+        }
+    }
+}

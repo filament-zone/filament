@@ -1,7 +1,7 @@
 use async_trait::async_trait;
-use penumbra_storage::StateWrite;
+use penumbra_storage::{StateRead, StateWrite};
 use pulzaar_chain::{genesis::AppState, REGISTRY};
-use tendermint::abci::request::{BeginBlock, EndBlock};
+use tendermint::abci::{request, response};
 
 use crate::component::ABCIComponent;
 
@@ -12,11 +12,8 @@ pub use state::{AssetsRead, AssetsWrite};
 pub struct Assets {}
 
 #[async_trait]
-impl<S> ABCIComponent<S> for Assets
-where
-    S: StateWrite,
-{
-    async fn init_chain(&self, state: &mut S, app_state: &AppState) {
+impl ABCIComponent for Assets {
+    async fn init_chain<S: StateWrite>(&self, state: &mut S, app_state: &AppState) {
         // Store account allocations.
         for allocation in &app_state.allocations {
             let asset = REGISTRY
@@ -31,9 +28,18 @@ where
         }
     }
 
-    async fn begin_block(&self, _state: &mut S, _begin_block: &BeginBlock) {}
+    async fn query<S: StateRead>(
+        &self,
+        _state: &S,
+        _req: &request::Query,
+    ) -> eyre::Result<response::Query> {
+        todo!()
+    }
 
-    async fn end_block(&self, _state: &mut S, _end_block: &EndBlock) {}
+    async fn begin_block<S: StateWrite>(&self, _state: &mut S, _begin_block: &request::BeginBlock) {
+    }
+
+    async fn end_block<S: StateWrite>(&self, _state: &mut S, _end_block: &request::EndBlock) {}
 }
 
 #[cfg(test)]

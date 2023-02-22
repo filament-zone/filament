@@ -4,15 +4,16 @@ use penumbra_storage::{ArcStateDeltaExt as _, Snapshot, StateDelta, Storage};
 use pulzaar_chain::{genesis::AppState, Transaction};
 use pulzaar_encoding as encoding;
 use tendermint::{
-    abci::{self, request},
+    abci::{self, request, response},
     consensus::Params,
     validator::Update,
 };
 use tracing::instrument;
 
 use crate::{
-    component::{ABCIComponent as _, Component},
+    component::{ABCIComponent as _, Accounts, Assets, Component, Staking},
     handler::Handler as _,
+    query::Prefix,
     state::StateWriteExt as _,
     AppHash,
 };
@@ -26,7 +27,11 @@ pub struct App {
 impl App {
     pub fn new(snapshot: Snapshot) -> Self {
         Self {
-            components: vec![],
+            components: vec![
+                Component::Accounts(Accounts {}),
+                Component::Assets(Assets {}),
+                Component::Staking(Staking {}),
+            ],
             state: Arc::new(StateDelta::new(snapshot)),
         }
     }
@@ -43,14 +48,22 @@ impl App {
             .unwrap();
 
         for component in &self.components {
-            match component {
-                Component::Accounts(cmp) => cmp.init_chain(&mut state_tx, app_state).await,
-                Component::Assets(cmp) => cmp.init_chain(&mut state_tx, app_state).await,
-                Component::Staking(cmp) => cmp.init_chain(&mut state_tx, app_state).await,
-            }
+            component.init_chain(&mut state_tx, app_state).await;
         }
 
         state_tx.apply();
+    }
+
+    #[instrument(skip(self))]
+    pub async fn query(&self, query: &request::Query) -> eyre::Result<response::Query> {
+        let prefix = Prefix::try_from(query.path.as_str())?;
+
+        for component in &self.components {
+            if component.prefix() == Some(prefix.clone()) {
+                return component.query(&self.state, query).await;
+            }
+        }
+        eyre::bail!("component for {} not found", query.path)
     }
 
     #[instrument(skip(self, begin_block))]
@@ -66,11 +79,7 @@ impl App {
         let _ = state_tx.put_block_timestamp(begin_block.header.time);
 
         for component in &self.components {
-            match component {
-                Component::Accounts(cmp) => cmp.begin_block(&mut state_tx, begin_block).await,
-                Component::Assets(cmp) => cmp.begin_block(&mut state_tx, begin_block).await,
-                Component::Staking(cmp) => cmp.begin_block(&mut state_tx, begin_block).await,
-            }
+            component.begin_block(&mut state_tx, begin_block).await;
         }
 
         state_tx.apply().1
@@ -108,11 +117,7 @@ impl App {
             .expect("state Arc should not be referenced elsewhere");
 
         for component in &self.components {
-            match component {
-                Component::Accounts(cmp) => cmp.end_block(&mut state_tx, end_block).await,
-                Component::Assets(cmp) => cmp.end_block(&mut state_tx, end_block).await,
-                Component::Staking(cmp) => cmp.end_block(&mut state_tx, end_block).await,
-            }
+            component.end_block(&mut state_tx, end_block).await;
         }
 
         let events = state_tx.apply().1;
