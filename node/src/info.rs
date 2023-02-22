@@ -2,8 +2,11 @@ use std::pin::Pin;
 
 use futures::{Future, FutureExt as _};
 use penumbra_storage::Storage;
-use pulzaar_app::AppHashRead as _;
-use tendermint::abci::{request, response, InfoRequest, InfoResponse};
+use pulzaar_app::{App, AppHashRead as _};
+use tendermint::{
+    abci::{request, response, InfoRequest, InfoResponse},
+    block::Height,
+};
 use tokio::sync::{mpsc, oneshot};
 use tokio_util::sync::PollSender;
 use tower_abci::BoxError;
@@ -135,8 +138,27 @@ impl Worker {
         })
     }
 
-    async fn query(&mut self, _query: request::Query) -> eyre::Result<response::Query> {
-        todo!()
+    async fn query(&mut self, query: request::Query) -> eyre::Result<response::Query> {
+        let state = if query.height == Height::from(0u32) {
+            self.storage.latest_snapshot()
+        } else {
+            self.storage
+                .snapshot(query.height.into())
+                .ok_or(eyre::eyre!(
+                    "snapshot for height {} not found",
+                    query.height
+                ))?
+        };
+
+        tracing::info!(?query, version = ?state.version());
+
+        let query = request::Query {
+            height: state.version().try_into()?,
+            ..query
+        };
+
+        // TODO(tsenart): Support query.prove.
+        App::new(state).query(&query).await
     }
 
     async fn echo(&mut self, _echo: request::Echo) -> eyre::Result<response::Echo> {

@@ -1,7 +1,7 @@
 use async_trait::async_trait;
-use penumbra_storage::StateWrite;
+use penumbra_storage::{StateRead, StateWrite};
 use pulzaar_chain::genesis::AppState;
-use tendermint::abci::request::{BeginBlock, EndBlock};
+use tendermint::abci::{request, response};
 
 pub mod accounts;
 pub mod assets;
@@ -11,18 +11,63 @@ pub use accounts::Accounts;
 pub use assets::Assets;
 pub use staking::Staking;
 
+use crate::query::Prefix;
+
 pub enum Component {
     Accounts(Accounts),
     Assets(Assets),
     Staking(Staking),
 }
 
+#[async_trait]
+impl ABCIComponent for Component {
+    async fn init_chain<S: StateWrite>(&self, state: &mut S, app_state: &AppState) {
+        match self {
+            Component::Accounts(cmp) => cmp.init_chain(state, app_state),
+            Component::Assets(cmp) => cmp.init_chain(state, app_state),
+            Component::Staking(cmp) => cmp.init_chain(state, app_state),
+        }
+        .await
+    }
+
+    async fn query<R: StateRead>(
+        &self,
+        state: &R,
+        req: &request::Query,
+    ) -> eyre::Result<response::Query> {
+        match self {
+            Component::Accounts(cmp) => cmp.query(state, req),
+            Component::Assets(cmp) => cmp.query(state, req),
+            Component::Staking(cmp) => cmp.query(state, req),
+        }
+        .await
+    }
+
+    async fn begin_block<S: StateWrite>(&self, state: &mut S, begin_block: &request::BeginBlock) {
+        match self {
+            Component::Accounts(cmp) => cmp.begin_block(state, begin_block),
+            Component::Assets(cmp) => cmp.begin_block(state, begin_block),
+            Component::Staking(cmp) => cmp.begin_block(state, begin_block),
+        }
+        .await
+    }
+
+    async fn end_block<S: StateWrite>(&self, state: &mut S, end_block: &request::EndBlock) {
+        match self {
+            Component::Accounts(cmp) => cmp.end_block(state, end_block),
+            Component::Assets(cmp) => cmp.end_block(state, end_block),
+            Component::Staking(cmp) => cmp.end_block(state, end_block),
+        }
+        .await
+    }
+}
+
 /// A component to be called for chain and block related ABCI calls.
 #[async_trait]
-pub trait ABCIComponent<S>: Send + Sync + 'static
-where
-    S: StateWrite,
-{
+pub trait ABCIComponent: Send + Sync + 'static {
+    /// Preifx to match paths of ABCI queries to internal components.
+    const QUERY_PREFIX: Option<Prefix> = None;
+
     /// * Called once upon genesis.
     /// * If ResponseInitChain.Validators is empty, the initial validator set will be the
     ///   RequestInitChain.Validators
@@ -33,7 +78,7 @@ where
     ///   computed based on some application specific information in the genesis file).
     ///
     /// <https://github.com/tendermint/tendermint/blob/main/spec/abci/abci.md#initchain>
-    async fn init_chain(&self, state: &mut S, app_state: &AppState);
+    async fn init_chain<S: StateWrite>(&self, state: &mut S, app_state: &AppState);
 
     /// * Signals the beginning of a new block.
     /// * Called prior to any `DeliverTx` method calls.
@@ -43,7 +88,7 @@ where
     ///   punishments for the validators.
     ///
     /// <https://github.com/tendermint/tendermint/blob/main/spec/abci/abci.md#initchain>
-    async fn begin_block(&self, state: &mut S, begin_blocke: &BeginBlock);
+    async fn begin_block<S: StateWrite>(&self, state: &mut S, begin_block: &request::BeginBlock);
 
     /// * Signals the end of a block.
     /// * Called after all the transactions for the current block have been delivered, prior to the
@@ -57,5 +102,24 @@ where
     /// * `consensus_param_updates` returned for block `H` apply to the consensus params for block `H+1`. For more information on the consensus parameters, see the [application spec entry on consensus parameters](https://github.com/tendermint/tendermint/blob/main/spec/abci/apps.md#consensus-parameters).
     ///
     /// <https://github.com/tendermint/tendermint/blob/main/spec/abci/abci.md#endblock>
-    async fn end_block(&self, state: &mut S, end_block: &EndBlock);
+    async fn end_block<S: StateWrite>(&self, state: &mut S, end_block: &request::EndBlock);
+
+    fn prefix(&self) -> Option<Prefix> {
+        Self::QUERY_PREFIX
+    }
+
+    /// * Query for data from the application at current or past height.
+    /// * Optionally return Merkle proof.
+    /// * Merkle proof includes self-describing type field to support many types of Merkle trees and
+    ///   encoding formats.
+    ///
+    /// <https://github.com/tendermint/tendermint/blob/main/spec/abci/abci.md#query-1>
+    async fn query<R: StateRead>(
+        &self,
+        _state: &R,
+        _req: &request::Query,
+    ) -> eyre::Result<response::Query> {
+        // Not to be implemented by default.
+        unreachable!()
+    }
 }

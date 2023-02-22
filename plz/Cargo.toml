@@ -12,6 +12,7 @@ name = "plz"
 path = "src/main.rs"
 
 [dependencies]
+pulzaar-app       = { path = "../app" }
 pulzaar-chain     = { path = "../chain" }
 pulzaar-config    = { path = "../config" }
 pulzaar-crypto    = { path = "../crypto" }

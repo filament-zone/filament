@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use penumbra_storage::StateWrite;
 use pulzaar_chain::genesis::AppState;
-use tendermint::abci::request::{BeginBlock, EndBlock};
+use tendermint::abci::request;
 
 use crate::component::ABCIComponent;
 
@@ -9,13 +9,11 @@ use crate::component::ABCIComponent;
 pub struct Staking {}
 
 #[async_trait]
-impl<S> ABCIComponent<S> for Staking
-where
-    S: StateWrite,
-{
-    async fn init_chain(&self, _state: &mut S, _app_state: &AppState) {}
+impl ABCIComponent for Staking {
+    async fn init_chain<S: StateWrite>(&self, _state: &mut S, _app_state: &AppState) {}
 
-    async fn begin_block(&self, _state: &mut S, _begin_block: &BeginBlock) {}
+    async fn begin_block<S: StateWrite>(&self, _state: &mut S, _begin_block: &request::BeginBlock) {
+    }
 
-    async fn end_block(&self, _state: &mut S, _end_block: &EndBlock) {}
+    async fn end_block<S: StateWrite>(&self, _state: &mut S, _end_block: &request::EndBlock) {}
 }
