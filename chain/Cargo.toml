@@ -14,6 +14,7 @@ pulzaar-crypto    = { path = "../crypto" }
 pulzaar-encoding  = { path = "../encoding" }
 
 eyre              = { workspace = true, features = [ "auto-install" ] }
+once_cell         = { workspace = true }
 serde             = { workspace = true, features = [ "derive" ] }
 sha2              = { workspace = true }
 

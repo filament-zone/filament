@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use penumbra_storage::StateWrite;
-use pulzaar_chain::{genesis::AppState, AssetId};
+use pulzaar_chain::{genesis::AppState, REGISTRY};
 use tendermint::abci::request::{BeginBlock, EndBlock};
 
 use crate::component::ABCIComponent;
@@ -19,12 +19,14 @@ where
     async fn init_chain(&self, state: &mut S, app_state: &AppState) {
         // Store account allocations.
         for allocation in &app_state.allocations {
-            let asset_id = AssetId(allocation.denom.clone());
+            let asset = REGISTRY
+                .by_base_denom(&allocation.denom)
+                .expect("asset not found for denom");
 
             // FIXME(xla): ABCI does not allow for errors to be returned during chain
             // initialisation. Which leaves aborting the program as only alternative for now.
             state
-                .put_balance(&allocation.address, &asset_id, allocation.amount)
+                .put_balance(&allocation.address, &asset.id, allocation.amount)
                 .unwrap();
         }
     }
@@ -69,7 +71,7 @@ mod test {
             })
             .map(|address| Allocation {
                 address,
-                denom: "upulzaar".to_string(),
+                denom: "ugm".to_string(),
                 amount: Amount::from(1000),
             })
             .collect::<Vec<_>>();
@@ -96,7 +98,7 @@ mod test {
         let state = StateDelta::new(storage.latest_snapshot());
 
         for allocation in &allocations {
-            let id = AssetId(allocation.denom.clone());
+            let id = AssetId::try_from(allocation.denom.as_ref())?;
             let balance = state.get_balance(&allocation.address, &id).await?;
             assert_eq!(balance, Some(allocation.amount));
         }

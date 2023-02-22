@@ -1767,6 +1767,7 @@ name = "pulzaar-chain"
 version = "0.1.0"
 dependencies = [
  "eyre",
+ "once_cell",
  "pretty_assertions",
  "pulzaar-crypto",
  "pulzaar-encoding",

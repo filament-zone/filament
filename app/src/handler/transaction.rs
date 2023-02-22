@@ -120,7 +120,7 @@ mod test {
         Transaction,
         TransactionBody,
     };
-    use pulzaar_crypto::{SignBytes, SigningKey};
+    use pulzaar_crypto::{SignBytes as _, SigningKey};
     use rand::thread_rng;
     use tempfile::tempdir;
 

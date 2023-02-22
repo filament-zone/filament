@@ -3,9 +3,9 @@ use std::{ffi::OsString, fs};
 use pulzaar_chain::{
     input::Transfer,
     Address,
+    Amount,
     Auth,
     ChainId,
-    Funds,
     Input,
     Transaction,
     TransactionBody,
@@ -58,14 +58,26 @@ pub fn run(args: &[OsString]) -> eyre::Result<()> {
         Err(e) => return Err(eyre::eyre!("to-address invalid: {e:?}")),
     };
 
-    let funds = match args.get(3).unwrap().to_owned().into_string() {
-        Ok(s) => Funds::try_from(s.as_str()).map_err(|e| eyre::eyre!(e))?,
+    let (amount, denom) = match args.get(3).unwrap().to_owned().into_string() {
+        Ok(value) => {
+            let n = value
+                .find(|c| !char::is_numeric(c))
+                .ok_or(eyre::eyre!("asset id missing"))?;
+            let (amount, denom) = value.split_at(n);
+
+            (Amount::try_from(amount)?, denom.to_owned())
+        },
         Err(e) => return Err(eyre::eyre!("parsing funds failed: {:?}", e)),
     };
 
     // TODO(tsenart): Read sequence number and account_number from full node.
 
-    let transfer = Transfer { from, to, funds };
+    let transfer = Transfer {
+        from,
+        to,
+        denom,
+        amount,
+    };
     let body = TransactionBody {
         inputs: vec![Input::Transfer(transfer)],
         chain_id,

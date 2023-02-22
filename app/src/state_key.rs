@@ -14,7 +14,7 @@ impl StateKey for AssetId {
     fn state_key(&self) -> String {
         // FIXME(xla): Conversion here should be safe and respect character set that is tolerated in
         // state keys.
-        self.0.clone()
+        self.to_string()
     }
 }
 

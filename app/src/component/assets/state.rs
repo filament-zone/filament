@@ -61,7 +61,7 @@ mod test {
 
         let signer = SigningKey::new(thread_rng());
         let addr = Address::from(signer.verification_key());
-        let id = AssetId("upulzaar".to_string());
+        let id = AssetId::try_from("upulzaar")?;
         let amount: u128 = rand::random();
         let amount = Amount::from(amount);
 
