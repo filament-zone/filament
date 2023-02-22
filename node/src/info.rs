@@ -1,6 +1,5 @@
 use std::pin::Pin;
 
-use bytes::Bytes;
 use futures::{Future, FutureExt as _};
 use penumbra_storage::Storage;
 use pulzaar_app::AppHashRead as _;
@@ -132,7 +131,7 @@ impl Worker {
             version: ABCI_INFO_VERSION.to_string(),
             app_version: APP_VERSION,
             last_block_height,
-            last_block_app_hash: Bytes::from(app_hash),
+            last_block_app_hash: app_hash.try_into()?,
         })
     }
 

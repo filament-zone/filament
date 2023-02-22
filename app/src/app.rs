@@ -4,8 +4,9 @@ use penumbra_storage::{ArcStateDeltaExt as _, Snapshot, StateDelta, Storage};
 use pulzaar_chain::{genesis::AppState, Transaction};
 use pulzaar_encoding as encoding;
 use tendermint::{
-    abci::{self, request, types::ValidatorUpdate},
+    abci::{self, request},
     consensus::Params,
+    validator::Update,
 };
 use tracing::instrument;
 
@@ -100,7 +101,7 @@ impl App {
     pub async fn end_block(
         &mut self,
         end_block: &request::EndBlock,
-    ) -> (Vec<ValidatorUpdate>, Option<Params>, Vec<abci::Event>) {
+    ) -> (Vec<Update>, Option<Params>, Vec<abci::Event>) {
         let mut state_tx = self
             .state
             .try_begin_transaction()

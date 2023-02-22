@@ -96,7 +96,7 @@ impl tower_service::Service<MempoolRequest> for Mempool {
                     // TODO(xla): Add counter in metrics for mempool checktx total.
 
                     Ok(MempoolResponse::CheckTx(response::CheckTx {
-                        code: 1,
+                        code: 1.into(),
                         log: format!("{e:#}"),
                         ..Default::default()
                     }))

@@ -87,7 +87,7 @@ pub fn run(args: &[OsString]) -> eyre::Result<()> {
 
     // TODO(tsenart): Make node URI a flag.
     let client = HttpClient::new("http://127.0.0.1:26657")?;
-    let req = client.broadcast_tx_commit(tx_bytes.into());
+    let req = client.broadcast_tx_commit::<Vec<u8>>(tx_bytes);
     let rt = Runtime::new()?;
     let res = rt.block_on(req)?;
 

@@ -196,7 +196,7 @@ impl Worker {
                 tracing::debug!(?e, "deliver tx failed");
 
                 Ok(response::DeliverTx {
-                    code: 1,
+                    code: 1.into(),
                     log: format!("{e:}"),
                     ..Default::default()
                 })

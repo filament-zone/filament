@@ -74,7 +74,8 @@ jobs:
 
       - name: Cache dependencies & tools
         uses: Swatinem/rust-cache@v2
-        timeout-minutes: 5
+        timeout-minutes: 1
+        continue-on-error: true
         with:
           key: ${{ matrix.os }}
 
