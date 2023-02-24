@@ -65,7 +65,7 @@ impl ABCIComponent for Component {
 /// A component to be called for chain and block related ABCI calls.
 #[async_trait]
 pub trait ABCIComponent: Send + Sync + 'static {
-    /// Preifx to match paths of ABCI queries to internal components.
+    /// Prefix to match paths of ABCI queries to internal components.
     const QUERY_PREFIX: Option<Prefix> = None;
 
     /// * Called once upon genesis.

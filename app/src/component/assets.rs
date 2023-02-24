@@ -5,8 +5,10 @@ use tendermint::abci::{request, response};
 
 use crate::component::ABCIComponent;
 
+mod error;
 mod state;
 
+pub use error::Error;
 pub use state::{AssetsRead, AssetsWrite};
 
 pub struct Assets {}

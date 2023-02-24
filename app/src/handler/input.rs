@@ -6,8 +6,8 @@ use pulzaar_chain::{Input, Transaction};
 
 use crate::handler::Handler;
 
-mod assets;
 mod delegate;
+mod transfer;
 mod undelegate;
 
 #[async_trait]

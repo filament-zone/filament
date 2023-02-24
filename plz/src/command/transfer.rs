@@ -11,6 +11,7 @@ use pulzaar_chain::{
     Input,
     Transaction,
     TransactionBody,
+    REGISTRY,
 };
 use pulzaar_crypto::{SignBytes, SigningKey};
 use pulzaar_encoding::{from_bytes, to_bytes, FromBech32 as _};
@@ -60,14 +61,17 @@ pub fn run(args: &[OsString]) -> eyre::Result<()> {
         Err(e) => return Err(eyre::eyre!("to-address invalid: {e:?}")),
     };
 
-    let (amount, denom) = match args.get(3).unwrap().to_owned().into_string() {
+    let (amount, asset) = match args.get(3).unwrap().to_owned().into_string() {
         Ok(value) => {
             let n = value
                 .find(|c| !char::is_numeric(c))
                 .ok_or(eyre::eyre!("asset id missing"))?;
             let (amount, denom) = value.split_at(n);
+            let asset = REGISTRY
+                .by_base_denom(denom)
+                .ok_or(eyre::eyre!("asset not found: {}", denom))?;
 
-            (Amount::try_from(amount)?, denom.to_owned())
+            (Amount::try_from(amount)?, asset)
         },
         Err(e) => return Err(eyre::eyre!("parsing funds failed: {:?}", e)),
     };
@@ -89,7 +93,7 @@ pub fn run(args: &[OsString]) -> eyre::Result<()> {
     let transfer = Transfer {
         from,
         to,
-        denom,
+        denom: asset.denom.clone(),
         amount,
     };
 

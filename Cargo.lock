@@ -1750,6 +1750,7 @@ dependencies = [
  "async-trait",
  "eyre",
  "hex",
+ "num-traits",
  "penumbra-storage",
  "pretty_assertions",
  "pulzaar-chain",
@@ -1760,6 +1761,7 @@ dependencies = [
  "sha2 0.10.6",
  "tempfile",
  "tendermint",
+ "thiserror",
  "tokio",
  "tracing",
 ]
@@ -1769,6 +1771,7 @@ name = "pulzaar-chain"
 version = "0.1.0"
 dependencies = [
  "eyre",
+ "num-traits",
  "once_cell",
  "pretty_assertions",
  "pulzaar-crypto",

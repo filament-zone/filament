@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use pulzaar_crypto::VerificationKey;
 use pulzaar_encoding::{FromBech32, ToBech32};
 use serde::{Deserialize, Serialize};
@@ -6,6 +8,15 @@ const BECH32_ADDRESS_PREFIX: &str = "plzaddr";
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct Address(VerificationKey);
+
+impl Display for Address {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for byte in &self.0.to_bytes() {
+            write!(f, "{byte:02x}")?;
+        }
+        Ok(())
+    }
+}
 
 impl AsRef<[u8]> for Address {
     fn as_ref(&self) -> &[u8] {

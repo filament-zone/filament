@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
 
-mod assets;
 mod delegate;
+mod transfer;
 mod undelegate;
 
-pub use assets::Transfer;
 pub use delegate::Delegate;
+pub use transfer::Transfer;
 pub use undelegate::Undelegate;
 
 // TODO(xla): Remov this allow, it's only triggered because the other variants carry empty structs
