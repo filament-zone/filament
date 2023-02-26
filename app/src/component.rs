@@ -1,7 +1,7 @@
 use async_trait::async_trait;
-use penumbra_storage::{StateRead, StateWrite};
+use penumbra_storage::StateWrite;
 use pulzaar_chain::genesis::AppState;
-use tendermint::abci::{request, response};
+use tendermint::abci::request;
 
 pub mod accounts;
 pub mod assets;
@@ -10,8 +10,6 @@ pub mod staking;
 pub use accounts::Accounts;
 pub use assets::Assets;
 pub use staking::Staking;
-
-use crate::query::Prefix;
 
 pub enum Component {
     Accounts(Accounts),
@@ -26,19 +24,6 @@ impl ABCIComponent for Component {
             Component::Accounts(cmp) => cmp.init_chain(state, app_state),
             Component::Assets(cmp) => cmp.init_chain(state, app_state),
             Component::Staking(cmp) => cmp.init_chain(state, app_state),
-        }
-        .await
-    }
-
-    async fn query<R: StateRead>(
-        &self,
-        state: &R,
-        req: &request::Query,
-    ) -> eyre::Result<response::Query> {
-        match self {
-            Component::Accounts(cmp) => cmp.query(state, req),
-            Component::Assets(cmp) => cmp.query(state, req),
-            Component::Staking(cmp) => cmp.query(state, req),
         }
         .await
     }
@@ -65,9 +50,6 @@ impl ABCIComponent for Component {
 /// A component to be called for chain and block related ABCI calls.
 #[async_trait]
 pub trait ABCIComponent: Send + Sync + 'static {
-    /// Prefix to match paths of ABCI queries to internal components.
-    const QUERY_PREFIX: Option<Prefix> = None;
-
     /// * Called once upon genesis.
     /// * If ResponseInitChain.Validators is empty, the initial validator set will be the
     ///   RequestInitChain.Validators
@@ -103,23 +85,4 @@ pub trait ABCIComponent: Send + Sync + 'static {
     ///
     /// <https://github.com/tendermint/tendermint/blob/main/spec/abci/abci.md#endblock>
     async fn end_block<S: StateWrite>(&self, state: &mut S, end_block: &request::EndBlock);
-
-    fn prefix(&self) -> Option<Prefix> {
-        Self::QUERY_PREFIX
-    }
-
-    /// * Query for data from the application at current or past height.
-    /// * Optionally return Merkle proof.
-    /// * Merkle proof includes self-describing type field to support many types of Merkle trees and
-    ///   encoding formats.
-    ///
-    /// <https://github.com/tendermint/tendermint/blob/main/spec/abci/abci.md#query-1>
-    async fn query<R: StateRead>(
-        &self,
-        _state: &R,
-        _req: &request::Query,
-    ) -> eyre::Result<response::Query> {
-        // Not to be implemented by default.
-        unreachable!()
-    }
 }

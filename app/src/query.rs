@@ -1,6 +1,8 @@
 use std::fmt::Display;
 
+use async_trait::async_trait;
 use eyre::Report;
+use serde::Serialize;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Prefix {
@@ -26,4 +28,12 @@ impl TryFrom<&str> for Prefix {
             _ => Err(eyre::eyre!("unsupported query prefix")),
         }
     }
+}
+
+#[async_trait]
+pub trait Query<S> {
+    type Key: Serialize;
+    type Response: Serialize + Send + Sync;
+
+    async fn respond(&self, state: &S) -> eyre::Result<(Self::Key, Self::Response)>;
 }

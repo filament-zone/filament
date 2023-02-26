@@ -1,7 +1,7 @@
 use async_trait::async_trait;
-use penumbra_storage::{StateRead, StateWrite};
+use penumbra_storage::StateWrite;
 use pulzaar_chain::{genesis::AppState, REGISTRY};
-use tendermint::abci::{request, response};
+use tendermint::abci::request;
 
 use crate::component::ABCIComponent;
 
@@ -28,14 +28,6 @@ impl ABCIComponent for Assets {
                 .put_balance(&allocation.address, &asset.id, allocation.amount)
                 .unwrap();
         }
-    }
-
-    async fn query<S: StateRead>(
-        &self,
-        _state: &S,
-        _req: &request::Query,
-    ) -> eyre::Result<response::Query> {
-        todo!()
     }
 
     async fn begin_block<S: StateWrite>(&self, _state: &mut S, _begin_block: &request::BeginBlock) {

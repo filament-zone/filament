@@ -4,16 +4,16 @@ use penumbra_storage::{ArcStateDeltaExt as _, Snapshot, StateDelta, Storage};
 use pulzaar_chain::{genesis::AppState, Transaction};
 use pulzaar_encoding as encoding;
 use tendermint::{
-    abci::{self, request, response},
+    abci::{self, request, response, Code},
     consensus::Params,
     validator::Update,
 };
 use tracing::instrument;
 
 use crate::{
-    component::{ABCIComponent as _, Accounts, Assets, Component, Staking},
+    component::{self, ABCIComponent as _, Accounts, Assets, Component, Staking},
     handler::Handler as _,
-    query::Prefix,
+    query::{Prefix, Query as _},
     state::StateWriteExt as _,
     AppHash,
 };
@@ -54,16 +54,46 @@ impl App {
         state_tx.apply();
     }
 
+    /// * Query for data from the application at current or past height.
+    /// * Optionally return Merkle proof.
+    /// * Merkle proof includes self-describing type field to support many types of Merkle trees and
+    ///   encoding formats.
+    ///
+    /// <https://github.com/tendermint/tendermint/blob/main/spec/abci/abci.md#query-1>
+    #[allow(unreachable_patterns)]
     #[instrument(skip(self))]
     pub async fn query(&self, query: &request::Query) -> eyre::Result<response::Query> {
         let prefix = Prefix::try_from(query.path.as_str())?;
 
-        for component in &self.components {
-            if component.prefix() == Some(prefix.clone()) {
-                return component.query(&self.state, query).await;
-            }
-        }
-        eyre::bail!("component for {} not found", query.path)
+        let q = match prefix {
+            Prefix::Accounts => {
+                pulzaar_encoding::from_bytes::<component::accounts::query::Query>(&query.data)?
+            },
+            _ => eyre::bail!("component for {} not found", query.path),
+        };
+
+        let res = response::Query {
+            height: query.height,
+            codespace: prefix.to_string(),
+            ..response::Query::default()
+        };
+
+        let res = match q.respond(&self.state).await {
+            Ok((key, data)) => response::Query {
+                code: Code::Ok,
+                key: pulzaar_encoding::to_bytes(&key)?.into(),
+                value: pulzaar_encoding::to_bytes(&data)?.into(),
+                ..res
+            },
+            Err(err) => response::Query {
+                // TODO(tsenart): Formalize error codes ala https://github.com/cosmos/cosmos-sdk/blob/main/types/errors/errors.go
+                code: Code::from(38),
+                log: err.to_string(),
+                ..res
+            },
+        };
+
+        Ok(res)
     }
 
     #[instrument(skip(self, begin_block))]
