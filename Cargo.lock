@@ -1528,10 +1528,9 @@ checksum = "c719dcf55f09a3a7e764c6649ab594c18a177e3599c467983cdf644bfc0a4088"
 [[package]]
 name = "penumbra-storage"
 version = "0.1.0"
-source = "git+https://github.com/penumbra-zone/penumbra?branch=main#9c609ecc4a5e2bfdb9c5e981c0631cba06f5d327"
+source = "git+https://github.com/penumbra-zone/penumbra?branch=main#963ab0b887a1d24878be844dfac89717ee1aba17"
 dependencies = [
  "anyhow",
- "async-stream",
  "async-trait",
  "futures",
  "hex",
