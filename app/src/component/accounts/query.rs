@@ -3,15 +3,22 @@ use pulzaar_chain::{Account, Address};
 use pulzaar_encoding::StateReadDecode;
 use serde::{Deserialize, Serialize};
 
-use crate::{component::accounts::AccountsRead as _, query};
+use crate::{
+    component::accounts::AccountsRead as _,
+    query::{self, Prefix},
+};
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub enum Query {
     AccountByAddress(Address),
 }
 
+impl query::Query for Query {
+    const PREFIX: Prefix = Prefix::Accounts;
+}
+
 #[async_trait]
-impl<S> query::Query<S> for Query
+impl<S> query::Respond<S> for Query
 where
     S: StateReadDecode,
 {

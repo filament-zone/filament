@@ -10,3 +10,11 @@ impl TryFrom<String> for ChainId {
         Ok(Self(value))
     }
 }
+
+impl TryFrom<&str> for ChainId {
+    type Error = eyre::Report;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Self::try_from(value.to_owned())
+    }
+}

@@ -9,4 +9,5 @@ mod state_key;
 pub use app::App;
 pub use app_hash::{AppHash, AppHashRead};
 pub use component::{accounts, assets, Component};
+pub use query::Query;
 pub use state::StateWriteExt;

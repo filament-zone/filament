@@ -5,7 +5,7 @@ use tendermint::abci::request;
 
 use crate::component::ABCIComponent;
 
-pub mod query;
+mod query;
 mod state;
 
 pub use query::Query;

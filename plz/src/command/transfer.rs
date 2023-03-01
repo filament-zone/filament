@@ -1,5 +1,6 @@
 use std::{ffi::OsString, fs};
 
+use eyre::{bail, eyre};
 use pulzaar_app::accounts;
 use pulzaar_chain::{
     input::Transfer,
@@ -8,98 +9,123 @@ use pulzaar_chain::{
     Amount,
     Auth,
     ChainId,
+    Denom,
     Input,
     Transaction,
     TransactionBody,
     REGISTRY,
 };
 use pulzaar_crypto::{SignBytes, SigningKey};
-use pulzaar_encoding::{from_bytes, to_bytes, FromBech32 as _};
-use tendermint_rpc::{Client as _, HttpClient};
-use tokio::runtime::Runtime;
+use pulzaar_encoding::{to_bytes, FromBech32 as _, ToBech32};
 
-use super::{plz_dirs, NAME};
+use crate::{
+    context::Context,
+    terminal::{Args, Help},
+};
 
-pub fn run(args: &[OsString]) -> eyre::Result<()> {
-    // TODO(tsenart): Better CLI flags parsing, usage, etc.
+pub const HELP: Help = Help {
+    name: "transfer",
+    description: "Transfer an asset from one account to another",
+    version: env!("CARGO_PKG_VERSION"),
+    usage: r#"
+Usage
 
-    if args.len() < 4 {
-        print_usage();
-        return Err(eyre::eyre!("not enough arguments given"));
+    plz transfer <chain_id> <from> <to> <amount> <denom>
+
+Options
+    "#,
+};
+
+pub struct Options {
+    chain_id: ChainId,
+    from: Address,
+    to: Address,
+    amount: Amount,
+    denom: Denom,
+}
+
+impl Args for Options {
+    fn from_args(args: Vec<OsString>) -> eyre::Result<Self> {
+        let mut parser = lexopt::Parser::from_args(args);
+        let vals = parser.values()?.collect::<Vec<_>>();
+
+        if vals.len() != 5 {
+            bail!("expected 5 arguments got {}", vals.len());
+        }
+
+        let mut values = vals.iter();
+
+        Ok(Self {
+            chain_id: ChainId::try_from(
+                values
+                    .next()
+                    .unwrap()
+                    .to_str()
+                    .ok_or(eyre!("chain_id is not UTF-8"))?,
+            )?,
+            from: Address::from_bech32(
+                values
+                    .next()
+                    .unwrap()
+                    .to_str()
+                    .ok_or(eyre!("from is not UTF-8"))?,
+            )?,
+            to: Address::from_bech32(
+                values
+                    .next()
+                    .unwrap()
+                    .to_str()
+                    .ok_or(eyre!("from is not UTF-8"))?,
+            )?,
+            amount: Amount::try_from(
+                values
+                    .next()
+                    .unwrap()
+                    .to_str()
+                    .ok_or(eyre!("amount is not UTF-8"))?,
+            )?,
+            denom: {
+                let denom = values
+                    .next()
+                    .unwrap()
+                    .to_str()
+                    .ok_or(eyre!("denom is not UTF-8"))?
+                    .to_owned();
+                let asset = REGISTRY
+                    .by_base_denom(&denom)
+                    .ok_or(eyre::eyre!("asset not found: {}", denom))?;
+
+                asset.denom.clone()
+            },
+        })
     }
+}
 
-    let chain_id = args
-        .get(0)
-        .unwrap()
-        .to_owned()
-        .into_string()
-        .map_err(|e| eyre::eyre!("{:?}", e))?;
-
-    let chain_id = ChainId::try_from(chain_id)?;
-
+pub fn run(ctx: Context, opts: Options) -> eyre::Result<()> {
     let signing_key = {
-        let from_addr = args
-            .get(1)
-            .unwrap()
-            .to_owned()
-            .into_string()
-            .map_err(|e| eyre::eyre!("from-address invalid: {e:?}"))?;
-
-        let dirs = plz_dirs()?;
-        let config_dir = dirs.config_dir();
-        let sk_path = config_dir.join("keys").join(from_addr);
+        let config_dir = ctx.dirs.config_dir();
+        let sk_path = config_dir.join("keys").join(opts.from.to_bech32()?);
         let sk_bytes = fs::read(sk_path)?;
 
         SigningKey::try_from(sk_bytes.as_slice())?
     };
 
     let verification_key = signing_key.verification_key();
-    let from = Address::from(verification_key);
 
-    let to = match args.get(2).unwrap().to_owned().into_string() {
-        Ok(s) => Address::from_bech32(s)?,
-        Err(e) => return Err(eyre::eyre!("to-address invalid: {e:?}")),
-    };
-
-    let (amount, asset) = match args.get(3).unwrap().to_owned().into_string() {
-        Ok(value) => {
-            let n = value
-                .find(|c| !char::is_numeric(c))
-                .ok_or(eyre::eyre!("asset id missing"))?;
-            let (amount, denom) = value.split_at(n);
-            let asset = REGISTRY
-                .by_base_denom(denom)
-                .ok_or(eyre::eyre!("asset not found: {}", denom))?;
-
-            (Amount::try_from(amount)?, asset)
-        },
-        Err(e) => return Err(eyre::eyre!("parsing funds failed: {:?}", e)),
-    };
-
-    // TODO(tsenart): Make node URI a flag.
-    let rt = Runtime::new()?;
-    let client = HttpClient::new("http://127.0.0.1:26657")?;
-    let path = Some("/accounts".to_string());
-    let data = to_bytes(&accounts::Query::AccountByAddress(from.clone()))?;
-    let query = client.abci_query(path, data, None, false);
-    let res = rt.block_on(query)?;
-
-    if res.code.is_err() {
-        eyre::bail!("ABCI account query error {:?}", res);
-    }
-
-    let account: Account = from_bytes(&res.value)?;
+    let account = ctx
+        .client
+        .query::<Account>(None, accounts::Query::AccountByAddress(opts.from.clone()))?;
 
     let transfer = Transfer {
-        from,
-        to,
-        denom: asset.denom.clone(),
-        amount,
+        from: opts.from,
+        to: opts.to,
+        denom: opts.denom,
+        amount: opts.amount,
     };
 
     let body = TransactionBody {
         inputs: vec![Input::Transfer(transfer)],
-        chain_id,
+        chain_id: opts.chain_id,
         max_height: None,
         account_id: account.id(),
         sequence: account.sequence(),
@@ -115,15 +141,46 @@ pub fn run(args: &[OsString]) -> eyre::Result<()> {
         body,
     };
     let tx_bytes = to_bytes(&tx)?;
-
-    let broadcast = client.broadcast_tx_commit::<Vec<u8>>(tx_bytes);
-    let res = rt.block_on(broadcast)?;
+    let res = ctx.client.broadcast_tx_commit(tx_bytes)?;
 
     println!("{:?}", res);
 
     Ok(())
 }
 
-fn print_usage() {
-    println!("\nUsage: {NAME} transfer <chain-id> <from-address> <to-address> <funds>\n");
+#[cfg(test)]
+mod test {
+    use pretty_assertions::assert_eq;
+    use pulzaar_chain::{Address, Amount, ChainId, REGISTRY};
+    use pulzaar_crypto::SigningKey;
+    use pulzaar_encoding::ToBech32 as _;
+    use rand::thread_rng;
+
+    use super::Options;
+    use crate::terminal::Args as _;
+
+    #[test]
+    fn options() -> eyre::Result<()> {
+        let chain_id = ChainId::try_from("inprocess-devnet")?;
+        let from = Address::from(SigningKey::new(thread_rng()).verification_key());
+        let to = Address::from(SigningKey::new(thread_rng()).verification_key());
+        let amount = Amount::try_from("1000")?;
+        let asset = REGISTRY.by_base_denom("ugm").unwrap();
+
+        let opts = Options::from_args(vec![
+            "inprocess-devnet".into(),
+            from.to_bech32()?.into(),
+            to.to_bech32()?.into(),
+            "1000".into(),
+            "ugm".into(),
+        ])?;
+
+        assert_eq!(opts.chain_id, chain_id);
+        assert_eq!(opts.from, from);
+        assert_eq!(opts.to, to);
+        assert_eq!(opts.amount, amount);
+        assert_eq!(opts.denom, asset.denom);
+
+        Ok(())
+    }
 }

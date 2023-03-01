@@ -30,8 +30,16 @@ impl TryFrom<&str> for Prefix {
     }
 }
 
+pub trait Query {
+    const PREFIX: Prefix;
+
+    fn prefix(&self) -> Prefix {
+        Self::PREFIX
+    }
+}
+
 #[async_trait]
-pub trait Query<S> {
+pub trait Respond<S> {
     type Key: Serialize;
     type Response: Serialize + Send + Sync;
 

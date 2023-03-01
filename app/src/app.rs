@@ -13,7 +13,7 @@ use tracing::instrument;
 use crate::{
     component::{self, ABCIComponent as _, Accounts, Assets, Component, Staking},
     handler::Handler as _,
-    query::{Prefix, Query as _},
+    query::{Prefix, Respond as _},
     state::StateWriteExt as _,
     AppHash,
 };
@@ -67,7 +67,7 @@ impl App {
 
         let q = match prefix {
             Prefix::Accounts => {
-                pulzaar_encoding::from_bytes::<component::accounts::query::Query>(&query.data)?
+                pulzaar_encoding::from_bytes::<component::accounts::Query>(&query.data)?
             },
             _ => eyre::bail!("component for {} not found", query.path),
         };

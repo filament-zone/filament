@@ -1600,6 +1600,7 @@ dependencies = [
  "directories",
  "eyre",
  "lexopt",
+ "pretty_assertions",
  "pulzaar-app",
  "pulzaar-chain",
  "pulzaar-config",
@@ -1608,9 +1609,11 @@ dependencies = [
  "pulzaar-node",
  "radicle-cli-test",
  "rand",
+ "serde",
  "tempfile",
  "tendermint",
  "tendermint-rpc",
+ "thiserror",
  "tokio",
 ]
 
