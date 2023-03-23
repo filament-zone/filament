@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 
 const BECH32_ADDRESS_PREFIX: &str = "plzaddr";
 
+/// A unique identifier for a state entry.
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct Address(VerificationKey);
 
