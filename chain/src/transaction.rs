@@ -4,10 +4,12 @@ use sha2::{Digest as _, Sha256};
 
 use crate::{input::Input, Address, ChainId};
 
-/// A Pulzaar transactin.
+/// A Pulzaar transaction.
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct Transaction {
+    /// Authentication data for the transaction body.
     pub auth: Auth,
+    /// Transaction body with inputs and auxiliary data.
     pub body: Body,
 }
 
@@ -17,7 +19,7 @@ impl Transaction {
     }
 }
 
-/// Authnetication information.
+/// Authentication information.
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub enum Auth {
     /// Single signature.

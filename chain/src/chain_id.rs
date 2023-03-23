@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+/// Typically a human readable string that identifies a chain and version but
+/// there are no strict format requirements.
 #[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize)]
 pub struct ChainId(String);
 
