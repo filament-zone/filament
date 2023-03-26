@@ -22,7 +22,7 @@ The simplest form of accounts are controlled by a single address.
 
 `address` for the single account is a `Ed25519` verification key.
 
-`id` is an unique 64bit identifier assigned to the account on creation. The id
+`id` is a unique 64bit identifier assigned to the account on creation. The id
 is not chosen by the account holder but incremented for each account. The counter
 starts at `1`.
 Its purpose is as a global sequence number for accounts to prevent replay of
