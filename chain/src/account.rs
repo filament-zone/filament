@@ -9,7 +9,7 @@ pub enum Account {
 
         /// Sytem wide unique identifier
         id: u64,
-        /// Account level nonce
+        /// Account level nonce.
         sequence: u64,
     },
 }
