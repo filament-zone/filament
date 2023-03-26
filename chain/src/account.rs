@@ -7,7 +7,7 @@ pub enum Account {
     Single {
         address: Address,
 
-        /// Sytem wide unique identifier
+        /// System wide unique identifier
         id: u64,
         /// Account level nonce.
         sequence: u64,

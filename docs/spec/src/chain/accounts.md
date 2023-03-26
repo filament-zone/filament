@@ -20,7 +20,7 @@ The simplest form of accounts are controlled by a single address.
 {{#include ../../../../chain/src/account.rs:7:14}}
 ```
 
-`address` for the single account is a `Ed25519` verification key.
+`address` for the single account is an `Ed25519` verification key.
 
 `id` is a unique 64bit identifier assigned to the account on creation. The id
 is not chosen by the account holder but incremented for each account. The counter
