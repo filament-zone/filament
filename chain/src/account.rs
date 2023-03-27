@@ -2,9 +2,12 @@ use serde::{Deserialize, Serialize};
 
 use crate::Address;
 
+/// Collection of different account types
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub enum Account {
+    /// Account controlled by a single public key
     Single {
+        /// The key controlling the account
         address: Address,
 
         /// System wide unique identifier

@@ -3,13 +3,13 @@
 Interactions with Pulzaar's state happen via accounts. That is, accounts are one
 of the base abstractions used for authorization and authentication.
 
-Accounts are stateful and stored in an [ADS](../crypto.md). The keys they are
-stored under are refered to as addresses. How the address is computed depends
-on the type of the account and the proper encoding of the key is described in
-the [encoding](../encoding.md) document.
+Accounts are stateful and stored in an [ADS](../crypto.md##authenticated-data-structure-ads).
+The keys they are stored under are refered to as addresses. How the address is
+computed depends on the type of the account and the proper encoding of the key
+is described in the [encoding](../encoding.md) document.
 
 ```rust,ignore
-{{#include ../../../../chain/src/account.rs:6:15}}
+{{#include ../../../../chain/src/account.rs:7:18}}
 ```
 
 ## Single
@@ -17,7 +17,7 @@ the [encoding](../encoding.md) document.
 The simplest form of accounts are controlled by a single address.
 
 ```rust,ignore
-{{#include ../../../../chain/src/account.rs:7:14}}
+{{#include ../../../../chain/src/account.rs:9:17}}
 ```
 
 `address` for the single account is an `Ed25519` verification key.
