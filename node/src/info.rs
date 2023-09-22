@@ -4,8 +4,8 @@ use futures::{Future, FutureExt as _};
 use penumbra_storage::Storage;
 use pulzaar_app::{App, AppHashRead as _};
 use tendermint::{
-    abci::{request, response, InfoRequest, InfoResponse},
     block::Height,
+    v0_34::abci::{request, response, InfoRequest, InfoResponse},
 };
 use tokio::sync::{mpsc, oneshot};
 use tokio_util::sync::PollSender;
