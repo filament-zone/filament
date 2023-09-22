@@ -59,7 +59,7 @@ pub async fn run(cfg: Config) -> eyre::Result<()> {
     let mempool = Mempool::new(storage).await?;
     let snapshot = Snapshot::new().await?;
 
-    let abci_fut = tower_abci::Server::builder()
+    let abci_fut = tower_abci::v034::Server::builder()
         .consensus(consensus)
         .mempool(mempool)
         .snapshot(snapshot)

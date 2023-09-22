@@ -1,7 +1,7 @@
 use std::{pin::Pin, task::Poll};
 
 use futures::{Future, FutureExt as _};
-use tendermint::abci::{request, response, SnapshotRequest, SnapshotResponse};
+use tendermint::v0_34::abci::{request, response, SnapshotRequest, SnapshotResponse};
 use tokio::sync::{mpsc, oneshot};
 use tokio_util::sync::PollSender;
 use tower_abci::BoxError;

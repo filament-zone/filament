@@ -4,7 +4,10 @@ use futures::FutureExt as _;
 use penumbra_storage::Storage;
 use pulzaar_app::App;
 use pulzaar_chain::{genesis::AppState, ChainId, ChainParameters};
-use tendermint::abci::{self, request, response, ConsensusRequest, ConsensusResponse};
+use tendermint::{
+    abci::Event,
+    v0_34::abci::{request, response, ConsensusRequest, ConsensusResponse},
+};
 use tokio::sync::{mpsc, oneshot};
 use tokio_util::sync::PollSender;
 use tower_abci::BoxError;
@@ -232,7 +235,7 @@ impl Worker {
     }
 }
 
-fn trace_events(events: &[abci::Event]) {
+fn trace_events(events: &[Event]) {
     for event in events {
         let span = tracing::trace_span!("event", kind = event.kind);
         span.in_scope(|| {

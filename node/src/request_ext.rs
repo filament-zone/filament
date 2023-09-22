@@ -1,5 +1,5 @@
 use sha2::{Digest as _, Sha256};
-use tendermint::abci::{
+use tendermint::v0_34::abci::{
     request::{
         ApplySnapshotChunk,
         BeginBlock,
