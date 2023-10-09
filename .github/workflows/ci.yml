@@ -43,7 +43,7 @@ jobs:
   lint-rust:
     strategy:
       matrix:
-        os: [buildjet-8vcpu-ubuntu-2204]
+        os: [ubuntu-22.04-16core]
         toolchain: [nightly]
 
     name: Lint Rust
@@ -96,7 +96,7 @@ jobs:
   test-rust:
     strategy:
       matrix:
-        os: [buildjet-8vcpu-ubuntu-2204]
+        os: [ubuntu-22.04-16core]
         toolchain: [stable]
 
     name: Test Rust

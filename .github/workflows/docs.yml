@@ -51,7 +51,7 @@ jobs:
       pull-requests: write
     strategy:
       matrix:
-        os: [buildjet-8vcpu-ubuntu-2204]
+        os: [ubuntu-22.04-16core]
         toolchain: [nightly]
 
     name: Deploy Rustdoc
