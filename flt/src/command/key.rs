@@ -1,8 +1,8 @@
 use std::{ffi::OsString, fs};
 
-use pulzaar_chain::Address;
-use pulzaar_crypto::SigningKey;
-use pulzaar_encoding::ToBech32 as _;
+use filament_chain::Address;
+use filament_crypto::SigningKey;
+use filament_encoding::ToBech32 as _;
 use rand::thread_rng;
 
 use crate::{
@@ -12,12 +12,12 @@ use crate::{
 
 pub const HELP: Help = Help {
     name: "key",
-    description: "Manage Pulzaar keys",
+    description: "Manage filament keys",
     version: env!("CARGO_PKG_VERSION"),
     usage: r#"
 Usage
 
-    plz key <command>
+    flt key <command>
 
 Options
     "#,

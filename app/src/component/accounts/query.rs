@@ -1,6 +1,6 @@
 use async_trait::async_trait;
-use pulzaar_chain::{Account, Address};
-use pulzaar_encoding::StateReadDecode;
+use filament_chain::{Account, Address};
+use filament_encoding::StateReadDecode;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -34,7 +34,7 @@ where
                     .ok_or(eyre::eyre!("account not found"))?;
 
                 Ok((
-                    pulzaar_encoding::to_bytes(&address)?.to_vec(),
+                    filament_encoding::to_bytes(&address)?.to_vec(),
                     Response::Account(account),
                 ))
             },

@@ -140,8 +140,8 @@ jobs:
         if: steps.cache-deps.outputs.cache-hit != 'true'
         run: cargo install --locked cargo-nextest
 
-      - name: Install plz
-        run: cargo install --force --path ./plz
+      - name: Install flt
+        run: cargo install --force --path ./flt
 
       # FIXME(xla): The recompiles the entire workspace regardless if the
       # `target` directory was reconstructed from a cache. It's unclear as to

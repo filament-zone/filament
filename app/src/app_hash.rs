@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use penumbra_storage::{RootHash, Snapshot};
 use sha2::{Digest as _, Sha256};
 
-static APPHASH_DOMSEP: &str = "PulzaarAppHash";
+static APPHASH_DOMSEP: &str = "FilamentAppHash";
 
 #[derive(Clone, Copy, Eq, PartialEq)]
 pub struct AppHash(pub [u8; 32]);

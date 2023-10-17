@@ -1,9 +1,9 @@
 use async_trait::async_trait;
-use pulzaar_chain::{Account, Address};
-use pulzaar_encoding::{StateReadDecode, StateWriteEncode};
+use filament_chain::{Account, Address};
+use filament_encoding::{StateReadDecode, StateWriteEncode};
 
 mod state_key {
-    use pulzaar_chain::Address;
+    use filament_chain::Address;
 
     use crate::state_key::StateKey as _;
 
@@ -83,10 +83,10 @@ impl<T: StateWriteEncode + ?Sized> AccountsWrite for T {}
 
 #[cfg(test)]
 mod test {
+    use filament_chain::{Account, Address};
+    use filament_crypto::SigningKey;
     use penumbra_storage::{StateDelta, Storage};
     use pretty_assertions::assert_eq;
-    use pulzaar_chain::{Account, Address};
-    use pulzaar_crypto::SigningKey;
     use rand::thread_rng;
     use tempfile::tempdir;
 

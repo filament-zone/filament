@@ -1,10 +1,10 @@
-use pulzaar_crypto::{SignBytes, Signature, VerificationKey};
+use filament_crypto::{SignBytes, Signature, VerificationKey};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest as _, Sha256};
 
 use crate::{input::Input, Address, ChainId};
 
-/// A Pulzaar transaction.
+/// A filament transaction.
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct Transaction {
     /// Authentication data for the transaction body.
@@ -39,7 +39,7 @@ impl From<&Auth> for Address {
     }
 }
 
-/// Body of a Pulzaar transaction.
+/// Body of a filament transaction.
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct Body {
     /// List of inputs carried by the transaction to advance the state machine.
@@ -61,7 +61,7 @@ pub struct Body {
 impl SignBytes for Body {
     fn sign_bytes(&self) -> eyre::Result<Vec<u8>> {
         let mut hasher = Sha256::new();
-        hasher.update(pulzaar_encoding::to_bytes(&self)?);
+        hasher.update(filament_encoding::to_bytes(&self)?);
         Ok(hasher.finalize().to_vec())
     }
 }

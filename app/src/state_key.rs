@@ -1,4 +1,4 @@
-use pulzaar_chain::{Address, AssetId};
+use filament_chain::{Address, AssetId};
 
 pub trait StateKey {
     fn state_key(&self) -> String;

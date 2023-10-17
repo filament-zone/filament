@@ -1,8 +1,8 @@
 use std::pin::Pin;
 
+use filament_app::{App, AppHashRead as _};
 use futures::{Future, FutureExt as _};
 use penumbra_storage::Storage;
-use pulzaar_app::{App, AppHashRead as _};
 use tendermint::{
     block::Height,
     v0_34::abci::{request, response, InfoRequest, InfoResponse},
@@ -130,7 +130,7 @@ impl Worker {
         let app_hash = state.app_hash().await?.0.to_vec();
 
         Ok(response::Info {
-            data: "pulzaar".to_string(),
+            data: "filament".to_string(),
             version: ABCI_INFO_VERSION.to_string(),
             app_version: APP_VERSION,
             last_block_height,

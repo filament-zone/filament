@@ -47,9 +47,9 @@ pub async fn run(cfg: Config) -> eyre::Result<()> {
         .install()
         .expect("failed to install recorder");
 
-    tracing::info!("starting pulzaard");
+    tracing::info!("starting filamentd");
 
-    let storage = Storage::load(dirs.data_dir().join("pulzaar/devnet/pulzaard/rocksdb"))
+    let storage = Storage::load(dirs.data_dir().join("filament/devnet/filamentd/rocksdb"))
         .await
         .map_err(|e| eyre::eyre!(e))
         .wrap_err("unable to initialise RocksDB storage")?;
@@ -66,7 +66,7 @@ pub async fn run(cfg: Config) -> eyre::Result<()> {
         .info(info)
         .finish()
         .unwrap()
-        .listen(format!("{}:{}", cfg.host, cfg.abci_port));
+        .listen_tcp(format!("{}:{}", cfg.host, cfg.abci_port));
     let abci_server = tokio::task::Builder::new()
         .name("abci_server")
         .spawn(abci_fut)

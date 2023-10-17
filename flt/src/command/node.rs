@@ -1,7 +1,7 @@
 use std::ffi::OsString;
 
 use eyre::eyre;
-use pulzaar_node::Config;
+use filament_node::Config;
 use tokio::runtime::Runtime;
 
 use crate::{
@@ -11,12 +11,12 @@ use crate::{
 
 pub const HELP: Help = Help {
     name: "node",
-    description: "Run a Pulzaar node",
+    description: "Run a filament node",
     version: env!("CARGO_PKG_VERSION"),
     usage: r#"
 Usage
 
-    plz node
+    flt node
 
 Options
 
@@ -69,5 +69,5 @@ impl Args for Options {
 pub fn run(_ctx: Context, cfg: Options) -> eyre::Result<()> {
     let rt = Runtime::new()?;
 
-    rt.block_on(pulzaar_node::run(cfg))
+    rt.block_on(filament_node::run(cfg))
 }

@@ -3,6 +3,6 @@
 If the CLI is called with a command that is not supported it errors:
 
 ``` shell
-$ plz unknown
-== Error: plz: "unknown" is not a supported command
+$ flt unknown
+== Error: flt: "unknown" is not a supported command
 ```

@@ -1,4 +1,4 @@
-use pulzaar_app::Query;
+use filament_app::Query;
 use serde::{de::DeserializeOwned, Serialize};
 use tendermint::block::Height;
 use tendermint_rpc::{endpoint::broadcast::tx_commit, Client as _, HttpClient};
@@ -32,7 +32,7 @@ impl Client {
         let height = height.map(Height::try_from).transpose()?;
 
         let path = Some(query.prefix().to_string());
-        let data = pulzaar_encoding::to_bytes(&query)?;
+        let data = filament_encoding::to_bytes(&query)?;
         let query = self.client.abci_query(path, data, height, false);
         let res = self.runtime.block_on(query)?;
 
@@ -40,7 +40,7 @@ impl Client {
             eyre::bail!("ABCI account query error {:?}", res);
         }
 
-        let r = pulzaar_encoding::from_bytes::<R>(&res.value)?;
+        let r = filament_encoding::from_bytes::<R>(&res.value)?;
 
         Ok(r)
     }

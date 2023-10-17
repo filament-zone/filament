@@ -1,7 +1,7 @@
 use eyre::{bail, eyre};
-use pulzaar_app::accounts;
-use pulzaar_chain::{Account, Address};
-use pulzaar_encoding::FromBech32;
+use filament_app::accounts;
+use filament_chain::{Account, Address};
+use filament_encoding::FromBech32;
 
 use crate::{
     command::Context,
@@ -15,7 +15,7 @@ pub const HELP: Help = Help {
     usage: r#"
 Usage
 
-    plz query account <address>
+    flt query account <address>
 
 Options
 
@@ -74,10 +74,10 @@ pub fn run(ctx: Context, opts: Options) -> eyre::Result<()> {
 
 #[cfg(test)]
 mod test {
+    use filament_chain::Address;
+    use filament_crypto::SigningKey;
+    use filament_encoding::ToBech32 as _;
     use pretty_assertions::assert_eq;
-    use pulzaar_chain::Address;
-    use pulzaar_crypto::SigningKey;
-    use pulzaar_encoding::ToBech32 as _;
     use rand::thread_rng;
 
     use super::Options;

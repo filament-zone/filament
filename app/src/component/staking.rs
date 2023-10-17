@@ -1,6 +1,6 @@
 use async_trait::async_trait;
+use filament_chain::genesis::AppState;
 use penumbra_storage::StateWrite;
-use pulzaar_chain::genesis::AppState;
 use tendermint::abci::request;
 
 use crate::component::ABCIComponent;

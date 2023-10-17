@@ -1,5 +1,5 @@
 [package]
-name                  = "plz"
+name                  = "flt"
 version               = "0.1.0"
 publish               = true
 authors.workspace     = true
@@ -8,16 +8,16 @@ homepage.workspace    = true
 repository.workspace  = true
 
 [[bin]]
-name = "plz"
+name = "flt"
 path = "src/main.rs"
 
 [dependencies]
-pulzaar-app       = { path = "../app" }
-pulzaar-chain     = { path = "../chain" }
-pulzaar-config    = { path = "../config" }
-pulzaar-crypto    = { path = "../crypto" }
-pulzaar-encoding  = { path = "../encoding" }
-pulzaar-node      = { path = "../node" }
+filament-app       = { path = "../app" }
+filament-chain     = { path = "../chain" }
+filament-config    = { path = "../config" }
+filament-crypto    = { path = "../crypto" }
+filament-encoding  = { path = "../encoding" }
+filament-node      = { path = "../node" }
 
 dialoguer         = { workspace = true }
 directories       = { workspace = true }

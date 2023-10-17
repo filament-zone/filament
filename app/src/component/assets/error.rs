@@ -1,4 +1,4 @@
-use pulzaar_chain::Address;
+use filament_chain::Address;
 
 #[derive(Debug, PartialEq, thiserror::Error)]
 pub enum Error {

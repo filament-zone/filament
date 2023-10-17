@@ -1,9 +1,9 @@
 use std::{future::Future, pin::Pin};
 
+use filament_app::App;
+use filament_chain::{genesis::AppState, ChainId, ChainParameters};
 use futures::FutureExt as _;
 use penumbra_storage::Storage;
-use pulzaar_app::App;
-use pulzaar_chain::{genesis::AppState, ChainId, ChainParameters};
 use tendermint::{
     abci::Event,
     v0_34::abci::{request, response, ConsensusRequest, ConsensusResponse},
@@ -141,7 +141,7 @@ impl Worker {
         let app_state = AppState {
             allocations: vec![],
             chain_parameters: ChainParameters {
-                chain_id: ChainId::try_from("pulzaar-devnet".to_string())?,
+                chain_id: ChainId::try_from("filament-devnet".to_string())?,
                 epoch_duration: 0,
             },
         };
