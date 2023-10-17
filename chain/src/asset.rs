@@ -60,7 +60,7 @@ impl Registry {
 
 pub static REGISTRY: Lazy<Registry> = Lazy::new(|| {
     let id = Id::try_from("ugm").unwrap();
-    let plz = Asset {
+    let flt = Asset {
         id: id.clone(),
         denom: Denom {
             id: id.clone(),
@@ -79,7 +79,7 @@ pub static REGISTRY: Lazy<Registry> = Lazy::new(|| {
     };
 
     let mut assets = BTreeMap::new();
-    assets.insert(id, plz);
+    assets.insert(id, flt);
 
     Registry { assets }
 });

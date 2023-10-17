@@ -12,7 +12,7 @@ fn test<'a>(
     let home = tmp.path().to_path_buf();
 
     Ok(TestFormula::new()
-        .env("PLZ_HOME", home.to_string_lossy())
+        .env("FLT_HOME", home.to_string_lossy())
         .envs(envs)
         .cwd(cwd)
         .file(base.join(test))?
@@ -21,16 +21,16 @@ fn test<'a>(
 }
 
 #[test]
-fn plz_usage() -> eyre::Result<()> {
-    test("docs/plz-usage.md", Path::new("."), vec![])
+fn flt_usage() -> eyre::Result<()> {
+    test("docs/flt-usage.md", Path::new("."), vec![])
 }
 
 #[test]
-fn plz_version() -> eyre::Result<()> {
-    test("docs/plz-version.md", Path::new("."), vec![])
+fn flt_version() -> eyre::Result<()> {
+    test("docs/flt-version.md", Path::new("."), vec![])
 }
 
 #[test]
-fn plz_cmd_not_found() -> eyre::Result<()> {
-    test("docs/plz-cmd-not-found.md", Path::new("."), vec![])
+fn flt_cmd_not_found() -> eyre::Result<()> {
+    test("docs/flt-cmd-not-found.md", Path::new("."), vec![])
 }

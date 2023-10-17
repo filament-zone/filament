@@ -1,11 +1,12 @@
 use std::sync::Arc;
 
+use filament_chain::{genesis::AppState, Transaction};
+use filament_encoding as encoding;
 use penumbra_storage::{ArcStateDeltaExt as _, Snapshot, StateDelta, Storage};
-use pulzaar_chain::{genesis::AppState, Transaction};
-use pulzaar_encoding as encoding;
 use tendermint::{
-    abci::{self, request, response, Code},
+    abci::{Code, Event},
     consensus::Params,
+    v0_34::abci::{request, response},
     validator::Update,
 };
 use tracing::instrument;
@@ -18,7 +19,7 @@ use crate::{
     AppHash,
 };
 
-/// The Pulzaar ABCI application modeled as stack of [`Component`]s.
+/// The filament ABCI application modeled as stack of [`Component`]s.
 pub struct App {
     components: Vec<Component>,
     state: Arc<StateDelta<Snapshot>>,
@@ -67,7 +68,7 @@ impl App {
 
         let q = match prefix {
             Prefix::Accounts => {
-                pulzaar_encoding::from_bytes::<component::accounts::Query>(&query.data)?
+                filament_encoding::from_bytes::<component::accounts::Query>(&query.data)?
             },
             _ => eyre::bail!("component for {} not found", query.path),
         };
@@ -81,8 +82,8 @@ impl App {
         let res = match q.respond(&self.state).await {
             Ok((key, data)) => response::Query {
                 code: Code::Ok,
-                key: pulzaar_encoding::to_bytes(&key)?.into(),
-                value: pulzaar_encoding::to_bytes(&data)?.into(),
+                key: filament_encoding::to_bytes(&key)?.into(),
+                value: filament_encoding::to_bytes(&data)?.into(),
                 ..res
             },
             Err(err) => response::Query {
@@ -97,7 +98,7 @@ impl App {
     }
 
     #[instrument(skip(self, begin_block))]
-    pub async fn begin_block(&mut self, begin_block: &request::BeginBlock) -> Vec<abci::Event> {
+    pub async fn begin_block(&mut self, begin_block: &request::BeginBlock) -> Vec<Event> {
         let mut state_tx = self
             .state
             .try_begin_transaction()
@@ -116,7 +117,7 @@ impl App {
     }
 
     #[instrument(skip(self, tx))]
-    pub async fn deliver_tx(&mut self, tx: Transaction) -> eyre::Result<Vec<abci::Event>> {
+    pub async fn deliver_tx(&mut self, tx: Transaction) -> eyre::Result<Vec<Event>> {
         let tx = Arc::new(tx);
         tx.validate(tx.clone()).await?;
         tx.check(self.state.clone()).await?;
@@ -131,7 +132,7 @@ impl App {
     }
 
     #[instrument(skip(self, tx_bytes))]
-    pub async fn deliver_tx_bytes(&mut self, tx_bytes: &[u8]) -> eyre::Result<Vec<abci::Event>> {
+    pub async fn deliver_tx_bytes(&mut self, tx_bytes: &[u8]) -> eyre::Result<Vec<Event>> {
         let tx: Transaction = encoding::from_bytes(tx_bytes)?;
         self.deliver_tx(tx).await
     }
@@ -140,7 +141,7 @@ impl App {
     pub async fn end_block(
         &mut self,
         end_block: &request::EndBlock,
-    ) -> (Vec<Update>, Option<Params>, Vec<abci::Event>) {
+    ) -> (Vec<Update>, Option<Params>, Vec<Event>) {
         let mut state_tx = self
             .state
             .try_begin_transaction()

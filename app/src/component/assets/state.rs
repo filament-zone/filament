@@ -1,12 +1,12 @@
 use async_trait::async_trait;
+use filament_chain::{Address, Amount, AssetId};
+use filament_encoding::{StateReadDecode, StateWriteEncode};
 use num_traits::ops::checked::{CheckedAdd as _, CheckedSub as _};
-use pulzaar_chain::{Address, Amount, AssetId};
-use pulzaar_encoding::{StateReadDecode, StateWriteEncode};
 
 use crate::component::assets::Error;
 
 mod state_key {
-    use pulzaar_chain::{Address, AssetId};
+    use filament_chain::{Address, AssetId};
 
     use crate::state_key::StateKey as _;
 
@@ -80,10 +80,10 @@ impl<T: StateWriteEncode + ?Sized> AssetsWrite for T {}
 
 #[cfg(test)]
 mod test {
+    use filament_chain::{Address, Amount, AssetId};
+    use filament_crypto::SigningKey;
     use penumbra_storage::{StateDelta, TempStorage};
     use pretty_assertions::assert_eq;
-    use pulzaar_chain::{Address, Amount, AssetId};
-    use pulzaar_crypto::SigningKey;
     use rand::thread_rng;
 
     use super::{AssetsRead as _, AssetsWrite as _};
@@ -95,7 +95,7 @@ mod test {
 
         let signer = SigningKey::new(thread_rng());
         let addr = Address::from(signer.verification_key());
-        let id = AssetId::try_from("upulzaar")?;
+        let id = AssetId::try_from("ufilament")?;
         let amount: u128 = rand::random();
         let amount = Amount::from(amount);
 

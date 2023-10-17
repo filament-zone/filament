@@ -32,7 +32,7 @@ pub const HELP: Help = Help {
     usage: r#"
 Usage
 
-    plz query <command>
+    flt query <command>
 
 Options
     "#,

@@ -1,10 +1,10 @@
 use std::fmt::Display;
 
-use pulzaar_crypto::VerificationKey;
-use pulzaar_encoding::{FromBech32, ToBech32};
+use filament_crypto::VerificationKey;
+use filament_encoding::{FromBech32, ToBech32};
 use serde::{Deserialize, Serialize};
 
-const BECH32_ADDRESS_PREFIX: &str = "plzaddr";
+const BECH32_ADDRESS_PREFIX: &str = "fltaddr";
 
 /// A unique identifier for a state entry.
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -51,8 +51,8 @@ impl FromBech32 for Address {
 
 #[cfg(test)]
 mod tests {
+    use filament_crypto::{SigningKey, VerificationKey};
     use pretty_assertions::assert_eq;
-    use pulzaar_crypto::{SigningKey, VerificationKey};
     use rand::thread_rng;
 
     use super::*;

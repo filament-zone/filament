@@ -1,6 +1,6 @@
 use async_trait::async_trait;
-use pulzaar_chain::ChainParameters;
-use pulzaar_encoding::{StateReadDecode, StateWriteEncode};
+use filament_chain::ChainParameters;
+use filament_encoding::{StateReadDecode, StateWriteEncode};
 use tendermint::Time;
 
 use crate::state_key;
@@ -48,9 +48,9 @@ impl<T: StateWriteEncode + ?Sized> StateWriteExt for T {}
 
 #[cfg(test)]
 mod test {
+    use filament_chain::{ChainId, ChainParameters};
     use penumbra_storage::{StateDelta, Storage};
     use pretty_assertions::assert_eq;
-    use pulzaar_chain::{ChainId, ChainParameters};
     use tempfile::tempdir;
     use tendermint::Time;
 

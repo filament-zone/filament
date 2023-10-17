@@ -1,6 +1,6 @@
 use async_trait::async_trait;
+use filament_chain::{genesis::AppState, REGISTRY};
 use penumbra_storage::StateWrite;
-use pulzaar_chain::{genesis::AppState, REGISTRY};
 use tendermint::abci::request;
 
 use crate::component::ABCIComponent;
@@ -38,9 +38,7 @@ impl ABCIComponent for Assets {
 
 #[cfg(test)]
 mod test {
-    use penumbra_storage::{StateDelta, Storage};
-    use pretty_assertions::assert_eq;
-    use pulzaar_chain::{
+    use filament_chain::{
         genesis::{Allocation, AppState},
         Address,
         Amount,
@@ -48,7 +46,9 @@ mod test {
         ChainId,
         ChainParameters,
     };
-    use pulzaar_crypto::SigningKey;
+    use filament_crypto::SigningKey;
+    use penumbra_storage::{StateDelta, Storage};
+    use pretty_assertions::assert_eq;
     use rand::{thread_rng, Rng as _};
     use tempfile::tempdir;
 

@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use filament_chain::{input::Transfer, Address, Transaction, REGISTRY};
 use penumbra_storage::{StateRead, StateWrite};
-use pulzaar_chain::{input::Transfer, Address, Transaction, REGISTRY};
 
 use crate::{
     component::{
@@ -65,9 +65,7 @@ impl Handler for Transfer {
 mod test {
     use std::sync::Arc;
 
-    use penumbra_storage::{StateDelta, TempStorage};
-    use pretty_assertions::assert_eq;
-    use pulzaar_chain::{
+    use filament_chain::{
         input,
         Address,
         Amount,
@@ -81,7 +79,9 @@ mod test {
         TransactionBody,
         REGISTRY,
     };
-    use pulzaar_crypto::{SignBytes as _, SigningKey};
+    use filament_crypto::{SignBytes as _, SigningKey};
+    use penumbra_storage::{StateDelta, TempStorage};
+    use pretty_assertions::assert_eq;
     use rand::thread_rng;
 
     use super::Error;

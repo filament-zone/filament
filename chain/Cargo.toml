@@ -1,5 +1,5 @@
 [package]
-name                    = "pulzaar-chain"
+name                    = "filament-chain"
 version                 = "0.1.0"
 authors.workspace       = true
 edition.workspace       = true
@@ -10,8 +10,8 @@ rust-version.workspace  = true
 publish.workspace       = true
 
 [dependencies]
-pulzaar-crypto    = { path = "../crypto" }
-pulzaar-encoding  = { path = "../encoding" }
+filament-crypto    = { path = "../crypto" }
+filament-encoding  = { path = "../encoding" }
 
 eyre              = { workspace = true, features = [ "auto-install" ] }
 num-traits        = { workspace = true }

@@ -1,8 +1,8 @@
 use std::{ffi::OsString, fs};
 
 use eyre::{bail, eyre};
-use pulzaar_app::accounts;
-use pulzaar_chain::{
+use filament_app::accounts;
+use filament_chain::{
     input::Transfer,
     Account,
     Address,
@@ -15,8 +15,8 @@ use pulzaar_chain::{
     TransactionBody,
     REGISTRY,
 };
-use pulzaar_crypto::{SignBytes, SigningKey};
-use pulzaar_encoding::{to_bytes, FromBech32 as _, ToBech32};
+use filament_crypto::{SignBytes, SigningKey};
+use filament_encoding::{to_bytes, FromBech32 as _, ToBech32};
 
 use crate::{
     context::Context,
@@ -30,7 +30,7 @@ pub const HELP: Help = Help {
     usage: r#"
 Usage
 
-    plz transfer <chain_id> <from> <to> <amount> <denom>
+    flt transfer <chain_id> <from> <to> <amount> <denom>
 
 Options
     "#,
@@ -150,10 +150,10 @@ pub fn run(ctx: Context, opts: Options) -> eyre::Result<()> {
 
 #[cfg(test)]
 mod test {
+    use filament_chain::{Address, Amount, ChainId, REGISTRY};
+    use filament_crypto::SigningKey;
+    use filament_encoding::ToBech32 as _;
     use pretty_assertions::assert_eq;
-    use pulzaar_chain::{Address, Amount, ChainId, REGISTRY};
-    use pulzaar_crypto::SigningKey;
-    use pulzaar_encoding::ToBech32 as _;
     use rand::thread_rng;
 
     use super::Options;

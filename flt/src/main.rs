@@ -1,6 +1,6 @@
 use std::process;
 
-use plz::{command::Root, config::NAME, terminal};
+use flt::{command::Root, config::NAME, terminal};
 
 fn main() {
     match Root::from_env().and_then(|r| r.run()) {
