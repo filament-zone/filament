@@ -60,7 +60,7 @@ mod test {
     async fn get_current_height() -> eyre::Result<()> {
         let dir = tempdir()?;
         let path = dir.into_path();
-        let storage = Storage::load(path.clone())
+        let storage = Storage::load(path.clone(), vec![])
             .await
             .map_err(|e| eyre::eyre!(e))?;
 
@@ -87,7 +87,7 @@ mod test {
     async fn put_block_height() -> eyre::Result<()> {
         let dir = tempdir()?;
         let path = dir.into_path();
-        let storage = Storage::load(path.clone())
+        let storage = Storage::load(path.clone(), vec![])
             .await
             .map_err(|e| eyre::eyre!(e))?;
 
@@ -114,7 +114,7 @@ mod test {
     async fn put_block_timestamp() -> eyre::Result<()> {
         let dir = tempdir()?;
         let path = dir.into_path();
-        let storage = Storage::load(path.clone())
+        let storage = Storage::load(path.clone(), vec![])
             .await
             .map_err(|e| eyre::eyre!(e))?;
 
@@ -143,7 +143,7 @@ mod test {
     async fn put_chain_parameters() -> eyre::Result<()> {
         let dir = tempdir()?;
         let path = dir.into_path();
-        let storage = Storage::load(path.clone())
+        let storage = Storage::load(path.clone(), vec![])
             .await
             .map_err(|e| eyre::eyre!(e))?;
 

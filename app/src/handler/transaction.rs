@@ -201,7 +201,7 @@ mod test {
     async fn check_chain_id() -> eyre::Result<()> {
         let dir = tempdir()?;
         let path = dir.into_path();
-        let storage = Storage::load(path.clone())
+        let storage = Storage::load(path.clone(), vec![])
             .await
             .map_err(|e| eyre::eyre!(e))?;
         let signer = SigningKey::new(thread_rng());
@@ -280,7 +280,7 @@ mod test {
     async fn check_max_height() -> eyre::Result<()> {
         let dir = tempdir()?;
         let path = dir.into_path();
-        let storage = Storage::load(path.clone())
+        let storage = Storage::load(path.clone(), vec![])
             .await
             .map_err(|e| eyre::eyre!(e))?;
         let signer = SigningKey::new(thread_rng());
@@ -384,7 +384,7 @@ mod test {
     async fn check_account_id_single() -> eyre::Result<()> {
         let dir = tempdir()?;
         let path = dir.into_path();
-        let storage = Storage::load(path.clone())
+        let storage = Storage::load(path.clone(), vec![])
             .await
             .map_err(|e| eyre::eyre!(e))?;
         let signer = SigningKey::new(thread_rng());
@@ -483,7 +483,7 @@ mod test {
     async fn check_account_sequence() -> eyre::Result<()> {
         let dir = tempdir()?;
         let path = dir.into_path();
-        let storage = Storage::load(path.clone())
+        let storage = Storage::load(path.clone(), vec![])
             .await
             .map_err(|e| eyre::eyre!(e))?;
         let signer = SigningKey::new(thread_rng());

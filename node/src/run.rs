@@ -49,10 +49,13 @@ pub async fn run(cfg: Config) -> eyre::Result<()> {
 
     tracing::info!("starting filamentd");
 
-    let storage = Storage::load(dirs.data_dir().join("filament/devnet/filamentd/rocksdb"))
-        .await
-        .map_err(|e| eyre::eyre!(e))
-        .wrap_err("unable to initialise RocksDB storage")?;
+    let storage = Storage::load(
+        dirs.data_dir().join("filament/devnet/filamentd/rocksdb"),
+        vec![],
+    )
+    .await
+    .map_err(|e| eyre::eyre!(e))
+    .wrap_err("unable to initialise RocksDB storage")?;
 
     let consensus = Consensus::new(storage.clone()).await?;
     let info = Info::new(storage.clone()).await?;

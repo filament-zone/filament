@@ -76,7 +76,7 @@ mod test {
 
         // Write and commit a value to storage.
         {
-            let storage = Storage::load(path.clone())
+            let storage = Storage::load(path.clone(), vec![])
                 .await
                 .map_err(|e| eyre::eyre!(e))?;
             let mut state = StateDelta::new(storage.latest_snapshot());
@@ -89,7 +89,9 @@ mod test {
         }
 
         // Retrieve value from storage.
-        let storage = Storage::load(path).await.map_err(|e| eyre::eyre!(e))?;
+        let storage = Storage::load(path, vec![])
+            .await
+            .map_err(|e| eyre::eyre!(e))?;
         let snapshot = storage.latest_snapshot();
 
         let v: Object = snapshot.get_bcs(key).await?.unwrap();

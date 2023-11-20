@@ -99,7 +99,7 @@ mod test {
     async fn create_account() -> eyre::Result<()> {
         let dir = tempdir()?;
         let path = dir.into_path();
-        let storage = Storage::load(path.clone())
+        let storage = Storage::load(path.clone(), vec![])
             .await
             .map_err(|e| eyre::eyre!(e))?;
 
