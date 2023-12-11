@@ -299,7 +299,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4114279215a005bc675e386011e594e1d9b800918cea18fcadadcce864a2046b"
 dependencies = [
  "borsh-derive",
- "hashbrown 0.12.3",
+ "hashbrown 0.13.2",
 ]
 
 [[package]]
@@ -2112,7 +2112,7 @@ checksum = "c719dcf55f09a3a7e764c6649ab594c18a177e3599c467983cdf644bfc0a4088"
 [[package]]
 name = "penumbra-storage"
 version = "0.63.1"
-source = "git+https://github.com/penumbra-zone/penumbra?branch=main#0e2b51c756a1dd9a2423d97ced769ccfff017153"
+source = "git+https://github.com/penumbra-zone/penumbra?branch=main#c8cfe17698aa776bd85ce5c2bd9072827b9e0751"
 dependencies = [
  "anyhow",
  "async-trait",
