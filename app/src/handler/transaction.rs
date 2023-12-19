@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use cnidarium::{StateRead, StateWrite};
 use filament_chain::{Account, Address, Auth, ChainParameters, Transaction};
 use filament_crypto::SignBytes;
-use penumbra_storage::{StateRead, StateWrite};
 
 use super::Handler;
 use crate::{
@@ -109,6 +109,7 @@ impl Handler for Transaction {
 mod test {
     use std::sync::Arc;
 
+    use cnidarium::{StateDelta, Storage};
     use filament_chain::{
         input,
         Address,
@@ -120,7 +121,6 @@ mod test {
         TransactionBody,
     };
     use filament_crypto::{SignBytes as _, SigningKey};
-    use penumbra_storage::{StateDelta, Storage};
     use rand::thread_rng;
     use tempfile::tempdir;
 

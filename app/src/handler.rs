@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use cnidarium::{StateRead, StateWrite};
 use filament_chain::Transaction;
-use penumbra_storage::{StateRead, StateWrite};
 
 mod input;
 mod transaction;

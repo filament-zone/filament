@@ -83,9 +83,9 @@ impl<T: StateWriteEncode + ?Sized> AccountsWrite for T {}
 
 #[cfg(test)]
 mod test {
+    use cnidarium::{StateDelta, Storage};
     use filament_chain::{Account, Address};
     use filament_crypto::SigningKey;
-    use penumbra_storage::{StateDelta, Storage};
     use pretty_assertions::assert_eq;
     use rand::thread_rng;
     use tempfile::tempdir;

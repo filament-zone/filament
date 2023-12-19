@@ -1,6 +1,6 @@
 use async_trait::async_trait;
+use cnidarium::StateWrite;
 use filament_chain::genesis::AppState;
-use penumbra_storage::StateWrite;
 use tendermint::abci::request;
 
 use crate::component::ABCIComponent;
@@ -34,6 +34,7 @@ impl ABCIComponent for Accounts {
 
 #[cfg(test)]
 mod test {
+    use cnidarium::{StateDelta, Storage};
     use filament_chain::{
         genesis::{Allocation, AppState},
         Address,
@@ -42,7 +43,6 @@ mod test {
         ChainParameters,
     };
     use filament_crypto::SigningKey;
-    use penumbra_storage::{StateDelta, Storage};
     use rand::{thread_rng, Rng as _};
     use tempfile::tempdir;
 

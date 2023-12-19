@@ -1,6 +1,6 @@
 use async_trait::async_trait;
+use cnidarium::StateWrite;
 use filament_chain::genesis::AppState;
-use penumbra_storage::StateWrite;
 use tendermint::abci::request;
 
 use crate::component::ABCIComponent;

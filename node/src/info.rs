@@ -1,8 +1,8 @@
 use std::pin::Pin;
 
+use cnidarium::Storage;
 use filament_app::{App, AppHashRead as _};
 use futures::{Future, FutureExt as _};
-use penumbra_storage::Storage;
 use tendermint::{
     block::Height,
     v0_34::abci::{request, response, InfoRequest, InfoResponse},

@@ -1,9 +1,9 @@
 use std::{future::Future, pin::Pin};
 
 use bytes::Bytes;
+use cnidarium::{Snapshot, Storage};
 use filament_app::App;
 use futures::FutureExt as _;
-use penumbra_storage::{Snapshot, Storage};
 use tendermint::v0_34::abci::{
     request::{self, CheckTxKind},
     response,

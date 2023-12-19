@@ -15,6 +15,7 @@ filament-app                 = { path = "../app" }
 filament-chain               = { path = "../chain" }
 
 bytes                       = { workspace = true }
+cnidarium                   = { workspace = true }
 console-subscriber          = { workspace = true }
 directories                 = { workspace = true }
 eyre                        = { workspace = true }
@@ -23,7 +24,6 @@ hex                         = { workspace = true, features = [ "alloc" ] }
 metrics-exporter-prometheus = { workspace = true, features = [ "http-listener" ] }
 metrics-tracing-context     = { workspace = true }
 metrics-util                = { workspace = true }
-penumbra-storage            = { workspace = true }
 sha2                        = { workspace = true }
 tendermint                  = { workspace = true }
 tokio                       = { workspace = true, features = [ "net", "macros", "rt-multi-thread", "tracing" ] }
