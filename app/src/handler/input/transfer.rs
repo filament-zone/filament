@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use cnidarium::{StateRead, StateWrite};
 use filament_chain::{input::Transfer, Address, Transaction, REGISTRY};
-use penumbra_storage::{StateRead, StateWrite};
 
 use crate::{
     component::{
@@ -65,6 +65,7 @@ impl Handler for Transfer {
 mod test {
     use std::sync::Arc;
 
+    use cnidarium::{StateDelta, TempStorage};
     use filament_chain::{
         input,
         Address,
@@ -80,7 +81,6 @@ mod test {
         REGISTRY,
     };
     use filament_crypto::{SignBytes as _, SigningKey};
-    use penumbra_storage::{StateDelta, TempStorage};
     use pretty_assertions::assert_eq;
     use rand::thread_rng;
 

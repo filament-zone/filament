@@ -80,9 +80,9 @@ impl<T: StateWriteEncode + ?Sized> AssetsWrite for T {}
 
 #[cfg(test)]
 mod test {
+    use cnidarium::{StateDelta, TempStorage};
     use filament_chain::{Address, Amount, AssetId};
     use filament_crypto::SigningKey;
-    use penumbra_storage::{StateDelta, TempStorage};
     use pretty_assertions::assert_eq;
     use rand::thread_rng;
 

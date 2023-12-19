@@ -1,12 +1,12 @@
 use std::net::SocketAddr;
 
+use cnidarium::Storage;
 use console_subscriber::ConsoleLayer;
 use directories::BaseDirs;
 use eyre::WrapErr as _;
 use metrics_exporter_prometheus::PrometheusBuilder;
 use metrics_tracing_context::{MetricsLayer, TracingContextLayer};
 use metrics_util::layers::Stack;
-use penumbra_storage::Storage;
 use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _, EnvFilter};
 
 use crate::{Config, Consensus, Info, Mempool, Snapshot};
@@ -86,5 +86,5 @@ pub async fn run(cfg: Config) -> eyre::Result<()> {
 }
 
 fn register_metrics() {
-    penumbra_storage::register_metrics();
+    cnidarium::register_metrics();
 }

@@ -48,8 +48,8 @@ impl<T: StateWriteEncode + ?Sized> StateWriteExt for T {}
 
 #[cfg(test)]
 mod test {
+    use cnidarium::{StateDelta, Storage};
     use filament_chain::{ChainId, ChainParameters};
-    use penumbra_storage::{StateDelta, Storage};
     use pretty_assertions::assert_eq;
     use tempfile::tempdir;
     use tendermint::Time;

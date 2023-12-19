@@ -299,7 +299,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4114279215a005bc675e386011e594e1d9b800918cea18fcadadcce864a2046b"
 dependencies = [
  "borsh-derive",
- "hashbrown 0.13.2",
+ "hashbrown 0.12.3",
 ]
 
 [[package]]
@@ -409,6 +409,33 @@ dependencies = [
  "glob",
  "libc",
  "libloading",
+]
+
+[[package]]
+name = "cnidarium"
+version = "0.64.1"
+source = "git+https://github.com/penumbra-zone/penumbra?branch=main#41345e5958840fd2e8a0b7f16f2a8fd7181bcbd6"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "borsh",
+ "futures",
+ "hex",
+ "ibc-types",
+ "ics23",
+ "jmt",
+ "metrics 0.19.0",
+ "once_cell",
+ "parking_lot",
+ "pin-project",
+ "rocksdb",
+ "sha2 0.10.8",
+ "smallvec",
+ "tempfile",
+ "tendermint",
+ "tokio",
+ "tokio-stream",
+ "tracing",
 ]
 
 [[package]]
@@ -758,13 +785,13 @@ name = "filament-app"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "cnidarium",
  "eyre",
  "filament-chain",
  "filament-crypto",
  "filament-encoding",
  "hex",
  "num-traits",
- "penumbra-storage",
  "pretty_assertions",
  "rand",
  "serde",
@@ -811,9 +838,9 @@ version = "0.1.0"
 dependencies = [
  "bcs",
  "bech32",
+ "cnidarium",
  "eyre",
  "futures",
- "penumbra-storage",
  "pretty_assertions",
  "rand",
  "serde",
@@ -827,6 +854,7 @@ name = "filament-node"
 version = "0.1.0"
 dependencies = [
  "bytes",
+ "cnidarium",
  "console-subscriber",
  "directories",
  "eyre",
@@ -837,7 +865,6 @@ dependencies = [
  "metrics-exporter-prometheus",
  "metrics-tracing-context",
  "metrics-util",
- "penumbra-storage",
  "sha2 0.10.8",
  "tendermint",
  "tokio",
@@ -2108,33 +2135,6 @@ name = "peg-runtime"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c719dcf55f09a3a7e764c6649ab594c18a177e3599c467983cdf644bfc0a4088"
-
-[[package]]
-name = "penumbra-storage"
-version = "0.63.1"
-source = "git+https://github.com/penumbra-zone/penumbra?branch=main#c8cfe17698aa776bd85ce5c2bd9072827b9e0751"
-dependencies = [
- "anyhow",
- "async-trait",
- "borsh",
- "futures",
- "hex",
- "ibc-types",
- "ics23",
- "jmt",
- "metrics 0.19.0",
- "once_cell",
- "parking_lot",
- "pin-project",
- "rocksdb",
- "sha2 0.10.8",
- "smallvec",
- "tempfile",
- "tendermint",
- "tokio",
- "tokio-stream",
- "tracing",
-]
 
 [[package]]
 name = "percent-encoding"

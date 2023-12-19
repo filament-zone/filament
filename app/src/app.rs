@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
+use cnidarium::{ArcStateDeltaExt as _, Snapshot, StateDelta, Storage};
 use filament_chain::{genesis::AppState, Transaction};
 use filament_encoding as encoding;
-use penumbra_storage::{ArcStateDeltaExt as _, Snapshot, StateDelta, Storage};
 use tendermint::{
     abci::{Code, Event},
     consensus::Params,

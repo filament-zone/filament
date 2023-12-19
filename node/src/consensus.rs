@@ -1,9 +1,9 @@
 use std::{future::Future, pin::Pin};
 
+use cnidarium::Storage;
 use filament_app::App;
 use filament_chain::{genesis::AppState, ChainId, ChainParameters};
 use futures::FutureExt as _;
-use penumbra_storage::Storage;
 use tendermint::{
     abci::Event,
     v0_34::abci::{request, response, ConsensusRequest, ConsensusResponse},

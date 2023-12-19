@@ -1,8 +1,8 @@
 use std::{future::Future, pin::Pin};
 
+use cnidarium::{StateRead, StateWrite};
 use eyre::{eyre, WrapErr as _};
 use futures::future::{FutureExt as _, TryFutureExt as _};
-use penumbra_storage::{StateRead, StateWrite};
 use serde::{de::DeserializeOwned, Serialize};
 
 use crate::{from_bytes, to_bytes};
@@ -48,7 +48,7 @@ impl<T: StateWrite + ?Sized> StateWriteEncode for T {}
 
 #[cfg(test)]
 mod test {
-    use penumbra_storage::{StateDelta, Storage};
+    use cnidarium::{StateDelta, Storage};
     use pretty_assertions::assert_eq;
     use serde::{Deserialize, Serialize};
     use tempfile::tempdir;

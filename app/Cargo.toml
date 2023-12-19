@@ -15,10 +15,10 @@ filament-crypto    = { path = "../crypto" }
 filament-encoding  = { path = "../encoding" }
 
 async-trait       = { workspace = true }
+cnidarium         = { workspace = true }
 eyre              = { workspace = true }
 hex               = { workspace = true, features = [ "alloc" ] }
 num-traits        = { workspace = true }
-penumbra-storage  = { workspace = true }
 serde             = { workspace = true }
 sha2              = { workspace = true }
 tendermint        = { workspace = true }
