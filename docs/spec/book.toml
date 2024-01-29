@@ -1,6 +1,26 @@
 [book]
-authors = ["xla"]
-language = "en"
-multilingual = false
-src = "src"
-title = "Pulzaar Spec"
+authors       = [ "Filament Team <core@filament.zone>" ]
+language      = "en"
+multilingual  = false
+src           = "src"
+title         = "Filament Protocol"
+
+[output.html]
+default-theme         = "coal"
+preferred-dark-theme  = "coal"
+curly-quotes          = true
+fold                  = { enable = true, level = 1 }
+git-repository-url    = "https://github.com/filament-zone/filament"
+additional-js         = [
+  "mermaid-init.js",
+  "mermaid.min.js",
+]
+
+[output.linkcheck]
+follow-web-links  = true
+warning-policy    = "error"
+
+[preprocessor.katex]
+
+[preprocessor.mermaid]
+command = "mdbook-mermaid"

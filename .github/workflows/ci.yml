@@ -76,7 +76,7 @@ jobs:
         timeout-minutes: 1
         continue-on-error: true
         with:
-          key: ${{ matrix.os }}
+          key: ${{ matrix.os }}-${{ matrix.toolchain }}
 
       - name: Run fmt check
         run: cargo fmt --all -- --check
@@ -129,7 +129,7 @@ jobs:
         timeout-minutes: 1
         continue-on-error: true
         with:
-          key: ${{ matrix.os }}
+          key: ${{ matrix.os }}-${{ matrix.toolchain }}
 
       - name: Install nextest
         if: steps.cache-deps.outputs.cache-hit != 'true'

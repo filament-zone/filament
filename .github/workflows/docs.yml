@@ -13,7 +13,8 @@ jobs:
       pull-requests: write
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-22.04-16core]
+        toolchain: [stable]
 
     name: Deploy docs
     runs-on: ${{ matrix.os }}
@@ -23,10 +24,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup mdBook
-        uses: peaceiris/actions-mdbook@v1
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        id: toolchain
+        if: steps.cache-toolchain.outputs.cache-hit != 'true'
         with:
-          mdbook-version: '0.4.25'
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          components: cargo, clippy, rustfmt
+          override: true
+
+      - name: Cache dependencies & tools
+        uses: Swatinem/rust-cache@v2
+        timeout-minutes: 1
+        continue-on-error: true
+        with:
+          key: ${{ matrix.os }}-${{ matrix.toolchain }}
+
+      - name: Setup mdBook
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: cargo install mdbook mdbook-katex mdbook-linkcheck mdbook-mermaid
 
       - name: Build Spec
         run: |
@@ -40,7 +57,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: filament-spec
-          directory: docs/spec/book/
+          directory: docs/spec/book/html/
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.head_ref }}
 
@@ -77,7 +94,7 @@ jobs:
         timeout-minutes: 1
         continue-on-error: true
         with:
-          key: ${{ matrix.os }}
+          key: ${{ matrix.os }}-${{ matrix.toolchain }}
 
       - name: Build Rustdoc
         env:
