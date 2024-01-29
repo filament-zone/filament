@@ -3,17 +3,17 @@ authors       = [ "Filament Team <core@filament.zone>" ]
 language      = "en"
 multilingual  = false
 src           = "src"
-title         = "Filament Protocol"
+title         = "Filament"
 
 [output.html]
-default-theme         = "coal"
-preferred-dark-theme  = "coal"
+default-theme         = "light"
+preferred-dark-theme  = "ayu"
 curly-quotes          = true
 fold                  = { enable = true, level = 1 }
 git-repository-url    = "https://github.com/filament-zone/filament"
 additional-js         = [
-  "mermaid-init.js",
-  "mermaid.min.js",
+  "theme/js/mermaid.min.js",
+  "theme/js/mermaid-init.js",
 ]
 
 [output.linkcheck]
@@ -24,3 +24,5 @@ warning-policy    = "error"
 
 [preprocessor.mermaid]
 command = "mdbook-mermaid"
+
+[preprocessor.toc]

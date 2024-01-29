@@ -3,12 +3,5 @@
 [Filament](./filament.md)
 
 - [Mechanism]()
-- [Chain]()
-  - [Cryptography]()
-  - [Transactions]()
-  - [Accounts]()
-  - [Ledger]()
-  - [State]()
-  - [Genesis]()
+- [Protocol](./protocol.md)
 - [Testnets]()
-- [Implementation]()
