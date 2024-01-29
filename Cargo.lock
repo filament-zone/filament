@@ -299,7 +299,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4114279215a005bc675e386011e594e1d9b800918cea18fcadadcce864a2046b"
 dependencies = [
  "borsh-derive",
- "hashbrown 0.12.3",
+ "hashbrown 0.13.2",
 ]
 
 [[package]]
@@ -414,7 +414,7 @@ dependencies = [
 [[package]]
 name = "cnidarium"
 version = "0.64.1"
-source = "git+https://github.com/penumbra-zone/penumbra?branch=main#c5258bffb8997bd7e7f74f8b488c5d3e3854b14e"
+source = "git+https://github.com/penumbra-zone/penumbra?branch=main#a1cd044841bbea37d3268850512150441ec99d7b"
 dependencies = [
  "anyhow",
  "async-trait",
