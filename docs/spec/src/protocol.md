@@ -48,11 +48,39 @@ Describes the payout mechanism of the budgets on settlement.
 
 #### $B$udget
 
-> *TODO*
+The budget is the total amount of funds available for a campaign, including
+incentives ($B_i$) and fee payments ($B_f$).
+
+$B = (B_i, B_f)$
+
+Fees will be used to pay for proof and segment generation on the hub.
 
 #### $P$ayment
 
 > *TODO*
+
+#### Proofs
+
+A segment should always come with a proof, which the campaign creator can
+use to verify its generation.
+
+There will be different proofs with a variety of integrity and costs.
+A simple signature from a trusted party is very low on verifiability for the
+generation of the segment while being very cheap to produce and verify.
+Using a SNARK that takes light client and state proof provides very high
+verifiability but is expensive to produce and cheap to verify.
+
+We offer the following proof types:
+
+* Signatures
+  * ECDSA[^ecdsa]
+    * $m$ being a serialization of $S$
+    * the proof is valid if the signature is valid for a public key that was
+      agreed upon by the campaign creator
+  * EdDSA[^eddsa]
+    * $m$ being a serialization of $S$
+    * the proof is valid if the signature is valid for a public key that was
+      agreed upon by the campaign creator
 
 ### TODO
 
@@ -64,7 +92,26 @@ Describes the payout mechanism of the budgets on settlement.
 
 ### Outpost
 
-#### `create_campaign(query, incentive, budget) -> campaign_id`
+#### `init(chain_id)`
+
+Initialize outpost contract
+
+* `chain_id` for the outpost
+* `id_ctx` counter for locally registered campaings, set to 1
+
+#### `create_campaign(query, incentive) -> campaign_id`
+
+$O$<sub>post</sub>
+
+* $S$ is registered
+
+$C$<sub>post</sub>
+
+* Campaign commitment (CC) is registered on outpost chain
+* CC is assigned an unique id ($ccid$), `chain_id || '-' || id_ctx`
+* increment `id_ctx` by 1
+
+#### `fund_campaign(campaign_id, budget)`
 
 $O$<sub>pre</sub>
 
@@ -73,13 +120,6 @@ $O$<sub>pre</sub>
 $O$<sub>post</sub>
 
 * $B$ is in $E$
-* $S$ is registered
-
-$C$<sub>post</sub>
-
-* CC is registered
-
-#### `fund_campaign(budget)`
 
 > *TODO*
 
@@ -143,15 +183,13 @@ sequenceDiagram
   * showing who pays who
 * make spec more concrete in terms of shape and data types
 * how are segments specified?
-* describe shape of budget @pm
-  * include value chain tip/fee
 * further define and clarify conditions
   * What is attester registration?
-  * What is a ccid? @pm
-    * encode origin of campaign/IBC channel prefix
-    * hash? if so what to hash
-  * What does it mean a proof is valid? @pm
-  * What are variants/types of proof? @pm
 * diagram failure sequences
 * create sequence for fee clearing on epocj
 * capture post condition for Fees after payments
+
+## References
+
+[^ecdsa]: [ECDSA](http://www.secg.org/sec2-v2.pdf)
+[^eddsa]: [EdDSA](https://www.rfc-editor.org/rfc/rfc8032.html)
