@@ -3,5 +3,5 @@
 [Filament](./filament.md)
 
 - [Mechanism]()
-- [Protocol](./protocol.md)
+- [Incentive Hub](./incentive-hub.md)
 - [Testnets]()

@@ -11,6 +11,9 @@ preferred-dark-theme  = "ayu"
 curly-quotes          = true
 fold                  = { enable = true, level = 1 }
 git-repository-url    = "https://github.com/filament-zone/filament"
+additional-css        = [
+  "theme/css/custom.css",
+]
 additional-js         = [
   "theme/js/mermaid.min.js",
   "theme/js/mermaid-init.js",
@@ -26,3 +29,4 @@ warning-policy    = "error"
 command = "mdbook-mermaid"
 
 [preprocessor.toc]
+max-level = 4
