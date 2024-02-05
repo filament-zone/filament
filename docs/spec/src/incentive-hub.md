@@ -42,7 +42,38 @@ flowchart TD
 
 ### Outpost initialization
 
-> *TODO*
+Deploying a new outpost should be a relatively rare occurence.
+Any new outpost will need to be registered on the hub. The process
+will start out permissioned but most likely change later.
+
+The registration process of the outpost on the hub can take a number
+of different forms but we assume that IBC is available, which may
+change in the future.
+
+If IBC and ICA (interchain accounts) are available then the hub could
+open an IBC channel and deploy the outpost by itself. But we will for
+now assume that ICA is not available and instead rely on an external
+deployer.
+These assumptions are mostly arbitrary at this point to give us a good
+starting point for further expansion.
+
+* XXX(pm): actually add some justifications?
+* XXX(pm): diagram written with neutron in mind/interchain tx available
+
+``` mermaid
+sequenceDiagram
+    autonumber
+
+    actor D as Deployer
+    participant C as Chain
+    participant H as Hub
+
+    D->>C: create Outpost on new chain
+    D->>C: trigger Outpost to register
+    C->>H: interchain tx
+    H->>H: register Outpost
+    H->>C: relay Outpost registration
+```
 
 ### Attester registration
 
