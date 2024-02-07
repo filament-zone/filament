@@ -61,57 +61,6 @@ jobs:
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.head_ref }}
 
-  deploy-rustdoc:
-    permissions:
-      contents: read
-      deployments: write
-      pull-requests: write
-    strategy:
-      matrix:
-        os: [ubuntu-22.04-16core]
-        toolchain: [nightly]
-
-    name: Deploy Rustdoc
-    runs-on: ${{ matrix.os }}
-    outputs:
-      rustdoc-url: ${{ steps.rustdoc-cloudflare-deploy.outputs.alias }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
-        id: toolchain
-        if: steps.cache-toolchain.outputs.cache-hit != 'true'
-        with:
-          profile: minimal
-          toolchain: ${{ matrix.toolchain }}
-          components: cargo, clippy, rustfmt
-          override: true
-
-      - name: Cache dependencies & tools
-        uses: Swatinem/rust-cache@v2
-        timeout-minutes: 1
-        continue-on-error: true
-        with:
-          key: ${{ matrix.os }}-${{ matrix.toolchain }}
-
-      - name: Build Rustdoc
-        env:
-          RUSTDOCFLAGS: "--enable-index-page -Zunstable-options -Dwarnings"
-        run: cargo doc --workspace --all-features --no-deps --document-private-items
-
-      - id: rustdoc-cloudflare-deploy
-        name: Publish Rustdoc to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: filament-rustdoc
-          directory: ./target/doc
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.head_ref }}
-
   summary:
     permissions:
       contents: read
@@ -133,5 +82,4 @@ jobs:
             ### Previews
             | **Site**    | **URL**                                                                                            | 
             |-------------|----------------------------------------------------------------------------------------------------|
-            | **Rustdoc** | [${{ needs.deploy-rustdoc.outputs.rustdoc-url }}](${{ needs.deploy-rustdoc.outputs.rustdoc-url }}) |
             | **Spec**    | [${{ needs.deploy-docs.outputs.spec-url }}](${{ needs.deploy-docs.outputs.spec-url }})             |
