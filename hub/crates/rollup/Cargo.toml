@@ -1,0 +1,59 @@
+[package]
+name          = "hub-rollup"
+version       = { workspace = true }
+authors       = { workspace = true }
+edition       = { workspace = true }
+license       = { workspace = true }
+homepage      = { workspace = true }
+repository    = { workspace = true }
+rust-version  = { workspace = true }
+publish       = { workspace = true }
+
+[dependencies]
+hub-prover  = { path = "../provers/risc0" }
+hub-stf     = { path = "../stf", features = ["native", "serde"] }
+
+fila-outposts = { workspace = true }
+
+sov-accounts                  = { workspace = true, features = ["native"] }
+sov-db                        = { workspace = true }
+sov-celestia-adapter          = { workspace = true, features = ["native"], optional=true }
+sov-ledger-rpc                = { workspace = true, features = ["server"] }
+sov-mock-da                   = { workspace = true, features = ["native"], optional=true }
+sov-modules-api               = { workspace = true, features = ["native"] }
+sov-modules-rollup-blueprint  = { workspace = true }
+sov-modules-stf-blueprint     = { workspace = true, features = ["native"] }
+sov-prover-storage-manager    = { workspace = true }
+sov-risc0-adapter             = { workspace = true, features = ["native"] }
+sov-rollup-interface          = { workspace = true }
+sov-state                     = { workspace = true }
+sov-stf-runner                = { workspace = true, features = ["native"] }
+sov-sequencer                 = { workspace = true }
+
+anyhow              = { workspace = true }
+async-trait         = { workspace = true }
+borsh               = { workspace = true, features = ["rc", "bytes"] }
+clap                = { workspace = true, features = ["derive"] }
+jsonrpsee           = { workspace = true, features = ["jsonrpsee-types"] }
+tracing             = { workspace = true }
+serde               = { workspace = true, features = ["derive", "rc"] }
+serde_json          = { workspace = true }
+tokio               = { workspace = true, features = ["full"] }
+
+tracing-subscriber  = { version = "0.3", features = ["env-filter"] }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+
+[features]
+default     = ["mock_da"] # set mock_da as the default feature
+celestia_da = ["sov-celestia-adapter"]
+mock_da     = ["sov-mock-da"]
+
+[[bin]]
+name = "cli"
+path = "src/bin/cli.rs"
+
+[[bin]]
+name = "node"
+path = "src/bin/node.rs"

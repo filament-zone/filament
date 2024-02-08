@@ -9,6 +9,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  CARGO_TERM_COLOR: always
+
 permissions:
   contents: read
   pull-requests: read
@@ -19,7 +22,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
 
-    name: Link Commits
+    name: Lint Commits
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -43,3 +46,74 @@ jobs:
 
       - uses: xt0rted/markdownlint-problem-matcher@v2
       - run: npm run markdownlint
+
+  build-hub:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04-16core]
+
+    name: Build Hub Rollup
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v2
+        with:
+          version: "23.2"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install cargo-risc0 # Risc0 v0.17 and higher require a cargo extension to build the guest code
+        run: cargo install cargo-risczero
+
+      - name: Install risc0-zkvm toolchain # Use the risc0 cargo extension to install the risc0 std library for the current toolchain
+        run: cargo risczero install
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Mock Rollup
+        run: cd hub && cargo build -p hub-rollup
+
+      - name: Build Celestia Rollup
+        run: cd hub && cargo build -p hub-rollup --no-default-features --features celestia_da
+
+  test-hub:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04-16core]
+
+    name: Test hub
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v2
+        with:
+          version: "23.2"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install cargo-risc0 # Risc0 v0.17 and higher require a cargo extension to build the guest code
+        run: cargo install cargo-risczero
+
+      - name: Install risc0-zkvm toolchain # Use the risc0 cargo extension to install the risc0 std library for the current toolchain
+        run: cargo risczero install
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build
+        run: cd hub && cargo build
+
+      - name: Run tests
+        run: cd hub && cargo test --workspace --all-targets
+
+      - name: Run README.md
+        run: cd hub && chmod +x rollup-starter.sh && ./rollup-starter.sh

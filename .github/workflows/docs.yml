@@ -71,7 +71,7 @@ jobs:
         os: [ubuntu-latest]
 
     name: Summary
-    needs: [deploy-docs, deploy-rustdoc]
+    needs: [deploy-docs]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Add comment with deployed preview links

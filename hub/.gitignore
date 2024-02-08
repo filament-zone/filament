@@ -1,0 +1,9 @@
+.idea
+
+/crates/provers/risc0/guest-mock/target
+/rollup-data/
+/target/
+
+docker/credentials/*
+!docker/credentials/bridge-0.addr
+!docker/credentials/bridge-0.key
