@@ -3,24 +3,24 @@
 
 use async_trait::async_trait;
 use hub_stf::Runtime;
-use sov_celestia_adapter::types::Namespace;
-use sov_celestia_adapter::verifier::{CelestiaSpec, CelestiaVerifier, RollupParams};
-use sov_celestia_adapter::{CelestiaConfig, CelestiaService};
-use sov_modules_api::default_context::{DefaultContext, ZkDefaultContext};
-use sov_modules_api::Address;
-use sov_modules_api::Spec;
+use sov_celestia_adapter::{
+    types::Namespace,
+    verifier::{CelestiaSpec, CelestiaVerifier, RollupParams},
+    CelestiaConfig,
+    CelestiaService,
+};
+use sov_modules_api::{
+    default_context::{DefaultContext, ZkDefaultContext},
+    Address,
+    Spec,
+};
 use sov_modules_rollup_blueprint::RollupBlueprint;
-use sov_modules_stf_blueprint::kernels::basic::BasicKernel;
-use sov_modules_stf_blueprint::StfBlueprint;
+use sov_modules_stf_blueprint::{kernels::basic::BasicKernel, StfBlueprint};
 use sov_prover_storage_manager::ProverStorageManager;
 use sov_risc0_adapter::host::Risc0Host;
 use sov_rollup_interface::zk::ZkvmHost;
-use sov_state::config::Config as StorageConfig;
-use sov_state::Storage;
-use sov_state::{DefaultStorageSpec, ZkStorage};
-use sov_stf_runner::ParallelProverService;
-use sov_stf_runner::RollupConfig;
-use sov_stf_runner::RollupProverConfig;
+use sov_state::{config::Config as StorageConfig, DefaultStorageSpec, Storage, ZkStorage};
+use sov_stf_runner::{ParallelProverService, RollupConfig, RollupProverConfig};
 
 /// The namespace for the rollup on Celestia.
 const ROLLUP_NAMESPACE: Namespace = Namespace::const_v0(*b"filahubtia");
@@ -35,22 +35,12 @@ pub struct CelestiaRollup {}
 /// they can be easily swapped with alternative implementations as needed.
 #[async_trait]
 impl RollupBlueprint for CelestiaRollup {
+    type DaConfig = CelestiaConfig;
     type DaService = CelestiaService;
     type DaSpec = CelestiaSpec;
-    type DaConfig = CelestiaConfig;
-    type Vm = Risc0Host<'static>;
-
-    type ZkContext = ZkDefaultContext;
     type NativeContext = DefaultContext;
-
-    type StorageManager = ProverStorageManager<CelestiaSpec, DefaultStorageSpec>;
-    type ZkRuntime = Runtime<Self::ZkContext, Self::DaSpec>;
-
-    type NativeRuntime = Runtime<Self::NativeContext, Self::DaSpec>;
-
     type NativeKernel = BasicKernel<Self::NativeContext, Self::DaSpec>;
-    type ZkKernel = BasicKernel<Self::ZkContext, Self::DaSpec>;
-
+    type NativeRuntime = Runtime<Self::NativeContext, Self::DaSpec>;
     type ProverService = ParallelProverService<
         <<Self::NativeContext as Spec>::Storage as Storage>::Root,
         <<Self::NativeContext as Spec>::Storage as Storage>::Witness,
@@ -64,6 +54,11 @@ impl RollupBlueprint for CelestiaRollup {
             Self::ZkKernel,
         >,
     >;
+    type StorageManager = ProverStorageManager<CelestiaSpec, DefaultStorageSpec>;
+    type Vm = Risc0Host<'static>;
+    type ZkContext = ZkDefaultContext;
+    type ZkKernel = BasicKernel<Self::ZkContext, Self::DaSpec>;
+    type ZkRuntime = Runtime<Self::ZkContext, Self::DaSpec>;
 
     fn create_rpc_methods(
         &self,

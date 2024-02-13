@@ -1,19 +1,23 @@
 #![allow(unused_doc_comments)]
 
-use sov_modules_api::macros::DefaultRuntime;
 #[cfg(feature = "native")]
-use sov_modules_api::Spec;
-use sov_modules_api::{Context, DaSpec, DispatchCall, Genesis, MessageCodec};
-
+pub use fila_outposts::{OutpostRegistryRpcImpl, OutpostRegistryRpcServer};
 #[cfg(feature = "native")]
 pub use sov_accounts::{AccountsRpcImpl, AccountsRpcServer};
 #[cfg(feature = "native")]
 pub use sov_bank::{BankRpcImpl, BankRpcServer};
 #[cfg(feature = "native")]
-pub use sov_sequencer_registry::{SequencerRegistryRpcImpl, SequencerRegistryRpcServer};
-
+use sov_modules_api::Spec;
+use sov_modules_api::{
+    macros::DefaultRuntime,
+    Context,
+    DaSpec,
+    DispatchCall,
+    Genesis,
+    MessageCodec,
+};
 #[cfg(feature = "native")]
-pub use fila_outposts::{OutpostRegistryRpcImpl, OutpostRegistryRpcServer};
+pub use sov_sequencer_registry::{SequencerRegistryRpcImpl, SequencerRegistryRpcServer};
 
 #[cfg(feature = "native")]
 use crate::genesis_config::GenesisPaths;
@@ -31,7 +35,8 @@ pub struct Runtime<C: Context, Da: DaSpec> {
     pub accounts: sov_accounts::Accounts<C>,
     /// The bank module is responsible for minting, transferring, and burning tokens
     pub bank: sov_bank::Bank<C>,
-    /// The sequencer registry module is responsible for authorizing sequencers to rollup transactions.
+    /// The sequencer registry module is responsible for authorizing sequencers to rollup
+    /// transactions.
     pub sequencer_registry: sov_sequencer_registry::SequencerRegistry<C, Da>,
 
     pub outpost_registry: fila_outposts::OutpostRegistry<C>,
@@ -43,7 +48,6 @@ where
     Da: DaSpec,
 {
     type GenesisConfig = GenesisConfig<C, Da>;
-
     #[cfg(feature = "native")]
     type GenesisPaths = GenesisPaths;
 

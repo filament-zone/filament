@@ -1,11 +1,15 @@
-use sov_modules_api::default_context::DefaultContext;
-use sov_modules_api::utils::generate_address as gen_addr_generic;
-use sov_modules_api::{Address, Context, Module, WorkingSet};
+use fila_outposts::{CallMessage, OutpostRegistry, OutpostRegistryConfig, OutpostResponse};
+use sov_modules_api::{
+    default_context::DefaultContext,
+    utils::generate_address as gen_addr_generic,
+    Address,
+    Context,
+    Module,
+    WorkingSet,
+};
 use sov_prover_storage_manager::{new_orphan_storage, SnapshotManager};
 use sov_rollup_interface::stf::Event;
 use sov_state::{DefaultStorageSpec, ProverStorage};
-
-use fila_outposts::{CallMessage, OutpostRegistry, OutpostRegistryConfig, OutpostResponse};
 
 pub type C = DefaultContext;
 pub type Storage = ProverStorage<DefaultStorageSpec, SnapshotManager>;

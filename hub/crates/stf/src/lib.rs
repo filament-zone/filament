@@ -5,11 +5,10 @@ pub mod genesis_config;
 mod hooks;
 pub mod runtime;
 pub use runtime::*;
+pub use sov_mock_da::MockDaSpec;
 use sov_modules_stf_blueprint::StfBlueprint;
 use sov_rollup_interface::da::DaVerifier;
 use sov_stf_runner::verifier::StateTransitionVerifier;
-
-pub use sov_mock_da::MockDaSpec;
 
 /// Alias for StateTransitionVerifier.
 pub type StfVerifier<DA, Vm, ZkContext, RT, K> =

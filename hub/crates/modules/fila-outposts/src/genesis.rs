@@ -1,7 +1,6 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use sov_modules_api::prelude::*;
-use sov_modules_api::{Context, WorkingSet};
+use sov_modules_api::{prelude::*, Context, WorkingSet};
 
 use crate::OutpostRegistry;
 
@@ -32,9 +31,7 @@ where
 
 #[cfg(test)]
 mod test {
-    use sov_modules_api::default_context::DefaultContext;
-    use sov_modules_api::utils::generate_address;
-    use sov_modules_api::Spec;
+    use sov_modules_api::{default_context::DefaultContext, utils::generate_address, Spec};
 
     use super::OutpostRegistryConfig;
 

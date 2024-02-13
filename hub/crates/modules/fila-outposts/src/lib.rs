@@ -2,7 +2,14 @@
 #![doc = include_str!("../README.md")]
 
 use sov_modules_api::{
-    CallResponse, Context, Error, Module, ModuleInfo, StateMap, StateValue, WorkingSet,
+    CallResponse,
+    Context,
+    Error,
+    Module,
+    ModuleInfo,
+    StateMap,
+    StateValue,
+    WorkingSet,
 };
 
 mod call;
@@ -38,10 +45,9 @@ impl<C> Module for OutpostRegistry<C>
 where
     C: Context,
 {
-    type Context = C;
-    type Config = OutpostRegistryConfig<C>;
     type CallMessage = CallMessage;
-
+    type Config = OutpostRegistryConfig<C>;
+    type Context = C;
     type Event = ();
 
     fn genesis(&self, config: &Self::Config, working_set: &mut WorkingSet<C>) -> Result<(), Error> {

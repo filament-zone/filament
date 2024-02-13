@@ -14,13 +14,13 @@ use sov_celestia_adapter::CelestiaConfig;
 #[cfg(feature = "mock_da")]
 use sov_mock_da::MockDaConfig;
 use sov_modules_rollup_blueprint::{Rollup, RollupBlueprint};
-use sov_modules_stf_blueprint::kernels::basic::BasicKernelGenesisConfig;
-use sov_modules_stf_blueprint::kernels::basic::BasicKernelGenesisPaths;
-use sov_stf_runner::RollupProverConfig;
-use sov_stf_runner::{from_toml_path, RollupConfig};
+use sov_modules_stf_blueprint::kernels::basic::{
+    BasicKernelGenesisConfig,
+    BasicKernelGenesisPaths,
+};
+use sov_stf_runner::{from_toml_path, RollupConfig, RollupProverConfig};
 use tracing::info;
-use tracing_subscriber::prelude::*;
-use tracing_subscriber::{fmt, EnvFilter};
+use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
 // config and genesis for mock da
 #[cfg(feature = "mock_da")]

@@ -6,9 +6,16 @@
 
 use sov_accounts::AccountsTxHook;
 use sov_bank::BankTxHook;
-use sov_modules_api::hooks::{ApplyBlobHooks, FinalizeHook, SlotHooks, TxHooks};
-use sov_modules_api::transaction::Transaction;
-use sov_modules_api::{AccessoryWorkingSet, BlobReaderTrait, Context, DaSpec, Spec, WorkingSet};
+use sov_modules_api::{
+    hooks::{ApplyBlobHooks, FinalizeHook, SlotHooks, TxHooks},
+    transaction::Transaction,
+    AccessoryWorkingSet,
+    BlobReaderTrait,
+    Context,
+    DaSpec,
+    Spec,
+    WorkingSet,
+};
 use sov_modules_stf_blueprint::{RuntimeTxHook, SequencerOutcome};
 use sov_sequencer_registry::SequencerRegistry;
 use sov_state::Storage;
@@ -51,9 +58,9 @@ impl<C: Context, Da: DaSpec> TxHooks for Runtime<C, Da> {
 }
 
 impl<C: Context, Da: DaSpec> ApplyBlobHooks<Da::BlobTransaction> for Runtime<C, Da> {
-    type Context = C;
     type BlobResult =
         SequencerOutcome<<<Da as DaSpec>::BlobTransaction as BlobReaderTrait>::Address>;
+    type Context = C;
 
     fn begin_blob_hook(
         &self,
@@ -78,7 +85,7 @@ impl<C: Context, Da: DaSpec> ApplyBlobHooks<Da::BlobTransaction> for Runtime<C, 
                     sov_sequencer_registry::SequencerOutcome::Completed,
                     working_set,
                 )
-            }
+            },
             SequencerOutcome::Ignored => Ok(()),
             SequencerOutcome::Slashed {
                 reason,
@@ -92,7 +99,7 @@ impl<C: Context, Da: DaSpec> ApplyBlobHooks<Da::BlobTransaction> for Runtime<C, 
                     },
                     working_set,
                 )
-            }
+            },
         }
     }
 }
@@ -118,7 +125,7 @@ impl<C: Context, Da: sov_modules_api::DaSpec> FinalizeHook<Da> for Runtime<C, Da
     fn finalize_hook(
         &self,
         _root_hash: &<<Self::Context as Spec>::Storage as Storage>::Root,
-        _accessory_working_set: &mut AccessoryWorkingSet<C>,
+        _accessory_working_set: &mut AccessoryWorkingSet<'_, C>,
     ) {
     }
 }

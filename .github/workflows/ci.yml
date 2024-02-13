@@ -51,6 +51,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04-16core]
+        toolchain: [stable]
 
     name: Build Hub Rollup
     runs-on: ${{ matrix.os }}
@@ -64,8 +65,12 @@ jobs:
           version: "23.2"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Cache dependencies
+      - name: Cache dependencies & tools
         uses: Swatinem/rust-cache@v2
+        timeout-minutes: 1
+        continue-on-error: true
+        with:
+          key: ${{ matrix.os }}-${{ matrix.toolchain }}
 
       - name: Install cargo-risc0 # Risc0 v0.17 and higher require a cargo extension to build the guest code
         run: cargo install cargo-risczero
@@ -85,6 +90,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04-16core]
+        toolchain: [stable]
 
     name: Test hub
     runs-on: ${{ matrix.os }}
@@ -98,8 +104,12 @@ jobs:
           version: "23.2"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Cache dependencies
+      - name: Cache dependencies & tools
         uses: Swatinem/rust-cache@v2
+        timeout-minutes: 1
+        continue-on-error: true
+        with:
+          key: ${{ matrix.os }}-${{ matrix.toolchain }}
 
       - name: Install cargo-risc0 # Risc0 v0.17 and higher require a cargo extension to build the guest code
         run: cargo install cargo-risczero
@@ -117,3 +127,63 @@ jobs:
 
       - name: Run README.md
         run: cd hub && chmod +x rollup-starter.sh && ./rollup-starter.sh
+
+  clippy-hub:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04-16core]
+        toolchain: [stable]
+
+    name: Clippy Hub
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          override: true
+          components: rustfmt, clippy
+
+      - name: Cache dependencies & tools
+        uses: Swatinem/rust-cache@v2
+        timeout-minutes: 1
+        continue-on-error: true
+        with:
+          key: ${{ matrix.os }}-${{ matrix.toolchain }}
+
+      - name: Run cargo clippy
+        run: cd hub && cargo metadata --format-version=1 --no-deps | jq -r '.packages[] | select(.name != "hub-rollup" and .name != "hub-prover") | .name' | xargs -I {} cargo clippy -p {} --no-deps -- -Dwarnings -Dnonstandard-style -Drust-2018-idioms -Dunused -Drust-2021-compatibility
+
+  fmt-hub:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04-16core]
+        toolchain: [nightly]
+
+    name: Format Hub
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          override: true
+          components: rustfmt, clippy
+
+      - name: Cache dependencies & tools
+        uses: Swatinem/rust-cache@v2
+        timeout-minutes: 1
+        continue-on-error: true
+        with:
+          key: ${{ matrix.os }}-${{ matrix.toolchain }}
+
+      - name: Run cargo fmt
+        run: cd hub && cargo fmt --all -- --check

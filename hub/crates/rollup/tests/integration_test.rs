@@ -2,23 +2,32 @@ use std::net::SocketAddr;
 
 use borsh::BorshSerialize;
 use hub_rollup::mock_rollup::MockRollup;
-use hub_stf::genesis_config::GenesisPaths;
-use hub_stf::RuntimeCall;
-use jsonrpsee::core::client::{Subscription, SubscriptionClientT};
-use jsonrpsee::rpc_params;
-use sov_mock_da::MockDaSpec;
-use sov_mock_da::{MockAddress, MockDaConfig};
-use sov_modules_api::default_context::DefaultContext;
-use sov_modules_api::default_signature::private_key::DefaultPrivateKey;
-use sov_modules_api::transaction::Transaction;
-use sov_modules_api::PrivateKey;
+use hub_stf::{genesis_config::GenesisPaths, RuntimeCall};
+use jsonrpsee::{
+    core::client::{Subscription, SubscriptionClientT},
+    rpc_params,
+};
+use sov_mock_da::{MockAddress, MockDaConfig, MockDaSpec};
+use sov_modules_api::{
+    default_context::DefaultContext,
+    default_signature::private_key::DefaultPrivateKey,
+    transaction::Transaction,
+    PrivateKey,
+};
 use sov_modules_rollup_blueprint::RollupBlueprint;
-use sov_modules_stf_blueprint::kernels::basic::BasicKernelGenesisConfig;
-use sov_modules_stf_blueprint::kernels::basic::BasicKernelGenesisPaths;
+use sov_modules_stf_blueprint::kernels::basic::{
+    BasicKernelGenesisConfig,
+    BasicKernelGenesisPaths,
+};
 use sov_sequencer::utils::SimpleClient;
-use sov_stf_runner::ProverServiceConfig;
-use sov_stf_runner::RollupProverConfig;
-use sov_stf_runner::{RollupConfig, RpcConfig, RunnerConfig, StorageConfig};
+use sov_stf_runner::{
+    ProverServiceConfig,
+    RollupConfig,
+    RollupProverConfig,
+    RpcConfig,
+    RunnerConfig,
+    StorageConfig,
+};
 use tokio::sync::oneshot;
 
 #[tokio::test]
@@ -148,6 +157,7 @@ async fn start_rollup(
         .await
         .unwrap();
 
-    // Close the tempdir explicitly to ensure that rustc doesn't see that it's unused and drop it unexpectedly
+    // Close the tempdir explicitly to ensure that rustc doesn't see that it's unused and drop it
+    // unexpectedly
     temp_dir.close().unwrap();
 }
