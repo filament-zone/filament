@@ -31,24 +31,23 @@ where
 
 #[cfg(test)]
 mod test {
-    use sov_modules_api::{default_context::DefaultContext, utils::generate_address, Spec};
+    use hub_core::Context;
+    use sov_modules_api::{utils::generate_address, Spec};
 
     use super::OutpostRegistryConfig;
 
     #[test]
     fn test_config_serialization() {
-        let address: <DefaultContext as Spec>::Address =
-            generate_address::<DefaultContext>("admin");
+        let admin: <Context as Spec>::Address = generate_address::<Context>("admin");
 
-        let config = OutpostRegistryConfig::<DefaultContext> { admin: address };
+        let config = OutpostRegistryConfig::<Context> { admin };
 
         let data = r#"
         {
             "admin":"sov1335hded4gyzpt00fpz75mms4m7ck02wgw07yhw9grahj4dzg4yvqk63pml"
         }"#;
 
-        let parsed_config: OutpostRegistryConfig<DefaultContext> =
-            serde_json::from_str(data).unwrap();
+        let parsed_config: OutpostRegistryConfig<Context> = serde_json::from_str(data).unwrap();
         assert_eq!(config, parsed_config)
     }
 }

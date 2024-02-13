@@ -1260,6 +1260,7 @@ dependencies = [
  "borsh",
  "clap",
  "fila-outposts",
+ "hub-core",
  "jsonrpsee",
  "schemars",
  "serde",
@@ -1628,6 +1629,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
 
 [[package]]
+name = "hub-core"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "sha2 0.10.8",
+ "sov-modules-api",
+ "sov-modules-core",
+ "sov-prover-storage-manager",
+ "sov-state",
+]
+
+[[package]]
 name = "hub-prover"
 version = "0.1.0"
 dependencies = [
@@ -1643,6 +1656,7 @@ dependencies = [
  "borsh",
  "clap",
  "fila-outposts",
+ "hub-core",
  "hub-prover",
  "hub-stf",
  "jsonrpsee",

@@ -1,6 +1,7 @@
 [workspace]
 resolver  = "2"
 members   = [
+  "crates/core",
   "crates/modules/fila-outposts",
   "crates/rollup",
   "crates/stf",
@@ -17,6 +18,9 @@ rust-version  = "1.73"
 publish       = false
 
 [workspace.dependencies]
+hub-core        = { path = "./crates/core" }
+hub-stf         = { path = "./crates/stf" }
+
 fila-outposts   = { path = "./crates/modules/fila-outposts" }
 
 sov-accounts                    = { git = "https://github.com/Sovereign-Labs/sovereign-sdk.git", rev = "13e4077c329ff14954b32e3180d43a6d86fa3172" }
@@ -29,6 +33,7 @@ sov-first-read-last-write-cache = { git = "https://github.com/Sovereign-Labs/sov
 sov-ledger-rpc                  = { git = "https://github.com/Sovereign-Labs/sovereign-sdk.git", rev = "13e4077c329ff14954b32e3180d43a6d86fa3172" }
 sov-mock-da                     = { git = "https://github.com/Sovereign-Labs/sovereign-sdk.git", rev = "13e4077c329ff14954b32e3180d43a6d86fa3172" }
 sov-modules-api                 = { git = "https://github.com/Sovereign-Labs/sovereign-sdk.git", rev = "13e4077c329ff14954b32e3180d43a6d86fa3172" }
+sov-modules-core                = { git = "https://github.com/Sovereign-Labs/sovereign-sdk.git", rev = "13e4077c329ff14954b32e3180d43a6d86fa3172" }
 sov-modules-rollup-blueprint    = { git = "https://github.com/Sovereign-Labs/sovereign-sdk.git", rev = "13e4077c329ff14954b32e3180d43a6d86fa3172" }
 sov-modules-stf-blueprint       = { git = "https://github.com/Sovereign-Labs/sovereign-sdk.git", rev = "13e4077c329ff14954b32e3180d43a6d86fa3172" }
 sov-prover-storage-manager      = { git = "https://github.com/Sovereign-Labs/sovereign-sdk.git", rev = "13e4077c329ff14954b32e3180d43a6d86fa3172" }
@@ -46,6 +51,7 @@ jsonrpsee           = { version = "0.20", default-features = false }
 risc0-build         = { version = "0.19", default-features = false }
 serde               = { version = "1.0",  default-features = false }
 serde_json          = { version = "1.0",  default-features = false }
+sha2                = { version = "0.10", default-features = false }
 schemars            = { version = "0.8",  default-features = false }
 tempfile            = { version = "3.5",  default-features = false }
 tokio               = { version = "1.0",  default-features = false }

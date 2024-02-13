@@ -1,0 +1,36 @@
+[package]
+name          = "hub-core"
+version       = { workspace = true }
+authors       = { workspace = true }
+edition       = { workspace = true }
+license       = { workspace = true }
+homepage      = { workspace = true }
+repository    = { workspace = true }
+# rust-version  = { workspace = true }
+publish       = { workspace = true }
+
+[dependencies]
+sov-modules-api             = { workspace = true }
+sov-modules-core            = { workspace = true }
+sov-prover-storage-manager  = { workspace = true, optional = true }
+sov-state                   = { workspace = true }
+
+serde = { workspace = true, optional = true }
+sha2  = { workspace = true }
+
+[features]
+native = [
+  "dep:sov-prover-storage-manager",
+
+  "sov-modules-api/native",
+  "sov-modules-core/native",
+  "sov-state/native",
+
+  "serde",
+]
+serde = [
+  "dep:serde",
+
+  "sov-modules-api/serde",
+  "sov-modules-core/serde",
+]

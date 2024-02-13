@@ -22,7 +22,9 @@ serde_json  = { workspace = true, optional = true }
 jsonrpsee   = { workspace = true, optional = true,  features = ["macros", "client-core", "server"] }
 
 [dev-dependencies]
+hub-core                    = { workspace = true }
 fila-outposts               = { path = ".", version = "*", features = ["native"] }
+
 sov-prover-storage-manager  = { workspace = true, features = ["test-utils"] }
 sov-rollup-interface        = { workspace = true }
 tempfile                    = { workspace = true }

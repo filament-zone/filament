@@ -10,8 +10,9 @@ rust-version  = { workspace = true }
 publish       = { workspace = true }
 
 [dependencies]
+hub-core    = { workspace = true, features = ["native"] }
 hub-prover  = { path = "../provers/risc0" }
-hub-stf     = { path = "../stf", features = ["native", "serde"] }
+hub-stf     = { workspace = true, features = ["native", "serde"] }
 
 fila-outposts = { workspace = true }
 

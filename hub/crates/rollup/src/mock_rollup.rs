@@ -2,14 +2,11 @@
 //! StarterRollup provides a minimal self-contained rollup implementation
 
 use async_trait::async_trait;
+use hub_core::{Context, ZkContext};
 use hub_stf::Runtime;
 use sov_db::ledger_db::LedgerDB;
 use sov_mock_da::{MockDaConfig, MockDaService, MockDaSpec};
-use sov_modules_api::{
-    default_context::{DefaultContext, ZkDefaultContext},
-    Address,
-    Spec,
-};
+use sov_modules_api::{Address, Spec};
 use sov_modules_rollup_blueprint::RollupBlueprint;
 use sov_modules_stf_blueprint::{kernels::basic::BasicKernel, StfBlueprint};
 use sov_prover_storage_manager::ProverStorageManager;
@@ -29,8 +26,8 @@ impl RollupBlueprint for MockRollup {
     /// This component defines the Data Availability layer.
     type DaService = MockDaService;
     type DaSpec = MockDaSpec;
-    /// Context for the ZNative environment.
-    type NativeContext = DefaultContext;
+    /// Context for the Native environment.
+    type NativeContext = Context;
     /// Kernels.
     type NativeKernel = BasicKernel<Self::NativeContext, Self::DaSpec>;
     /// Runtime for the Native environment.
@@ -54,7 +51,7 @@ impl RollupBlueprint for MockRollup {
     /// The concrete ZkVm used in the rollup.
     type Vm = Risc0Host<'static>;
     /// Context for the Zero Knowledge environment.
-    type ZkContext = ZkDefaultContext;
+    type ZkContext = ZkContext;
     type ZkKernel = BasicKernel<Self::ZkContext, Self::DaSpec>;
     /// Runtime for the Zero Knowledge environment.
     type ZkRuntime = Runtime<Self::ZkContext, Self::DaSpec>;
