@@ -12,6 +12,8 @@ publish       = { workspace = true }
 [dependencies]
 fila-outposts             = { workspace = true }
 
+sov-ibc                   = { workspace = true }
+
 sov-accounts              = { workspace = true }
 sov-bank                  = { workspace = true }
 sov-sequencer-registry    = { workspace = true }
@@ -25,10 +27,11 @@ sov-stf-runner            = { workspace = true }
 
 anyhow      = { workspace = true }
 clap        = { workspace = true, optional = true, features = ["derive"] }
+hex         = { workspace = true, features = ["alloc", "serde"] }
 jsonrpsee   = { workspace = true, optional = true, features = ["jsonrpsee-types"] }
 borsh       = { workspace = true, features = ["rc", "bytes"] }
 serde       = { workspace = true, features = ["derive", "rc"] }
-serde_json  = { workspace = true, optional = true }
+serde_json  = { workspace = true }
 tracing     = { workspace = true }
 
 
@@ -49,7 +52,6 @@ native  = [
   "clap",
   "jsonrpsee",
   "serde",
-  "serde_json",
 ]
 serde   = [
   "fila-outposts/serde",

@@ -14,7 +14,7 @@ use sov_modules_api::{
     Address,
     Spec,
 };
-use sov_modules_rollup_blueprint::RollupBlueprint;
+use sov_modules_rollup_blueprint::{RollupBlueprint, WalletBlueprint};
 use sov_modules_stf_blueprint::{kernels::basic::BasicKernel, StfBlueprint};
 use sov_prover_storage_manager::ProverStorageManager;
 use sov_risc0_adapter::host::Risc0Host;
@@ -134,4 +134,5 @@ impl RollupBlueprint for CelestiaRollup {
         ProverStorageManager::new(storage_config)
     }
 }
-impl sov_modules_rollup_blueprint::WalletBlueprint for CelestiaRollup {}
+
+impl WalletBlueprint for CelestiaRollup {}
