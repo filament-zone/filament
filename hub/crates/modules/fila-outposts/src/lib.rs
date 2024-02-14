@@ -13,11 +13,13 @@ use sov_modules_api::{
 };
 
 mod call;
+mod event;
 mod genesis;
 #[cfg(feature = "native")]
 mod query;
 
 pub use call::CallMessage;
+pub use event::Event;
 pub use genesis::*;
 #[cfg(feature = "native")]
 pub use query::*;
@@ -48,7 +50,7 @@ where
     type CallMessage = CallMessage;
     type Config = OutpostRegistryConfig<C>;
     type Context = C;
-    type Event = ();
+    type Event = Event;
 
     fn genesis(&self, config: &Self::Config, working_set: &mut WorkingSet<C>) -> Result<(), Error> {
         Ok(self.init_module(config, working_set)?)

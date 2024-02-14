@@ -13,6 +13,7 @@ use sov_modules_api::{
     Context,
     DaSpec,
     DispatchCall,
+    Event,
     Genesis,
     MessageCodec,
 };
@@ -27,7 +28,7 @@ use crate::genesis_config::GenesisPaths;
     derive(sov_modules_api::macros::CliWallet),
     sov_modules_api::macros::expose_rpc
 )]
-#[derive(Genesis, DispatchCall, MessageCodec, DefaultRuntime)]
+#[derive(Genesis, DispatchCall, Event, MessageCodec, DefaultRuntime)]
 #[serialization(borsh::BorshDeserialize, borsh::BorshSerialize)]
 #[cfg_attr(feature = "serde", serialization(serde::Serialize, serde::Deserialize))]
 pub struct Runtime<C: Context, Da: DaSpec> {
@@ -52,7 +53,9 @@ where
     type GenesisPaths = GenesisPaths;
 
     #[cfg(feature = "native")]
-    fn rpc_methods(storage: <C as Spec>::Storage) -> jsonrpsee::RpcModule<()> {
+    fn rpc_methods(
+        storage: std::sync::Arc<std::sync::RwLock<<C as Spec>::Storage>>,
+    ) -> jsonrpsee::RpcModule<()> {
         get_rpc_methods::<C, Da>(storage.clone())
     }
 

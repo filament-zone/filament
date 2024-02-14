@@ -1,9 +1,9 @@
 use anyhow::{bail, Result};
 #[cfg(feature = "native")]
 use sov_modules_api::macros::CliWalletArg;
-use sov_modules_api::{CallResponse, Context, StateMapAccessor, WorkingSet};
+use sov_modules_api::{CallResponse, Context, EventEmitter as _, StateMapAccessor, WorkingSet};
 
-use crate::OutpostRegistry;
+use crate::{Event, OutpostRegistry};
 
 /// Available call messages for interacting with the `fila-outposts` module.
 #[cfg_attr(
@@ -42,9 +42,10 @@ where
 
         self.outposts.set(&chain_id, context.sender(), working_set);
 
-        working_set.add_event(
-            "OutpostRegistry register",
-            &format!("An outpost with chain_id {chain_id} was registered"),
+        self.emit_event(
+            working_set,
+            "outpost_registry_register",
+            Event::Register { chain_id },
         );
 
         Ok(CallResponse::default())

@@ -7,6 +7,7 @@ use sov_bank::BankConfig;
 use sov_modules_api::{Context, DaSpec};
 use sov_modules_stf_blueprint::Runtime as RuntimeTrait;
 use sov_sequencer_registry::SequencerConfig;
+pub use sov_state::config::Config as StorageConfig;
 use sov_stf_runner::read_json_file;
 
 use super::GenesisConfig;

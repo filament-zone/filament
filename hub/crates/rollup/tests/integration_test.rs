@@ -67,6 +67,7 @@ async fn register_outpost(rpc_address: SocketAddr) -> Result<(), anyhow::Error> 
     let chain_id = 0;
     let gas_tip = 0;
     let gas_limit = 0;
+    let max_gas_price = None;
     let nonce = 0;
     let tx = Transaction::<DefaultContext>::new_signed_tx(
         &key,
@@ -74,6 +75,7 @@ async fn register_outpost(rpc_address: SocketAddr) -> Result<(), anyhow::Error> 
         chain_id,
         gas_tip,
         gas_limit,
+        max_gas_price,
         nonce,
     );
 
@@ -120,6 +122,7 @@ async fn start_rollup(
         },
         runner: RunnerConfig {
             start_height: 1,
+            da_polling_interval_ms: 1000,
             rpc_config: RpcConfig {
                 bind_host: "127.0.0.1".into(),
                 bind_port: 0,
@@ -127,6 +130,8 @@ async fn start_rollup(
         },
         da: MockDaConfig {
             sender_address: MockAddress::from([0; 32]),
+            finalization_blocks: 0,
+            wait_attempts: 10,
         },
         prover_service: ProverServiceConfig {
             aggregated_proof_block_jump: 1,

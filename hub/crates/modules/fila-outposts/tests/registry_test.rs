@@ -1,4 +1,4 @@
-use fila_outposts::{CallMessage, OutpostRegistry, OutpostRegistryConfig, OutpostResponse};
+use fila_outposts::{CallMessage, Event, OutpostRegistry, OutpostRegistryConfig, OutpostResponse};
 use sov_modules_api::{
     default_context::DefaultContext,
     utils::generate_address as gen_addr_generic,
@@ -7,12 +7,9 @@ use sov_modules_api::{
     Module,
     WorkingSet,
 };
-use sov_prover_storage_manager::{new_orphan_storage, SnapshotManager};
-use sov_rollup_interface::stf::Event;
-use sov_state::{DefaultStorageSpec, ProverStorage};
+use sov_prover_storage_manager::new_orphan_storage;
 
 pub type C = DefaultContext;
-pub type Storage = ProverStorage<DefaultStorageSpec, SnapshotManager>;
 fn generate_address(name: &str) -> Address {
     gen_addr_generic::<DefaultContext>(name)
 }
@@ -48,11 +45,14 @@ fn genesis_and_register() {
         .expect("registration failed");
 
     assert_eq!(
-        working_set.events()[0],
-        Event::new(
-            "OutpostRegistry register",
-            "An outpost with chain_id neutron-1 was registered"
-        )
+        working_set
+            .take_event(0)
+            .unwrap()
+            .downcast::<Event>()
+            .unwrap(),
+        Event::Register {
+            chain_id: "neutron-1".to_owned()
+        },
     );
     let res: Option<OutpostResponse> = registry
         .get_outpost("neutron-1".to_owned(), &mut working_set)
