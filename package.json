@@ -5,9 +5,9 @@
     "prepare": "husky install"
   },
   "devDependencies": {
-    "@commitlint/cli": "^18.6.0",
+    "@commitlint/cli": "^18.6.1",
     "@commitlint/config-conventional": "^18.6.2",
-    "husky": "^9.0.11",
+    "husky": "^9.0.10",
     "markdownlint-cli": "^0.39.0"
   }
 }
