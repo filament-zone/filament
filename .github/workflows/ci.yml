@@ -44,7 +44,7 @@ jobs:
           node-version: '20.x'
       - run: npm install
 
-      - uses: xt0rted/markdownlint-problem-matcher@v2
+      - uses: xt0rted/markdownlint-problem-matcher@v3
       - run: npm run markdownlint
 
   build-hub:
