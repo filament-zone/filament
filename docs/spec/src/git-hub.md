@@ -12,6 +12,51 @@ retroactive public goods funding via github.
 
 ## Sequence
 
+``` mermaid
+sequenceDiagram
+
+    actor C as Campaigner
+    participant O as Outpost
+    participant H as Hub
+    actor I as Indexer
+    actor A as Attester
+    participant G as Github
+    actor U as User
+
+    I->>H: register as worker
+    A->>H: register as worker
+    I->>H: poll for campaigns
+    A->>H: poll for campaigns
+    C->>O: create Campaign
+    C->>O: fund Campaign
+    O->>H: register campaign
+    I->>I: eval budget
+    A->>A: eval budget
+    H->>O: update campaign status
+    I->>G: pull segment data
+    I->>I: sign segment data
+    I->>H: post segment data
+    A->>H: pull segments
+
+    create participant S
+
+    A->>S: deploy oauth service
+    loop
+        U->>S: sign in
+        S->>G: oauth flow
+        G->>S: oauth resp
+        U->>S: post address
+        S->>A: post conversion
+        A->>H: post conversions
+        H->>O: register conversion
+        O->>U: payout
+    end
+
+    H->>O: mark campaign as complete
+    O->>A: disperse fee
+    O->>I: disperse fee
+```
+
 ## Trust assumptions
 
 ## Mechanisms
