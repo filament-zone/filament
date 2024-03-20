@@ -59,6 +59,16 @@ sequenceDiagram
 
 ## Trust assumptions
 
+### Oracle
+
+To reduce implementation complexity we will rely on a trusted oracle to handle
+communication between chains. The oracle is a known entity ${pk}_O$ which will
+watch for state changes in outpost contracts and relay them to the hub. As such
+it is in a privileged position to create and update campaigns.
+The identity of the oracle is fixed at genesis.
+
+XXX(pm): multiple and not just one?
+
 ## Mechanisms
 
 For the following mechanisms we assume that all actors have a long lived signing
@@ -69,7 +79,7 @@ TODO(pm): no crypto agility
 
 ### Indexer Registry
 
-The indexer registry $R_I$ is the mapping of indexer indentities ${pk}_i$ to
+The indexer registry $R_I$ is the mapping of indexer identities ${pk}_i$ to
 registration records $r^I_i$.
 
 ```Rust
@@ -128,7 +138,7 @@ struct UnregisterIndexerMsg {
 
 ### Attester Registry
 
-The attester registry $R_A$ is the mapping of attester indentities ${pk}_a$ to
+The attester registry $R_A$ is the mapping of attester identities ${pk}_a$ to
 registration records $r^A_a$.
 
 ```Rust
@@ -182,3 +192,105 @@ struct UnregisterIndexerMsg {
     identity: [u8; 32],
 }
 ```
+
+### Campaign registry
+
+The campaign registry $R_C$ stores all currently running and past campaigns. It
+is a mapping from campaign ids $c_c$ to campaign records $r^C_c$.
+
+Campaign creators are not expected to be interacting with the hub directly but
+always with their native outpost.
+Updates to the campaign registry on the hub are made by trusted oracles, indexers
+or attesters.
+
+```Rust
+struct CampaignRecord {
+    id: u64,
+    origin: ChainId,
+    status: CampaignStatus
+    budget: CampaignBudget,
+    indexer: [u8; 32],
+    attester: [u8; 32],
+    segment_desc: SegmentDesc,
+    conversion_desc: ConversionProof,
+    payout: PayoutMechanism,
+    ends_at: UnixEpoch,
+}
+
+type ChainId = String # XXX(pm): this should probably go somewhere else
+
+enum CampaignStatus {
+    Funded,
+    Indexing,
+    Attesting,
+    Finished,
+    Canceled,
+    Failed(String),
+}
+
+struct CampaignBudget {
+    fee: Coin,
+    incentives: Coin,
+}
+
+struct SegmentDesc {
+    kind: Segment,
+    sources: Vec<String>,
+}
+
+enum Segment {
+    GithubTopNContributors(u16),
+    GithubAllContributors,
+}
+
+enum ConversionProof {
+    Social(Auth),
+}
+
+enum Auth {
+    Github,
+}
+
+enum PayoutMechanism {
+    ProportionalPerConversion,
+}
+```
+
+#### Campaign creation
+
+Campaigns are created on any outpost from which the oracle picks them up to post
+to the hub. Campaigns will only be relayed after they are funded on the outpost.
+On the hub the oracle sends a campaign creation message.
+
+```Rust
+struct CampaignCreateMsg {
+    id: u64,
+    origin: ChainId,
+    indexer: [u8; 32],
+    attester: [u8; 32],
+    segment_desc: SegmentDesc,
+    conversion: ConversionProof,
+    ends_at: UnixEpoch,
+}
+```
+
+The `id` is assigned on the outpost.
+The outpost from which the oracle picked up the event is identified via the `origin`.
+Together the `id` and `origin` form the campaign id $c$, `origin || '-' || id`.
+For example, for the neutron outpost the campaign id might be `neutron-1-23`.
+
+The `indexer` MUST be registered in the indexer registry.
+
+The `attester` MUST be registered in the attester registry.
+
+The `segment_desc` describes the target for this campaign. The `sources` for these
+segments are github repositories. The format MUST be `"org/repo"`, e.g.
+`"bitcoin/bitcoin"`. The sources list MUST be at least of length one.
+When selecting the `GithubTopNContributors` kind, n MUST be greater than zero.
+
+Campaigns MUST have an end time `ends_at` after which conversions are no longer
+possible. `ends_at` MUST be unix time and at least 86400 seconds greater than
+the last valid block time.
+
+Since campaigns are only relayed after funding on the outpost, after this message
+is applied the `status` of the campaign MUST be set to `Funded`.
