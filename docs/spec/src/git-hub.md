@@ -3,6 +3,8 @@
 This document outlines an MVP version of the incentive hub that just focuses on
 retroactive public goods funding via github.
 
+TODO(pm): sections for general things like serialization, hash fn etc
+
 ## Actors
 
 - Campaigner
@@ -32,10 +34,10 @@ sequenceDiagram
     O->>H: register campaign
     I->>I: eval budget
     A->>A: eval budget
-    H->>O: update campaign status
     I->>G: pull segment data
     I->>I: sign segment data
     I->>H: post segment data
+    H->>O: update campaign status
     A->>H: pull segments
 
     create participant S
@@ -57,9 +59,9 @@ sequenceDiagram
     O->>I: disperse fee
 ```
 
-## Trust assumptions
+## Assumptions
 
-### Oracle
+### Trusted oracle
 
 To reduce implementation complexity we will rely on a trusted oracle to handle
 communication between chains. The oracle is a known entity ${pk}_O$ which will
@@ -68,6 +70,11 @@ it is in a privileged position to create and update campaigns.
 The identity of the oracle is fixed at genesis.
 
 XXX(pm): multiple and not just one?
+
+### Segment and conversion storage
+
+For this system with scope limited to github based airdrops we assume a fairly
+limited requirement for storage, at most a couple of megabytes per campaign.
 
 ## Mechanisms
 
@@ -180,7 +187,7 @@ struct RegisterAttesterMsg {
 When storing the record, the statemachine MUST also store ${pk}_m$ of the sender
 to establish who is allowed to modify the record later.
 
-### Unregister Attester
+#### Unregister Attester
 
 A record can be removed from the registry with a message which MUST be signed
 by the ${sk}_m$ belonging to the stored ${pk}_m$ in the record for `identity`.
@@ -212,7 +219,9 @@ struct CampaignRecord {
     indexer: [u8; 32],
     attester: [u8; 32],
     segment_desc: SegmentDesc,
-    conversion_desc: ConversionProof,
+    segments: Vec<Segment>,
+    conversion_desc: ConversionDesc,
+    conversions: Vec<Conversion>,
     payout: PayoutMechanism,
     ends_at: UnixEpoch,
 }
@@ -220,6 +229,7 @@ struct CampaignRecord {
 type ChainId = String # XXX(pm): this should probably go somewhere else
 
 enum CampaignStatus {
+    Created,
     Funded,
     Indexing,
     Attesting,
@@ -234,17 +244,36 @@ struct CampaignBudget {
 }
 
 struct SegmentDesc {
-    kind: Segment,
+    kind: SegmentKind,
     sources: Vec<String>,
+    proof: SegmentProof,
 }
 
-enum Segment {
+enum SegmentKind {
     GithubTopNContributors(u16),
     GithubAllContributors,
 }
 
-enum ConversionProof {
+enum SegmentProof {
+    Ed25519Signature(Ed25519Signature),
+}
+
+struct Ed25519Signature {
+    pk: [u8; 32],
+    sig: [u8; 64],
+}
+
+struct ConversionDesc {
+    kind: ConversionMechanism,
+    proof: ConversionProof,
+}
+
+enum ConversionMechanism {
     Social(Auth),
+}
+
+enum ConversionProof {
+    Ed25519Signature(Ed25519Signature),
 }
 
 enum Auth {
@@ -269,13 +298,15 @@ struct CampaignCreateMsg {
     indexer: [u8; 32],
     attester: [u8; 32],
     segment_desc: SegmentDesc,
-    conversion: ConversionProof,
+    conversion_desc: ConversionDesc,
     ends_at: UnixEpoch,
 }
 ```
 
 The `id` is assigned on the outpost.
+
 The outpost from which the oracle picked up the event is identified via the `origin`.
+
 Together the `id` and `origin` form the campaign id $c$, `origin || '-' || id`.
 For example, for the neutron outpost the campaign id might be `neutron-1-23`.
 
@@ -294,3 +325,151 @@ the last valid block time.
 
 Since campaigns are only relayed after funding on the outpost, after this message
 is applied the `status` of the campaign MUST be set to `Funded`.
+
+### Segments
+
+Segments are collections of arbitrary data but for this prototype, we will assume
+they are collections of github ids.
+
+```Rust
+struct Segment {
+    data: SegmentData,
+    proof: SegmentProof,
+}
+
+enum SegmentData {
+    GithubSegment(GithubSegment),
+}
+
+struct GithubSegment {
+    source: string,
+    retrieved_at: UnixEpoch,
+    data: Vec<String>,
+}
+
+```
+
+XXX(pm): segments are embedded in campaign -> not re-usable in this version,
+         also makes reads more expensive than they should be
+
+#### Post segment
+
+After a campaign is created on the hub it is picked up by an indexer who inspects
+the `segment_desc`.
+
+```Rust
+struct SegmentCreateMsg {
+    campaign_id: String,
+    segments: Vec<Segment>,
+    proof: SegmentProof,
+}
+```
+
+The proof MUST be signed by an indexer whose ${pk}_i$ is registered in the
+indexer registry.
+
+The signature MUST be over the SHA256 hash of the serialized segment, i.e.
+`hash(serialize(segment))`.
+
+The `campaign_id` MUST exist in the campaign registry for this message to have
+any effect.
+
+If the campaign identified by `campaign_id` already has segment data attached,
+then this message has no effect.
+
+The produced segments MUST match the description provided by the campaign creator.
+
+XXX(pm): previous point very fuzzy
+
+After this message is applied, the `indexer` field of the campaign MUST be set
+to the provers identity ${pk}_i$.
+
+### Conversions
+
+Conversions are tracked by attesters, streamed to the hub and then relayed to
+outposts. It would be preferable if hub could assess the validity of addresses
+but for the sake of simplicitly it is out of scope.
+
+```Rust
+struct Conversion {
+    addr: Addr,
+    payout: Coin,
+}
+
+enum ConversionProof {
+    Ed25519Signature(Ed25519Signature),
+}
+```
+
+#### Post conversion
+
+```Rust
+struct ConversionCreatedMsg {
+    campaign_id: String,
+    conversions: Vec<Conversion>,
+    proof: ConversionProof,
+}
+```
+
+XXX(pm): might make sense to use a Map instead of a Vec? can an address be used
+         multiple times?
+
+The proof MUST be signed by an attester whose ${pk}_a$ is registered in the
+attester registry.
+
+The signature MUST be over the SHA256 hash of the serialized conversions, i.e.
+`hash(serialize(conversions))`.
+
+The `campaign_id` MUST exist in the campaign registry for this message to have
+any effect.
+
+If the campaign identified by `campaign_id` already has conversion data attached
+and the sender of this message is not the attester stored in the campaign then
+this message has no effect.
+
+If this conversion is the first for the campaign then after this message is applied,
+the `attester` field of the campaign MUST be set to he author.
+
+The `payout` MUST be calculated in accordance with the payout mechanism and incentive
+budget recorded in the campaign.
+
+### Oracle interactions
+
+The trusted oracles are essential to keep the hub and outposts in sync. The
+following section will outline how to. The execution environments are not
+expected to be homogeneous so the messages are only to be taken as pseudo
+code to outline the rough shape of outpost messages.
+
+#### Campaign segment posted
+
+After an indexer posts a segment data onchain the corresponding campaign on the
+origin outpost needs to be updated.
+
+```Rust
+struct CampaignSegmentPostedMsg {}
+```
+
+XXX(pm): could also include root of merkle-ized segment to be able to provide
+         rudimentary proofs for conversion but maybe overkill given that oracles
+         are trusted
+
+#### Campaign conversion posted
+
+Whenever an attester posts new conversions on the hub, the oracle relays them
+to the appropriate outpost, which should then trigger payouts immediately.
+
+```Rust
+struct CampaignConversionsPostedMsg {
+    conversions: Vec<Conversion>,
+}
+```
+
+#### Campaign conversion finished
+
+The conversion process can either finish when all entries from the segment
+converted or the campaing ran out of time. Once it is marked as finished
+on the hub, an oracle updates the corresponding outpost.
+
+```Rust
+struct CampaignFinishedMsg {}
+```
