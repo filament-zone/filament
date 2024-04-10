@@ -467,7 +467,7 @@ struct CampaignConversionsPostedMsg {
 #### Campaign conversion finished
 
 The conversion process can either finish when all entries from the segment
-converted or the campaing ran out of time. Once it is marked as finished
+converted or the campaign ran out of time. Once it is marked as finished
 on the hub, an oracle updates the corresponding outpost.
 
 ```Rust
