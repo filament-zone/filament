@@ -219,7 +219,7 @@ struct CampaignRecord {
     indexer: [u8; 32],
     attester: [u8; 32],
     segment_desc: SegmentDesc,
-    segments: Vec<Segment>,
+    segment: Segment,
     conversion_desc: ConversionDesc,
     conversions: Vec<Conversion>,
     payout: PayoutMechanism,
@@ -246,12 +246,16 @@ struct CampaignBudget {
 struct SegmentDesc {
     kind: SegmentKind,
     sources: Vec<String>,
-    proof: SegmentProof,
+    proof: SegmentProofMechanism,
 }
 
 enum SegmentKind {
     GithubTopNContributors(u16),
     GithubAllContributors,
+}
+
+enum SegmentProofMechanism {
+    Ed25519Signature,
 }
 
 enum SegmentProof {
@@ -265,11 +269,15 @@ struct Ed25519Signature {
 
 struct ConversionDesc {
     kind: ConversionMechanism,
-    proof: ConversionProof,
+    proof: ConversionProofMechanism,
 }
 
 enum ConversionMechanism {
     Social(Auth),
+}
+
+enum ConversionProofMechanism {
+    Ed25519Signature,
 }
 
 enum ConversionProof {
@@ -335,6 +343,7 @@ they are collections of github ids.
 struct Segment {
     data: SegmentData,
     proof: SegmentProof,
+    retrieved_at: UnixEpoch,
 }
 
 enum SegmentData {
@@ -342,9 +351,7 @@ enum SegmentData {
 }
 
 struct GithubSegment {
-    source: string,
-    retrieved_at: UnixEpoch,
-    data: Vec<String>,
+    entries: Vec<(u64, Coin)>,
 }
 
 ```
@@ -360,13 +367,12 @@ the `segment_desc`.
 ```Rust
 struct SegmentCreateMsg {
     campaign_id: String,
-    segments: Vec<Segment>,
-    proof: SegmentProof,
+    segment: Segment,
 }
 ```
 
-The proof MUST be signed by an indexer whose ${pk}_i$ is registered in the
-indexer registry.
+The proof MUST be authored by the `indexer` public key ${pk}_i$ specified in the
+campaign.
 
 The signature MUST be over the SHA256 hash of the serialized segment, i.e.
 `hash(serialize(segment))`.
@@ -377,12 +383,10 @@ any effect.
 If the campaign identified by `campaign_id` already has segment data attached,
 then this message has no effect.
 
-The produced segments MUST match the description provided by the campaign creator.
+The produced segment MUST match the description provided by the campaign creator.
 
-XXX(pm): previous point very fuzzy
-
-After this message is applied, the `indexer` field of the campaign MUST be set
-to the provers identity ${pk}_i$.
+This message MUST be signed by the `indexer` public key supplied during campaign
+creation.
 
 ### Conversions
 
@@ -393,7 +397,6 @@ but for the sake of simplicitly it is out of scope.
 ```Rust
 struct Conversion {
     addr: Addr,
-    payout: Coin,
 }
 
 enum ConversionProof {
@@ -414,8 +417,8 @@ struct ConversionCreatedMsg {
 XXX(pm): might make sense to use a Map instead of a Vec? can an address be used
          multiple times?
 
-The proof MUST be signed by an attester whose ${pk}_a$ is registered in the
-attester registry.
+The proof MUST be authored by the `attester` public key ${pk}_i$ specified in the
+campaign.
 
 The signature MUST be over the SHA256 hash of the serialized conversions, i.e.
 `hash(serialize(conversions))`.
@@ -423,12 +426,8 @@ The signature MUST be over the SHA256 hash of the serialized conversions, i.e.
 The `campaign_id` MUST exist in the campaign registry for this message to have
 any effect.
 
-If the campaign identified by `campaign_id` already has conversion data attached
-and the sender of this message is not the attester stored in the campaign then
+If the sender of this message is not the attester stored in the campaign then
 this message has no effect.
-
-If this conversion is the first for the campaign then after this message is applied,
-the `attester` field of the campaign MUST be set to he author.
 
 The `payout` MUST be calculated in accordance with the payout mechanism and incentive
 budget recorded in the campaign.
