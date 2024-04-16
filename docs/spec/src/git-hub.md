@@ -49,12 +49,11 @@ sequenceDiagram
         G->>S: oauth resp
         U->>S: post address
         S->>A: post conversion
-        A->>H: post conversions
-        H->>O: register conversion
+        A->>O: post conversions
         O->>U: payout
     end
 
-    H->>O: mark campaign as complete
+    O->>H: mark campaign as complete
     O->>A: disperse fee
     O->>I: disperse fee
 ```
@@ -221,7 +220,6 @@ struct CampaignRecord {
     segment_desc: SegmentDesc,
     segment: Segment,
     conversion_desc: ConversionDesc,
-    conversions: Vec<Conversion>,
     payout: PayoutMechanism,
     ends_at: UnixEpoch,
 }
@@ -390,9 +388,9 @@ creation.
 
 ### Conversions
 
-Conversions are tracked by attesters, streamed to the hub and then relayed to
-outposts. It would be preferable if hub could assess the validity of addresses
-but for the sake of simplicitly it is out of scope.
+Conversions are tracked by attesters and directly streamed to the respective
+outposts. Therefore they are not in the scope of the hub but still mentioned
+here for completeness.
 
 ```Rust
 struct Conversion {
@@ -414,23 +412,17 @@ struct ConversionCreatedMsg {
 }
 ```
 
-XXX(pm): might make sense to use a Map instead of a Vec? can an address be used
-         multiple times?
-
 The proof MUST be authored by the `attester` public key ${pk}_i$ specified in the
 campaign.
 
 The signature MUST be over the SHA256 hash of the serialized conversions, i.e.
 `hash(serialize(conversions))`.
 
-The `campaign_id` MUST exist in the campaign registry for this message to have
-any effect.
+The `campaign_id` MUST be registered in the outpost that the conversion is being
+posted to.
 
 If the sender of this message is not the attester stored in the campaign then
 this message has no effect.
-
-The `payout` MUST be calculated in accordance with the payout mechanism and incentive
-budget recorded in the campaign.
 
 ### Oracle interactions
 
