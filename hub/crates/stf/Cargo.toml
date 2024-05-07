@@ -1,0 +1,74 @@
+[package]
+name          = "filament-hub-stf"
+version       = { workspace = true }
+authors       = { workspace = true }
+edition       = { workspace = true }
+license       = { workspace = true }
+homepage      = { workspace = true }
+repository    = { workspace = true }
+rust-version  = { workspace = true }
+publish       = { workspace = true }
+
+[lints]
+workspace = true
+
+[dependencies]
+sov-accounts              = { workspace = true }
+sov-bank                  = { workspace = true }
+sov-blob-storage          = { workspace = true }
+sov-chain-state           = { workspace = true }
+sov-cli                   = { workspace = true, optional = true }
+sov-kernels               = { workspace = true }
+sov-mock-da               = { workspace = true }
+sov-mock-zkvm             = { workspace = true }
+sov-modules-api           = { workspace = true }
+sov-modules-stf-blueprint = { workspace = true }
+sov-prover-incentives     = { workspace = true }
+sov-rollup-interface      = { workspace = true }
+sov-sequencer-registry    = { workspace = true }
+sov-state                 = { workspace = true }
+sov-stf-runner            = { workspace = true }
+sov-value-setter          = { workspace = true }
+
+anyhow      = { workspace = true }
+borsh       = { workspace = true }
+clap        = { workspace = true, optional = true }
+jsonrpsee   = { workspace = true, optional = true, features = ["http-client", "server"] }
+serde       = { workspace = true, features = ["alloc", "derive"] }
+serde_json  = { workspace = true, optional = true }
+tokio       = { workspace = true, optional = true, features = [ "sync" ] }
+tracing     = { workspace = true }
+
+[dev-dependencies]
+filament-hub-stf = { path = ".", features = ["native"] }
+
+sov-prover-storage-manager  = { workspace = true, features = [ "test-utils" ] }
+sov-test-utils              = { workspace = true }
+
+tempfile = { workspace = true }
+
+[features]
+default = []
+offchain = [ "filament-hub-stf/offchain" ]
+native = [
+	"clap",
+	"filament-hub-stf/native",
+	"jsonrpsee",
+	"serde_json",
+	"sov-accounts/native",
+	"sov-bank/native",
+	"sov-blob-storage/native",
+	"sov-chain-state/native",
+	"sov-cli",
+	"sov-kernels/native",
+	"sov-mock-da/native",
+	"sov-mock-zkvm/native",
+	"sov-modules-api/native",
+	"sov-modules-stf-blueprint/native",
+	"sov-prover-incentives/native",
+	"sov-rollup-interface/native",
+	"sov-sequencer-registry/native",
+	"sov-state/native",
+	"sov-stf-runner/native",
+	"tokio",
+]

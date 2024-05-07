@@ -1,0 +1,67 @@
+[workspace]
+resolver  = "2"
+members   = [
+  # "crates/rollup",
+  "crates/stf",
+]
+
+[workspace.package]
+version       = "0.1.0"
+authors       = ["Filament Team <core@filament.zone>"]
+edition       = "2021"
+license       = "MIT or Apache-2.0"
+homepage      = "https://filament.zone"
+repository    = "https://github.com/filament-zone/incentives"
+rust-version  = "1.73"
+publish       = false
+
+# In case you need inspiration for new lints to add to the list, this is a good
+# reference: <https://github.com/EmbarkStudios/rust-ecosystem/blob/6783ae1573d62f3f5439b8ff9e04bec191ec2eaf/lints.toml>.
+[workspace.lints.clippy]
+debug_assert_with_mut_call    = "deny"
+doc_link_with_quotes          = "deny"
+inefficient_to_string         = "deny"
+map_flatten                   = "deny"
+manual_ok_or                  = "deny"
+match_same_arms               = "deny"
+semicolon_if_nothing_returned = "deny"
+#map_err_ignore = "warn"
+#doc_markdown = "warn"
+
+[workspace.lints.rust]
+dead_code         = "deny"
+non_ascii_idents  = "deny" # Bad for readability and it can also be a security vulnerability
+
+
+[workspace.dependencies]
+sov-accounts                = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
+sov-bank                    = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
+sov-blob-storage            = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
+sov-chain-state             = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
+sov-cli                     = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
+sov-kernels                 = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
+sov-mock-da                 = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
+sov-mock-zkvm               = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
+sov-modules-api             = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
+sov-modules-stf-blueprint   = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
+sov-prover-incentives       = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
+sov-prover-storage-manager  = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
+sov-rollup-interface        = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
+sov-sequencer-registry      = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
+sov-state                   = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
+sov-stf-runner              = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
+sov-test-utils              = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
+sov-value-setter            = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
+
+anyhow      = { version = "1.0.68",   default-features = false }
+borsh       = { version = "0.10.3",   default-features = false }
+clap        = { version = "4.4.10",   default-features = false }
+jsonrpsee   = { version = "0.20.1",   default-features = false }
+serde       = { version = "1.0.196",  default-features = false }
+serde_json  = { version = "1.0",      default-features = false }
+tempfile    = { version = "3.8",      default-features = false }
+tokio       = { version = "1.35",     default-features = false }
+tracing     = { version = "0.1.40",   default-features = false }
+
+[patch."https://github.com/SovereignLabs/sovereign-sdk"]
+
