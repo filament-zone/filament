@@ -1,0 +1,46 @@
+[package]
+name      = "filament-prover-guest-celestia"
+version   = "0.3.0"
+edition   = "2021"
+resolver  = "2"
+
+[workspace]
+
+[dependencies]
+filament-hub-config = { path = "../../../config" }
+filament-hub-stf    = { path = "../../../stf" }
+
+sov-celestia-adapter          = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-kernels                   = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-mock-zkvm                 = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-modules-api               = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-modules-stf-blueprint     = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-risc0-adapter             = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-state                     = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+
+anyhow              = { version = "1.0.68" }
+risc0-zkvm          = { version = "0.20", default-features = false, features = ["std"] }
+risc0-zkvm-platform = { version = "0.20" }
+
+[patch.crates-io]
+sha2            = { git = "https://github.com/risc0/RustCrypto-hashes", tag = "sha2-v0.10.8-risczero.0" }
+ed25519-dalek   = { git = "https://github.com/risc0/curve25519-dalek", tag = "curve25519-4.1.0-risczero.1" }
+crypto-bigint   = {git = "https://github.com/risc0/RustCrypto-crypto-bigint", tag = "v0.5.2-risc0"}
+secp256k1_v027  = { package = "secp256k1", version = "0.27", git = "https://github.com/Sovereign-Labs/rust-secp256k1.git", branch = "risc0-compatible-0-27-0" }
+secp256k1_v028  = { package = "secp256k1", version = "0.28", git = "https://github.com/Sovereign-Labs/rust-secp256k1.git", branch = "risc0-compatible-0-28-2" }
+
+[profile.dev]
+opt-level = 3
+
+[profile.dev.build-override]
+opt-level = 3
+
+[profile.release]
+debug = 1
+lto = true
+
+[profile.release.build-override]
+opt-level = 3
+
+[features]
+bench = ["sov-celestia-adapter/bench"]

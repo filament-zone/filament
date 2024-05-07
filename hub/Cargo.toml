@@ -1,7 +1,9 @@
 [workspace]
 resolver  = "2"
 members   = [
-  # "crates/rollup",
+  "crates/config",
+  "crates/provers/risc0",
+  "crates/rollup",
   "crates/stf",
 ]
 
@@ -32,36 +34,50 @@ semicolon_if_nothing_returned = "deny"
 dead_code         = "deny"
 non_ascii_idents  = "deny" # Bad for readability and it can also be a security vulnerability
 
-
 [workspace.dependencies]
-sov-accounts                = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
-sov-bank                    = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
-sov-blob-storage            = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
-sov-chain-state             = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
-sov-cli                     = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
-sov-kernels                 = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
-sov-mock-da                 = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
-sov-mock-zkvm               = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
-sov-modules-api             = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
-sov-modules-stf-blueprint   = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
-sov-prover-incentives       = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
-sov-prover-storage-manager  = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
-sov-rollup-interface        = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
-sov-sequencer-registry      = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
-sov-state                   = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
-sov-stf-runner              = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
-sov-test-utils              = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
-sov-value-setter            = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", branch = "nightly" }
+filament-hub-config   = { path = "./crates/config" }
+filament-hub-rollup   = { path = "./crates/rollup" }
+filament-hub-stf      = { path = "./crates/stf" }
+filament-prover-risc0 = { path = "./crates/provers/risc0" }
 
-anyhow      = { version = "1.0.68",   default-features = false }
-borsh       = { version = "0.10.3",   default-features = false }
-clap        = { version = "4.4.10",   default-features = false }
-jsonrpsee   = { version = "0.20.1",   default-features = false }
-serde       = { version = "1.0.196",  default-features = false }
-serde_json  = { version = "1.0",      default-features = false }
-tempfile    = { version = "3.8",      default-features = false }
-tokio       = { version = "1.35",     default-features = false }
-tracing     = { version = "0.1.40",   default-features = false }
+sov-accounts                  = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-bank                      = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-blob-storage              = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-celestia-adapter          = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-chain-state               = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-cli                       = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-db                        = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-kernels                   = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-ledger-apis               = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-mock-da                   = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-mock-zkvm                 = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-modules-api               = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-modules-rollup-blueprint  = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-modules-stf-blueprint     = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-prover-incentives         = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-prover-storage-manager    = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-risc0-adapter             = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-rollup-interface          = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-sequencer                 = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-sequencer-registry        = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-state                     = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-stf-runner                = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-test-utils                = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
+sov-value-setter              = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "0bd7fad" }
 
-[patch."https://github.com/SovereignLabs/sovereign-sdk"]
-
+anyhow              = { version = "1.0.68",   default-features = false }
+async-trait         = { version = "0.1.71",   default-features = false }
+axum                = { version = "0.7",      default-features = false }
+borsh               = { version = "0.10.3",   default-features = false }
+clap                = { version = "4.4.10",   default-features = false }
+hex                 = { version = "0.4.3",    default-features = false }
+jsonrpsee           = { version = "0.20.1",   default-features = false }
+prometheus_exporter = { version = "0.8.5",    default-features = false }
+risc0-build         = { version = "0.20",     default-features = false }
+rand                = { version = "0.8",      default-features = false }
+serde               = { version = "1.0.196",  default-features = false }
+serde_json          = { version = "1.0",      default-features = false }
+tempfile            = { version = "3.8",      default-features = false }
+tokio               = { version = "1.35",     default-features = false }
+tracing             = { version = "0.1.40",   default-features = false }
+tracing-subscriber  = { version = "0.3.17",   default-features = false }
