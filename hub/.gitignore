@@ -1,8 +1,13 @@
+/demo_data
+/path_readme
+/tests/test_data/tmp
+/target
+
 .idea
 
+/crates/provers/risc0/guest-celestia/target
 /crates/provers/risc0/guest-mock/target
 /rollup-data/
-/target/
 
 docker/credentials/*
 !docker/credentials/bridge-0.addr

@@ -71,5 +71,6 @@ native = [
 	"sov-sequencer-registry/native",
 	"sov-state/native",
 	"sov-stf-runner/native",
+	"sov-value-setter/native",
 	"tokio",
 ]

@@ -14,12 +14,12 @@ workspace = true
 
 [dependencies]
 filament-hub-config   = { workspace = true }
-filament-hub-stf      = { workspace = true }
+filament-hub-stf      = { workspace = true, features = [ "native" ] }
 filament-prover-risc0 = { workspace = true }
 
 sov-celestia-adapter          = { workspace = true, features = [ "native" ] }
 sov-db                        = { workspace = true }
-sov-kernels                   = { workspace = true }
+sov-kernels                   = { workspace = true, features = [ "native" ] }
 sov-mock-da                   = { workspace = true, features = [ "native" ] }
 sov-mock-zkvm                 = { workspace = true, features = [ "native" ] }
 sov-modules-api               = { workspace = true, features = [ "native" ] }
@@ -41,7 +41,7 @@ prometheus_exporter = { workspace = true }
 serde_json          = { workspace = true }
 tokio               = { workspace = true }
 tracing             = { workspace = true }
-tracing-subscriber  = { workspace = true, features = [ "env-filter" ] }
+tracing-subscriber  = { workspace = true, features = [ "env-filter", "fmt" ] }
 
 [dev-dependencies]
 sov-cli           = { workspace = true }
