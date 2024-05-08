@@ -1820,6 +1820,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "38793c55593b33412e3ae40c2c9781ffaa6f438f6f8c10f24e71846fbd7ae01e"
 
 [[package]]
+name = "filament-hub-cli"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "filament-hub-rollup",
+ "filament-hub-stf",
+ "sov-modules-api",
+ "sov-modules-rollup-blueprint",
+ "tokio",
+]
+
+[[package]]
 name = "filament-hub-config"
 version = "0.1.0"
 

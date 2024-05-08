@@ -1,0 +1,23 @@
+[package]
+name          = "filament-hub-cli"
+version       = { workspace = true }
+authors       = { workspace = true }
+edition       = { workspace = true }
+license       = { workspace = true }
+homepage      = { workspace = true }
+repository    = { workspace = true }
+rust-version  = { workspace = true }
+publish       = { workspace = true }
+
+[lints]
+workspace = true
+
+[dependencies]
+filament-hub-rollup = { workspace = true }
+filament-hub-stf    = { workspace = true }
+
+sov-modules-api               = { workspace = true, features = [ "native" ] }
+sov-modules-rollup-blueprint  = { workspace = true }
+
+anyhow  = { workspace = true }
+tokio   = { workspace = true }
