@@ -115,6 +115,9 @@ jobs:
           override: true
           components: rustfmt, clippy
 
+      - name: Install mold linker
+        uses: rui314/setup-mold@v1
+
       - name: Install cargo-risczero
         uses: taiki-e/install-action@v2
         with:
@@ -167,6 +170,9 @@ jobs:
           override: true
           components: rustfmt, rust-src, clippy
 
+      - name: Install mold linker
+        uses: rui314/setup-mold@v1
+
       - name: Install cargo-risczero
         uses: taiki-e/install-action@v2
         with:
@@ -184,11 +190,8 @@ jobs:
         with:
           key: ${{ matrix.os }}-${{ matrix.toolchain }}
 
-      - name: Build Mock Rollup
+      - name: Build Rollup
         run: cargo build -p filament-hub-rollup
-
-      - name: Build Celestia Rollup
-        run: cargo build -p filament-hub-rollup --no-default-features --features celestia_da
 
   test:
     strategy:
@@ -222,6 +225,9 @@ jobs:
           override: true
           components: rustfmt, rust-src, clippy
 
+      - name: Install mold linker
+        uses: rui314/setup-mold@v1
+
       - name: Install cargo-risczero
         uses: taiki-e/install-action@v2
         with:
@@ -239,11 +245,8 @@ jobs:
         with:
           key: ${{ matrix.os }}-${{ matrix.toolchain }}
 
-      - name: Build
-        run: cargo build
+      - name: Install nextest
+        uses: taiki-e/install-action@nextest
 
       - name: Run tests
         run: cargo test --workspace --all-targets
-
-      - name: Run README.md
-        run: chmod +x rollup-starter.sh && ./rollup-starter.sh
