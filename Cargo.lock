@@ -1843,6 +1843,7 @@ dependencies = [
  "borsh",
  "clap",
  "filament-hub-indexer-registry",
+ "jsonrpsee",
  "schemars",
  "serde",
  "serde_json",
@@ -1851,6 +1852,7 @@ dependencies = [
  "sov-state",
  "sov-test-utils",
  "tempfile",
+ "thiserror",
  "tracing",
 ]
 
@@ -1908,6 +1910,7 @@ dependencies = [
  "anyhow",
  "borsh",
  "clap",
+ "filament-hub-indexer-registry",
  "filament-hub-stf",
  "jsonrpsee",
  "serde",
@@ -1929,7 +1932,6 @@ dependencies = [
  "sov-state",
  "sov-stf-runner",
  "sov-test-utils",
- "sov-value-setter",
  "tempfile",
  "tokio",
  "tracing",

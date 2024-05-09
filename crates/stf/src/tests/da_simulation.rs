@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use borsh::BorshSerialize;
 use sov_bank::Bank;
 use sov_mock_da::MockDaSpec;
@@ -9,12 +7,7 @@ use sov_modules_api::{
     EncodeCall,
     PrivateKey,
 };
-use sov_test_utils::{
-    bank_data::BankMessageGenerator,
-    value_setter_data::{ValueSetterMessage, ValueSetterMessages},
-    MessageGenerator,
-    TestPrivateKey,
-};
+use sov_test_utils::{bank_data::BankMessageGenerator, MessageGenerator, TestPrivateKey};
 
 use crate::runtime::Runtime;
 
@@ -27,11 +20,6 @@ pub fn simulate_da(admin: TestPrivateKey) -> Vec<RawTx> {
     let bank_generator = BankMessageGenerator::<S>::with_minter_and_transfer(admin.clone());
     let bank_messages = bank_generator.create_default_messages_without_gas_usage();
 
-    let value_setter = ValueSetterMessages::new(vec![ValueSetterMessage {
-        admin: Rc::new(admin),
-        messages: vec![99, 33],
-    }]);
-    messages.extend(value_setter.create_default_raw_txs_without_gas_usage::<Runtime<S, Da>>());
     let nonce_offset = messages.len() as u64;
     for mut msg in bank_messages {
         msg.nonce += nonce_offset;

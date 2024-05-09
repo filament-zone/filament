@@ -19,9 +19,11 @@ sov-state       = { workspace = true }
 anyhow          = { workspace = true }
 borsh           = { workspace = true, features = [ "rc" ] }
 clap            = { workspace = true, optional = true }
+jsonrpsee       = { workspace = true, optional = true, features = [ "client-core", "macros", "server" ] }
 schemars        = { workspace = true, optional = true }
 serde           = { workspace = true }
 serde_json      = { workspace = true, optional = true }
+thiserror       = { workspace = true }
 tracing         = { workspace = true }
 
 [dev-dependencies]
@@ -37,6 +39,7 @@ default = []
 native = [
   "clap",
   "filament-hub-indexer-registry/native",
+  "jsonrpsee",
   "schemars",
   "serde_json",
   "sov-modules-api/native",

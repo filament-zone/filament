@@ -41,14 +41,7 @@ fn generate_call_message<S: Spec, Da: DaSpec>(
     len_range: Range<usize>,
 ) -> Vec<runtime::RuntimeCall<S, Da>> {
     let payloads = generate_dynamic_random_vectors(len_range);
-    let mut messages = Vec::with_capacity(payloads.len());
-
-    for payload in payloads {
-        messages.push(runtime::RuntimeCall::value_setter(
-            sov_value_setter::CallMessage::SetManyValues(payload),
-        ));
-    }
-
+    let messages = Vec::with_capacity(payloads.len());
     messages
 }
 

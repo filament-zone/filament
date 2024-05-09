@@ -13,6 +13,8 @@ publish       = { workspace = true }
 workspace = true
 
 [dependencies]
+filament-hub-indexer-registry = { workspace = true }
+
 sov-accounts              = { workspace = true }
 sov-bank                  = { workspace = true }
 sov-blob-storage          = { workspace = true }
@@ -28,7 +30,6 @@ sov-rollup-interface      = { workspace = true }
 sov-sequencer-registry    = { workspace = true }
 sov-state                 = { workspace = true }
 sov-stf-runner            = { workspace = true }
-sov-value-setter          = { workspace = true }
 
 anyhow      = { workspace = true }
 borsh       = { workspace = true }
@@ -53,6 +54,7 @@ default = []
 offchain = [ "filament-hub-stf/offchain" ]
 native = [
 	"clap",
+	"filament-hub-indexer-registry/native",
 	"filament-hub-stf/native",
 	"jsonrpsee",
 	"serde_json",
@@ -71,6 +73,5 @@ native = [
 	"sov-sequencer-registry/native",
 	"sov-state/native",
 	"sov-stf-runner/native",
-	"sov-value-setter/native",
 	"tokio",
 ]

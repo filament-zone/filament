@@ -1,9 +1,8 @@
 use std::fmt::Debug;
 
-use anyhow::{bail, Result};
-use sov_modules_api::{CallResponse, Context, EventEmitter, Spec, TxState};
+use sov_modules_api::{CallResponse, Context, Spec, TxState};
 
-use crate::{event::Event, IndexerRegistry};
+use crate::{error::IndexerRegistryError, IndexerRegistry};
 
 /// This enumeration represents the available call messages for interacting with
 /// the `IndexerRegistry` module.
@@ -15,85 +14,39 @@ use crate::{event::Event, IndexerRegistry};
     derive(schemars::JsonSchema),
     schemars(bound = "S::Address: ::schemars::JsonSchema", rename = "CallMessage")
 )]
-#[derive(borsh::BorshDeserialize, borsh::BorshSerialize, Debug, PartialEq)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    borsh::BorshDeserialize,
+    borsh::BorshSerialize,
+    serde::Deserialize,
+    serde::Serialize,
+)]
 pub enum CallMessage<S: Spec> {
     RegisterIndexer(S::Address, String),
     UnregisterIndexer(S::Address),
 }
 
 impl<S: Spec> IndexerRegistry<S> {
-    pub(crate) fn register_indexer(
+    pub(crate) fn register(
         &self,
+        indexer: S::Address,
+        alias: String,
         context: &Context<S>,
         working_set: &mut impl TxState<S>,
-        addr: S::Address,
-        alias: String,
-    ) -> Result<CallResponse> {
-        tracing::info!(%addr, ?alias, "Register indexer request");
-
-        // Only allow admin to update registry for now.
-        let admin = self.admin.get(working_set);
-        if admin.is_none() {
-            bail!("Admin needs to be set");
-        }
-        if *context.sender() != admin.unwrap() {
-            bail!("Only admin is allowed to register indexers");
-        }
-
-        if !self.indexers.iter(working_set).any(|each| each == addr) {
-            self.indexers.push(&addr, working_set);
-        }
-
-        self.aliases.set(&addr, &alias, working_set);
-
-        self.emit_event(
-            working_set,
-            "indexer_registered",
-            Event::IndexerRegistered {
-                addr: addr.to_string(),
-                alias: alias.clone(),
-            },
-        );
-        tracing::info!(%addr, ?alias, "Indexer registered");
-
+    ) -> Result<CallResponse, IndexerRegistryError<S>> {
+        self.register_indexer(context.sender().clone(), indexer, alias, working_set)?;
         Ok(CallResponse::default())
     }
 
-    pub(crate) fn unregister_indexer(
+    pub(crate) fn unregister(
         &self,
+        indexer: S::Address,
         context: &Context<S>,
         working_set: &mut impl TxState<S>,
-        addr: S::Address,
-    ) -> Result<CallResponse> {
-        tracing::info!(%addr, "Unregister indexer request");
-
-        // Only allow admin to update registry for now.
-        let admin = self.admin.get(working_set);
-        if admin.is_none() {
-            bail!("Admin needs to be set");
-        }
-        if *context.sender() != admin.unwrap() {
-            bail!("Only admin is allowed to register indexers");
-        }
-
-        let mut indexers = self.indexers.iter(working_set).collect::<Vec<_>>();
-        let pos = indexers.iter().position(|each| *each == addr);
-        if pos.is_none() {
-            bail!("Indexer is not registered");
-        }
-        indexers.remove(pos.unwrap());
-
-        self.indexers.set_all(indexers, working_set);
-
-        self.emit_event(
-            working_set,
-            "indexer_unregistered",
-            Event::IndexerUnregistered {
-                addr: addr.to_string(),
-            },
-        );
-        tracing::info!(%addr, "Indexer unregistered");
-
+    ) -> Result<CallResponse, IndexerRegistryError<S>> {
+        self.unregister_indexer(context.sender().clone(), indexer, working_set)?;
         Ok(CallResponse::default())
     }
 }
