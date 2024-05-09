@@ -6,3 +6,18 @@
 **/*.rs.bk
 
 node_modules
+
+/demo_data
+/path_readme
+/tests/test_data/tmp
+/target
+
+.idea
+
+/crates/provers/risc0/guest-celestia/target
+/crates/provers/risc0/guest-mock/target
+/rollup-data/
+
+docker/credentials/*
+!docker/credentials/bridge-0.addr
+!docker/credentials/bridge-0.key
