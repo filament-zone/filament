@@ -37,10 +37,11 @@ dead_code         = "deny"
 non_ascii_idents  = "deny" # Bad for readability and it can also be a security vulnerability
 
 [workspace.dependencies]
-filament-hub-config   = { path = "./crates/config" }
-filament-hub-rollup   = { path = "./crates/rollup" }
-filament-hub-stf      = { path = "./crates/stf" }
-filament-prover-risc0 = { path = "./crates/provers/risc0" }
+filament-hub-config           = { path = "./crates/config" }
+filament-hub-indexer-registry = { path = "./crates/modules/indexer-registry" }
+filament-hub-rollup           = { path = "./crates/rollup" }
+filament-hub-stf              = { path = "./crates/stf" }
+filament-prover-risc0         = { path = "./crates/provers/risc0" }
 
 sov-accounts                  = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7508455c" }
 sov-bank                      = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7508455c" }

@@ -1016,11 +1016,25 @@ name = "filament-hub-config"
 version = "0.1.0"
 
 [[package]]
+name = "filament-hub-indexer-registry"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "borsh 0.10.3",
+ "serde",
+ "sov-modules-api",
+ "sov-state",
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
 name = "filament-hub-stf"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "borsh 0.10.3",
+ "filament-hub-indexer-registry",
  "serde",
  "sov-accounts",
  "sov-bank",
@@ -1036,7 +1050,6 @@ dependencies = [
  "sov-sequencer-registry",
  "sov-state",
  "sov-stf-runner",
- "sov-value-setter",
  "tracing",
 ]
 
@@ -2686,19 +2699,6 @@ dependencies = [
  "serde_json",
  "sov-metrics",
  "sov-rollup-interface",
-]
-
-[[package]]
-name = "sov-value-setter"
-version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
-dependencies = [
- "anyhow",
- "borsh 0.10.3",
- "serde",
- "sov-modules-api",
- "sov-state",
- "thiserror",
 ]
 
 [[package]]

@@ -35,6 +35,8 @@
 #![allow(unused_doc_comments)]
 
 #[cfg(feature = "native")]
+use filament_hub_indexer_registry::{IndexerRegistryRpcImpl, IndexerRegistryRpcServer};
+#[cfg(feature = "native")]
 use sov_accounts::{AccountsRpcImpl, AccountsRpcServer};
 #[cfg(feature = "native")]
 use sov_bank::{BankRpcImpl, BankRpcServer};
@@ -46,8 +48,6 @@ use sov_prover_incentives::{ProverIncentivesRpcImpl, ProverIncentivesRpcServer};
 use sov_rollup_interface::da::DaSpec;
 #[cfg(feature = "native")]
 use sov_sequencer_registry::{SequencerRegistryRpcImpl, SequencerRegistryRpcServer};
-#[cfg(feature = "native")]
-use sov_value_setter::{ValueSetterRpcImpl, ValueSetterRpcServer};
 
 #[cfg(feature = "native")]
 use crate::genesis::GenesisPaths;
@@ -66,13 +66,13 @@ pub struct Runtime<S: Spec, Da: DaSpec> {
     pub bank: sov_bank::Bank<S>,
     /// The Sequencer Registry module.
     pub sequencer_registry: sov_sequencer_registry::SequencerRegistry<S, Da>,
-    /// The Value Setter module.
-    // TODO(xla): Remove once proper modules are implemented.
-    pub value_setter: sov_value_setter::ValueSetter<S>,
     /// The Prover Incentives module.
     pub prover_incentives: sov_prover_incentives::ProverIncentives<S, Da>,
     /// The Accounts module.
     pub accounts: sov_accounts::Accounts<S>,
+
+    /// The Indexer Registry module.
+    pub indexer_registry: filament_hub_indexer_registry::IndexerRegistry<S>,
 }
 
 impl<S, Da> sov_modules_stf_blueprint::Runtime<S, Da> for Runtime<S, Da>

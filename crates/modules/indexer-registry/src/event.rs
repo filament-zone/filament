@@ -1,4 +1,6 @@
-/// Template Event
+use sov_modules_api::Spec;
+
+/// IndexerRegistry Event
 #[derive(
     borsh::BorshDeserialize,
     borsh::BorshSerialize,
@@ -8,7 +10,7 @@
     PartialEq,
     Clone,
 )]
-pub enum Event {
-    IndexerRegistered { addr: String, alias: String },
-    IndexerUnregistered { addr: String },
+pub enum Event<S: Spec> {
+    IndexerRegistered { addr: S::Address, alias: String },
+    IndexerUnregistered { addr: S::Address },
 }

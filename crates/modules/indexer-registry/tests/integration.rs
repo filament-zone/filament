@@ -4,7 +4,7 @@ use filament_hub_indexer_registry::{
     Indexer,
     IndexerRegistry,
     IndexerRegistryConfig,
-    QueryIndexersResponse,
+    IndexersResponse,
 };
 use sov_modules_api::{utils::generate_address, Context, Module, WorkingSet};
 use sov_prover_storage_manager::new_orphan_storage;
@@ -36,8 +36,8 @@ fn register_indexer() {
     // Query initial state.
     #[cfg(feature = "native")]
     {
-        let query_response = indexer_registry.query_indexers(&mut working_set);
-        assert_eq!(QueryIndexersResponse { indexers: vec![] }, query_response);
+        let query_response = indexer_registry.get_indexers(&mut working_set).unwrap();
+        assert_eq!(IndexersResponse { indexers: vec![] }, query_response);
     }
 
     {
@@ -48,9 +48,9 @@ fn register_indexer() {
             .unwrap();
         let typed_event = working_set.take_event(0).unwrap();
         assert_eq!(
-            typed_event.downcast::<Event>().unwrap(),
+            typed_event.downcast::<Event<S>>().unwrap(),
             Event::IndexerRegistered {
-                addr: indexer_addr.to_string(),
+                addr: indexer_addr,
                 alias: indexer_alias.clone(),
             }
         );
@@ -59,9 +59,9 @@ fn register_indexer() {
     // Test query
     #[cfg(feature = "native")]
     {
-        let query_response = indexer_registry.query_indexers(&mut working_set);
+        let query_response = indexer_registry.get_indexers(&mut working_set).unwrap();
         assert_eq!(
-            QueryIndexersResponse {
+            IndexersResponse {
                 indexers: vec![Indexer {
                     addr: indexer_addr.to_string(),
                     alias: indexer_alias,
@@ -95,9 +95,9 @@ fn unregister_indexer() {
     // Query initial state.
     #[cfg(feature = "native")]
     {
-        let query_response = indexer_registry.query_indexers(&mut working_set);
+        let query_response = indexer_registry.get_indexers(&mut working_set).unwrap();
         assert_eq!(
-            QueryIndexersResponse {
+            IndexersResponse {
                 indexers: vec![Indexer {
                     addr: indexer_addr.to_string(),
                     alias: indexer_alias.clone(),
@@ -115,17 +115,15 @@ fn unregister_indexer() {
             .unwrap();
         let typed_event = working_set.take_event(0).unwrap();
         assert_eq!(
-            typed_event.downcast::<Event>().unwrap(),
-            Event::IndexerUnregistered {
-                addr: indexer_addr.to_string()
-            }
+            typed_event.downcast::<Event<S>>().unwrap(),
+            Event::IndexerUnregistered { addr: indexer_addr }
         );
     }
 
     // Test query
     #[cfg(feature = "native")]
     {
-        let query_response = indexer_registry.query_indexers(&mut working_set);
-        assert_eq!(QueryIndexersResponse { indexers: vec![] }, query_response);
+        let query_response = indexer_registry.get_indexers(&mut working_set).unwrap();
+        assert_eq!(IndexersResponse { indexers: vec![] }, query_response);
     }
 }
