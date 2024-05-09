@@ -1836,6 +1836,25 @@ name = "filament-hub-config"
 version = "0.1.0"
 
 [[package]]
+name = "filament-hub-indexer-registry"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "borsh",
+ "clap",
+ "filament-hub-indexer-registry",
+ "schemars",
+ "serde",
+ "serde_json",
+ "sov-modules-api",
+ "sov-prover-storage-manager",
+ "sov-state",
+ "sov-test-utils",
+ "tempfile",
+ "tracing",
+]
+
+[[package]]
 name = "filament-hub-rollup"
 version = "0.1.0"
 dependencies = [
