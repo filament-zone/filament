@@ -10,7 +10,13 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  CARGO_INCREMENTAL: 0
+  CARGO_NET_RETRY: 10
+  CARGO_PROFILE_DEV_DEBUG: 1
+  CARGO_PROFILE_RELEASE_DEBUG: 1
   CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: short
+  RUSTUP_MAX_RETRIES: 10
 
 permissions:
   contents: read
@@ -47,6 +53,72 @@ jobs:
       - uses: xt0rted/markdownlint-problem-matcher@v3
       - run: npm run markdownlint
 
+  clippy-hub:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04-16core]
+        toolchain: [stable]
+
+    name: Clippy
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Set up Git credentials for private repo
+        run: |
+          git config --global --replace-all \
+          "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" \
+          ssh://git@github.com
+
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          override: true
+          components: rustfmt, clippy
+
+      - name: Cache dependencies & tools
+        uses: Swatinem/rust-cache@v2
+        timeout-minutes: 1
+        continue-on-error: true
+        with:
+          key: ${{ matrix.os }}-${{ matrix.toolchain }}
+
+      - name: Run cargo clippy
+        run: cargo clippy --workspace --no-deps -- -Dwarnings -Dnonstandard-style -Drust-2018-idioms -Dunused -Drust-2021-compatibility
+
+  fmt-hub:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04-16core]
+        toolchain: [nightly]
+
+    name: Format
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          override: true
+          components: rustfmt, clippy
+
+      - name: Cache dependencies & tools
+        uses: Swatinem/rust-cache@v2
+        timeout-minutes: 1
+        continue-on-error: true
+        with:
+          key: ${{ matrix.os }}-${{ matrix.toolchain }}
+
+      - name: Run cargo fmt
+        run: cargo fmt --all -- --check
+
   build-hub:
     strategy:
       matrix:
@@ -81,10 +153,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Mock Rollup
-        run: cd hub && cargo build -p hub-rollup
+        run: cargo build -p filament-hub-rollup
 
       - name: Build Celestia Rollup
-        run: cd hub && cargo build -p hub-rollup --no-default-features --features celestia_da
+        run: cargo build -p filament-hub-rollup --no-default-features --features celestia_da
 
   test-hub:
     strategy:
@@ -92,7 +164,7 @@ jobs:
         os: [ubuntu-22.04-16core]
         toolchain: [stable]
 
-    name: Test hub
+    name: Test
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -120,70 +192,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build
-        run: cd hub && cargo build
+        run: cargo build
 
       - name: Run tests
-        run: cd hub && cargo test --workspace --all-targets
+        run: cargo test --workspace --all-targets
 
       - name: Run README.md
-        run: cd hub && chmod +x rollup-starter.sh && ./rollup-starter.sh
-
-  clippy-hub:
-    strategy:
-      matrix:
-        os: [ubuntu-22.04-16core]
-        toolchain: [stable]
-
-    name: Clippy Hub
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v4
-
-      - name: Install toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: ${{ matrix.toolchain }}
-          override: true
-          components: rustfmt, clippy
-
-      - name: Cache dependencies & tools
-        uses: Swatinem/rust-cache@v2
-        timeout-minutes: 1
-        continue-on-error: true
-        with:
-          key: ${{ matrix.os }}-${{ matrix.toolchain }}
-
-      - name: Run cargo clippy
-        run: cd hub && cargo metadata --format-version=1 --no-deps | jq -r '.packages[] | select(.name != "hub-rollup" and .name != "hub-prover") | .name' | xargs -I {} cargo clippy -p {} --no-deps -- -Dwarnings -Dnonstandard-style -Drust-2018-idioms -Dunused -Drust-2021-compatibility
-
-  fmt-hub:
-    strategy:
-      matrix:
-        os: [ubuntu-22.04-16core]
-        toolchain: [nightly]
-
-    name: Format Hub
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v4
-
-      - name: Install toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: ${{ matrix.toolchain }}
-          override: true
-          components: rustfmt, clippy
-
-      - name: Cache dependencies & tools
-        uses: Swatinem/rust-cache@v2
-        timeout-minutes: 1
-        continue-on-error: true
-        with:
-          key: ${{ matrix.os }}-${{ matrix.toolchain }}
-
-      - name: Run cargo fmt
-        run: cd hub && cargo fmt --all -- --check
+        run: chmod +x rollup-starter.sh && ./rollup-starter.sh
