@@ -34,6 +34,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "android-tzdata"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e999941b234f3131b00bc13c22d06e8c5ff726d1b6318ac7eb276997bbb4fef0"
+
+[[package]]
+name = "android_system_properties"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "819e7219dbd41043ac279b19830f2efc897156490d7fd6ea916720117ee66311"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "anyhow"
 version = "1.0.83"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -326,6 +341,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567"
 
 [[package]]
+name = "base64"
+version = "0.22.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
+
+[[package]]
 name = "base64ct"
 version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -546,7 +567,7 @@ name = "celestia-types"
 version = "0.1.0"
 source = "git+https://github.com/eigerco/celestia-node-rs.git?rev=66b7c6c#66b7c6cd58213c0cbf79207ba549cef82764ddca"
 dependencies = [
- "base64",
+ "base64 0.21.7",
  "bech32 0.9.1",
  "bytes",
  "celestia-proto",
@@ -575,6 +596,19 @@ name = "cfg_aliases"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fd16c4719339c4530435d38e511904438d07cce7950afa3718a84ac36c10e89e"
+
+[[package]]
+name = "chrono"
+version = "0.4.38"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a21f936df1771bf62b77f047b726c4625ff2e8aa607c01ec06e5a05bd8463401"
+dependencies = [
+ "android-tzdata",
+ "iana-time-zone",
+ "num-traits",
+ "serde",
+ "windows-targets",
+]
 
 [[package]]
 name = "cid"
@@ -636,6 +670,12 @@ name = "convert_case"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6245d59a3e82a7fc217c5828a6692dbc6dfb63a0c8c90495621f7b9d79704a0e"
+
+[[package]]
+name = "core-foundation-sys"
+version = "0.8.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "06ea2b9bc92be3c2baa9334a323ebca2d6f074ff852cd1d7b11064035cd3868f"
 
 [[package]]
 name = "core2"
@@ -724,6 +764,41 @@ dependencies = [
 ]
 
 [[package]]
+name = "darling"
+version = "0.20.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "54e36fcd13ed84ffdfda6f5be89b31287cbb80c439841fe69e04841435464391"
+dependencies = [
+ "darling_core",
+ "darling_macro",
+]
+
+[[package]]
+name = "darling_core"
+version = "0.20.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9c2cf1c23a687a1feeb728783b993c4e1ad83d99f351801977dd809b48d0a70f"
+dependencies = [
+ "fnv",
+ "ident_case",
+ "proc-macro2",
+ "quote",
+ "strsim",
+ "syn 2.0.61",
+]
+
+[[package]]
+name = "darling_macro"
+version = "0.20.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a668eda54683121533a393014d8692171709ff57a7d61f187b6e782719f8933f"
+dependencies = [
+ "darling_core",
+ "quote",
+ "syn 2.0.61",
+]
+
+[[package]]
 name = "data-encoding"
 version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -766,6 +841,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b42b6fa04a440b495c8b04d0e71b707c585f83cb9cb28cf8cd0d976c315e31b4"
 dependencies = [
  "powerfmt",
+ "serde",
 ]
 
 [[package]]
@@ -1011,6 +1087,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "fnv"
+version = "1.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
+
+[[package]]
 name = "funty"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1106,6 +1188,12 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
+version = "0.12.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a9ee70c43aaf417c914396645a0fa852624801b24ebb7ae78fe8272889ac888"
+
+[[package]]
+name = "hashbrown"
 version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "43a3c133739dddd0d2990f9a4bdf8eb4b21ef50e4851ca85ab661199821d510e"
@@ -1141,6 +1229,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "iana-time-zone"
+version = "0.1.60"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e7ffbb5a1b541ea2561f8c41c087286cc091e21e556a4f09a8f6cbf17b69b141"
+dependencies = [
+ "android_system_properties",
+ "core-foundation-sys",
+ "iana-time-zone-haiku",
+ "js-sys",
+ "wasm-bindgen",
+ "windows-core",
+]
+
+[[package]]
+name = "iana-time-zone-haiku"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f31827a206f56af32e590ba56d5d2d085f558508192593743f16b2306495269f"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "ics23"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1158,6 +1269,12 @@ dependencies = [
  "sha2 0.10.8",
  "sha3",
 ]
+
+[[package]]
+name = "ident_case"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
 
 [[package]]
 name = "impl-codec"
@@ -1187,12 +1304,24 @@ checksum = "ce23b50ad8242c51a442f3ff322d56b02f08852c77e4c0b4d3fd684abc89c683"
 
 [[package]]
 name = "indexmap"
+version = "1.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bd070e393353796e801d209ad339e89596eb4c8d430d18ede6a1cced8fafbd99"
+dependencies = [
+ "autocfg",
+ "hashbrown 0.12.3",
+ "serde",
+]
+
+[[package]]
+name = "indexmap"
 version = "2.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "168fb715dda47215e360912c096649d23d58bf392ac62f73919e831745e40f26"
 dependencies = [
  "equivalent",
  "hashbrown 0.14.5",
+ "serde",
 ]
 
 [[package]]
@@ -1201,7 +1330,7 @@ version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9aa4a0980c8379295100d70854354e78df2ee1c6ca0f96ffe89afeb3140e3a3d"
 dependencies = [
- "base64",
+ "base64 0.21.7",
  "serde",
 ]
 
@@ -1504,7 +1633,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e1d3afd2628e69da2be385eb6f2fd57c8ac7977ceeff6dc166ff1657b0e386a9"
 dependencies = [
  "fixedbitset",
- "indexmap",
+ "indexmap 2.2.6",
 ]
 
 [[package]]
@@ -2154,6 +2283,37 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_with"
+version = "3.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ad483d2ab0149d5a5ebcd9972a3852711e0153d863bf5a5d0391d28883c4a20"
+dependencies = [
+ "base64 0.22.1",
+ "chrono",
+ "hex",
+ "indexmap 1.9.3",
+ "indexmap 2.2.6",
+ "schemars",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "serde_with_macros",
+ "time",
+]
+
+[[package]]
+name = "serde_with_macros"
+version = "3.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "65569b702f41443e8bc8bbb1c5779bd0450bbe723b56198980e80ec45780bce2"
+dependencies = [
+ "darling",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.61",
+]
+
+[[package]]
 name = "sha2"
 version = "0.9.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2207,11 +2367,12 @@ dependencies = [
 [[package]]
 name = "sov-accounts"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=0bd7fad#0bd7fad3a10913b4b6186120f51097927fc8bc73"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
 dependencies = [
  "anyhow",
  "borsh 0.10.3",
  "serde",
+ "serde_with",
  "sov-modules-api",
  "sov-state",
  "thiserror",
@@ -2220,7 +2381,7 @@ dependencies = [
 [[package]]
 name = "sov-bank"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=0bd7fad#0bd7fad3a10913b4b6186120f51097927fc8bc73"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
 dependencies = [
  "anyhow",
  "bech32 0.11.0",
@@ -2235,7 +2396,7 @@ dependencies = [
 [[package]]
 name = "sov-blob-storage"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=0bd7fad#0bd7fad3a10913b4b6186120f51097927fc8bc73"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
 dependencies = [
  "anyhow",
  "bincode",
@@ -2252,7 +2413,7 @@ dependencies = [
 [[package]]
 name = "sov-celestia-adapter"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=0bd7fad#0bd7fad3a10913b4b6186120f51097927fc8bc73"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2278,7 +2439,7 @@ dependencies = [
 [[package]]
 name = "sov-chain-state"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=0bd7fad#0bd7fad3a10913b4b6186120f51097927fc8bc73"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
 dependencies = [
  "anyhow",
  "borsh 0.10.3",
@@ -2293,7 +2454,7 @@ dependencies = [
 [[package]]
 name = "sov-kernels"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=0bd7fad#0bd7fad3a10913b4b6186120f51097927fc8bc73"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
 dependencies = [
  "anyhow",
  "sov-blob-storage",
@@ -2306,12 +2467,12 @@ dependencies = [
 [[package]]
 name = "sov-metrics"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=0bd7fad#0bd7fad3a10913b4b6186120f51097927fc8bc73"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
 
 [[package]]
 name = "sov-mock-da"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=0bd7fad#0bd7fad3a10913b4b6186120f51097927fc8bc73"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2327,7 +2488,7 @@ dependencies = [
 [[package]]
 name = "sov-mock-zkvm"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=0bd7fad#0bd7fad3a10913b4b6186120f51097927fc8bc73"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
 dependencies = [
  "anyhow",
  "bincode",
@@ -2344,7 +2505,7 @@ dependencies = [
 [[package]]
 name = "sov-modules-api"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=0bd7fad#0bd7fad3a10913b4b6186120f51097927fc8bc73"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
 dependencies = [
  "anyhow",
  "bech32 0.11.0",
@@ -2364,7 +2525,7 @@ dependencies = [
 [[package]]
 name = "sov-modules-core"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=0bd7fad#0bd7fad3a10913b4b6186120f51097927fc8bc73"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
 dependencies = [
  "anyhow",
  "bech32 0.11.0",
@@ -2386,7 +2547,7 @@ dependencies = [
 [[package]]
 name = "sov-modules-macros"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=0bd7fad#0bd7fad3a10913b4b6186120f51097927fc8bc73"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
 dependencies = [
  "anyhow",
  "bech32 0.11.0",
@@ -2404,7 +2565,7 @@ dependencies = [
 [[package]]
 name = "sov-modules-stf-blueprint"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=0bd7fad#0bd7fad3a10913b4b6186120f51097927fc8bc73"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
 dependencies = [
  "anyhow",
  "borsh 0.10.3",
@@ -2421,7 +2582,7 @@ dependencies = [
 [[package]]
 name = "sov-prover-incentives"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=0bd7fad#0bd7fad3a10913b4b6186120f51097927fc8bc73"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
 dependencies = [
  "anyhow",
  "bincode",
@@ -2437,7 +2598,7 @@ dependencies = [
 [[package]]
 name = "sov-risc0-adapter"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=0bd7fad#0bd7fad3a10913b4b6186120f51097927fc8bc73"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
 dependencies = [
  "anyhow",
  "bincode",
@@ -2460,7 +2621,7 @@ dependencies = [
 [[package]]
 name = "sov-rollup-interface"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=0bd7fad#0bd7fad3a10913b4b6186120f51097927fc8bc73"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2480,7 +2641,7 @@ dependencies = [
 [[package]]
 name = "sov-sequencer-registry"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=0bd7fad#0bd7fad3a10913b4b6186120f51097927fc8bc73"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
 dependencies = [
  "anyhow",
  "borsh 0.10.3",
@@ -2495,7 +2656,7 @@ dependencies = [
 [[package]]
 name = "sov-state"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=0bd7fad#0bd7fad3a10913b4b6186120f51097927fc8bc73"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
 dependencies = [
  "anyhow",
  "bcs",
@@ -2515,7 +2676,7 @@ dependencies = [
 [[package]]
 name = "sov-stf-runner"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=0bd7fad#0bd7fad3a10913b4b6186120f51097927fc8bc73"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
 dependencies = [
  "anyhow",
  "borsh 0.10.3",
@@ -2530,7 +2691,7 @@ dependencies = [
 [[package]]
 name = "sov-value-setter"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=0bd7fad#0bd7fad3a10913b4b6186120f51097927fc8bc73"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
 dependencies = [
  "anyhow",
  "borsh 0.10.3",
@@ -2555,6 +2716,12 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
+
+[[package]]
+name = "strsim"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
 
 [[package]]
 name = "subtle"
@@ -2702,6 +2869,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5dfd88e563464686c916c7e46e623e520ddc6d79fa6641390f2e3fa86e83e885"
 dependencies = [
  "deranged",
+ "itoa",
  "num-conv",
  "powerfmt",
  "serde",
@@ -2746,7 +2914,7 @@ version = "0.20.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "396e4d48bbb2b7554c944bde63101b5ae446cff6ec4a24227428f15eb72ef338"
 dependencies = [
- "indexmap",
+ "indexmap 2.2.6",
  "toml_datetime",
  "winnow",
 ]
@@ -2958,6 +3126,15 @@ checksum = "77afa9a11836342370f4817622a2f0f418b134426d91a82dfb48f532d2ec13ef"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "windows-core"
+version = "0.52.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "33ab640c8d7e35bf8ba19b884ba838ceb4fba93a4e8c65a9059d08afcfc683d9"
+dependencies = [
+ "windows-targets",
 ]
 
 [[package]]

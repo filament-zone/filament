@@ -20,6 +20,7 @@ filament-prover-risc0 = { workspace = true }
 sov-celestia-adapter          = { workspace = true, features = [ "native" ] }
 sov-db                        = { workspace = true }
 sov-kernels                   = { workspace = true, features = [ "native" ] }
+sov-ledger-apis               = { workspace = true, features = [ "server" ] }
 sov-mock-da                   = { workspace = true, features = [ "native" ] }
 sov-mock-zkvm                 = { workspace = true, features = [ "native" ] }
 sov-modules-api               = { workspace = true, features = [ "native" ] }
@@ -44,14 +45,18 @@ tracing             = { workspace = true }
 tracing-subscriber  = { workspace = true, features = [ "env-filter", "fmt" ] }
 
 [dev-dependencies]
-sov-cli           = { workspace = true }
-sov-bank          = { workspace = true, features = [ "native" ] }
-sov-ledger-apis   = { workspace = true, features = [ "server" ] }
-sov-test-utils    = { workspace = true }
-sov-value-setter  = { workspace = true, features = [ "native" ] }
+sov-cli               = { workspace = true }
+sov-bank              = { workspace = true, features = [ "native" ] }
+sov-rollup-interface  = { workspace = true, features = [ "arbitrary" ] }
+sov-test-utils        = { workspace = true }
+sov-value-setter      = { workspace = true, features = [ "native" ] }
 
-borsh     = { workspace = true, features = ["bytes"] }
-hex       = { workspace = true }
-rand      = { workspace = true }
-serde     = { workspace = true }
-tempfile  = { workspace = true }
+borsh       = { workspace = true, features = [ "bytes" ] }
+hex         = { workspace = true }
+proptest    = { workspace = true, features = [ "alloc" ] }
+rand        = { workspace = true }
+reqwest     = { workspace = true, features = [ "http2", "rustls-tls" ] }
+sha2        = { workspace = true, features = [ "std" ] }
+serde       = { workspace = true }
+tempfile    = { workspace = true }
+tendermint  = { workspace = true, features = [ "k256", "rust-crypto" ] }
