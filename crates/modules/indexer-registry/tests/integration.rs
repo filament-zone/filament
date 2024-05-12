@@ -9,9 +9,10 @@ use filament_hub_indexer_registry::{
 use sov_modules_api::{utils::generate_address, Context, Module, WorkingSet};
 use sov_prover_storage_manager::new_orphan_storage;
 use sov_state::{DefaultStorageSpec, ProverStorage};
+use sov_test_utils::TestHasher;
 
 type S = sov_test_utils::TestSpec;
-pub type Storage = ProverStorage<DefaultStorageSpec>;
+pub type Storage = ProverStorage<DefaultStorageSpec<TestHasher>>;
 
 #[test]
 fn register_indexer() {

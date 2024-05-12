@@ -37,7 +37,6 @@ pub struct IndexerRegistryConfig<S: Spec> {
     pub indexers: Vec<(S::Address, String)>,
 }
 
-#[cfg_attr(feature = "native", derive(sov_modules_api::ModuleCallJsonSchema))]
 #[derive(ModuleInfo)]
 pub struct IndexerRegistry<S: Spec> {
     /// Id of the module.

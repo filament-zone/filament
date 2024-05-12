@@ -2380,7 +2380,7 @@ dependencies = [
 [[package]]
 name = "sov-accounts"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=5d375bc#5d375bc2a4ca8826b4f0e22ac9a0250633252196"
 dependencies = [
  "anyhow",
  "borsh 0.10.3",
@@ -2394,7 +2394,7 @@ dependencies = [
 [[package]]
 name = "sov-bank"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=5d375bc#5d375bc2a4ca8826b4f0e22ac9a0250633252196"
 dependencies = [
  "anyhow",
  "bech32 0.11.0",
@@ -2409,7 +2409,7 @@ dependencies = [
 [[package]]
 name = "sov-blob-storage"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=5d375bc#5d375bc2a4ca8826b4f0e22ac9a0250633252196"
 dependencies = [
  "anyhow",
  "bincode",
@@ -2426,7 +2426,7 @@ dependencies = [
 [[package]]
 name = "sov-celestia-adapter"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=5d375bc#5d375bc2a4ca8826b4f0e22ac9a0250633252196"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2452,7 +2452,7 @@ dependencies = [
 [[package]]
 name = "sov-chain-state"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=5d375bc#5d375bc2a4ca8826b4f0e22ac9a0250633252196"
 dependencies = [
  "anyhow",
  "borsh 0.10.3",
@@ -2467,7 +2467,7 @@ dependencies = [
 [[package]]
 name = "sov-kernels"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=5d375bc#5d375bc2a4ca8826b4f0e22ac9a0250633252196"
 dependencies = [
  "anyhow",
  "sov-blob-storage",
@@ -2480,12 +2480,12 @@ dependencies = [
 [[package]]
 name = "sov-metrics"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=5d375bc#5d375bc2a4ca8826b4f0e22ac9a0250633252196"
 
 [[package]]
 name = "sov-mock-da"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=5d375bc#5d375bc2a4ca8826b4f0e22ac9a0250633252196"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2501,7 +2501,7 @@ dependencies = [
 [[package]]
 name = "sov-mock-zkvm"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=5d375bc#5d375bc2a4ca8826b4f0e22ac9a0250633252196"
 dependencies = [
  "anyhow",
  "bincode",
@@ -2518,7 +2518,7 @@ dependencies = [
 [[package]]
 name = "sov-modules-api"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=5d375bc#5d375bc2a4ca8826b4f0e22ac9a0250633252196"
 dependencies = [
  "anyhow",
  "bech32 0.11.0",
@@ -2538,7 +2538,7 @@ dependencies = [
 [[package]]
 name = "sov-modules-core"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=5d375bc#5d375bc2a4ca8826b4f0e22ac9a0250633252196"
 dependencies = [
  "anyhow",
  "bech32 0.11.0",
@@ -2560,7 +2560,7 @@ dependencies = [
 [[package]]
 name = "sov-modules-macros"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=5d375bc#5d375bc2a4ca8826b4f0e22ac9a0250633252196"
 dependencies = [
  "anyhow",
  "bech32 0.11.0",
@@ -2578,7 +2578,7 @@ dependencies = [
 [[package]]
 name = "sov-modules-stf-blueprint"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=5d375bc#5d375bc2a4ca8826b4f0e22ac9a0250633252196"
 dependencies = [
  "anyhow",
  "borsh 0.10.3",
@@ -2595,7 +2595,7 @@ dependencies = [
 [[package]]
 name = "sov-prover-incentives"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=5d375bc#5d375bc2a4ca8826b4f0e22ac9a0250633252196"
 dependencies = [
  "anyhow",
  "bincode",
@@ -2611,7 +2611,7 @@ dependencies = [
 [[package]]
 name = "sov-risc0-adapter"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=5d375bc#5d375bc2a4ca8826b4f0e22ac9a0250633252196"
 dependencies = [
  "anyhow",
  "bincode",
@@ -2634,7 +2634,7 @@ dependencies = [
 [[package]]
 name = "sov-rollup-interface"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=5d375bc#5d375bc2a4ca8826b4f0e22ac9a0250633252196"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2654,7 +2654,7 @@ dependencies = [
 [[package]]
 name = "sov-sequencer-registry"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=5d375bc#5d375bc2a4ca8826b4f0e22ac9a0250633252196"
 dependencies = [
  "anyhow",
  "borsh 0.10.3",
@@ -2669,7 +2669,7 @@ dependencies = [
 [[package]]
 name = "sov-state"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=5d375bc#5d375bc2a4ca8826b4f0e22ac9a0250633252196"
 dependencies = [
  "anyhow",
  "bcs",
@@ -2689,7 +2689,7 @@ dependencies = [
 [[package]]
 name = "sov-stf-runner"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=7508455c#7508455cc12e9ecfaad4c64b3ee1bc8054549853"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=5d375bc#5d375bc2a4ca8826b4f0e22ac9a0250633252196"
 dependencies = [
  "anyhow",
  "borsh 0.10.3",

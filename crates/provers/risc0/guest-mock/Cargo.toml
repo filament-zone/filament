@@ -9,13 +9,13 @@ resolver = "2"
 [dependencies]
 filament-hub-stf = { path = "../../../stf" }
 
-sov-kernels                   = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7508455c" }
-sov-mock-da                   = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7508455c" }
-sov-mock-zkvm                 = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7508455c" }
-sov-modules-api               = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7508455c" }
-sov-modules-stf-blueprint     = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7508455c" }
-sov-risc0-adapter             = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7508455c" }
-sov-state                     = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7508455c" }
+sov-kernels                   = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "5d375bc" }
+sov-mock-da                   = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "5d375bc" }
+sov-mock-zkvm                 = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "5d375bc" }
+sov-modules-api               = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "5d375bc" }
+sov-modules-stf-blueprint     = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "5d375bc" }
+sov-risc0-adapter             = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "5d375bc" }
+sov-state                     = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "5d375bc" }
 
 anyhow              = { version = "1.0.68" }
 risc0-zkvm          = { version = "0.20", default-features = false, features = ["std"] }

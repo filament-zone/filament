@@ -9,20 +9,25 @@ use sov_modules_api::{
     Authenticator,
     DaSpec,
     DispatchCall,
+    GasMeter,
     Spec,
 };
+use sov_sequencer_registry::SequencerStakeMeter;
 
 use crate::runtime::Runtime;
 
 impl<S: Spec, Da: DaSpec> RuntimeAuthenticator for Runtime<S, Da> {
     type Decodable = <Self as DispatchCall>::Decodable;
+    type Gas = S::Gas;
+    type SequencerStakeMeter = SequencerStakeMeter<S::Gas>;
     type Tx = AuthenticatedTransactionAndRawHash<S>;
 
     fn authenticate(
         &self,
         raw_tx: &RawTx,
+        sequener_stake_meter: &mut Self::SequencerStakeMeter,
     ) -> Result<(Self::Tx, Self::Decodable), AuthenticationError> {
-        sov_modules_api::authenticate::<S, Self>(&raw_tx.data)
+        sov_modules_api::authenticate::<S, Self>(&raw_tx.data, sequener_stake_meter)
     }
 }
 
@@ -43,6 +48,7 @@ impl<S: Spec, Da: DaSpec> Authenticator for ModAuth<S, Da> {
 
     fn authenticate(
         tx: &[u8],
+        stake_meter: &mut impl GasMeter<S::Gas>,
     ) -> Result<
         (
             AuthenticatedTransactionAndRawHash<Self::Spec>,
@@ -50,7 +56,7 @@ impl<S: Spec, Da: DaSpec> Authenticator for ModAuth<S, Da> {
         ),
         AuthenticationError,
     > {
-        sov_modules_api::authenticate::<Self::Spec, Self::DispatchCall>(tx)
+        sov_modules_api::authenticate::<Self::Spec, Self::DispatchCall>(tx, stake_meter)
     }
 
     fn encode(tx: Vec<u8>) -> Result<RawTx, anyhow::Error> {

@@ -6,6 +6,7 @@ use sov_mock_da::{MockDaConfig, MockDaService, MockDaSpec};
 use sov_mock_zkvm::{MockCodeCommitment, MockZkvm};
 use sov_modules_api::{
     default_spec::{DefaultSpec, ZkDefaultSpec},
+    CryptoSpec,
     Spec,
     Zkvm,
 };
@@ -43,7 +44,10 @@ impl RollupBlueprint for MockDemoRollup {
         Self::OuterZkvmHost,
         StfBlueprint<Self::ZkSpec, Self::DaSpec, Self::ZkRuntime, Self::ZkKernel>,
     >;
-    type StorageManager = ProverStorageManager<MockDaSpec, DefaultStorageSpec>;
+    type StorageManager = ProverStorageManager<
+        MockDaSpec,
+        DefaultStorageSpec<<<Self::NativeSpec as Spec>::CryptoSpec as CryptoSpec>::Hasher>,
+    >;
     type ZkKernel = BasicKernel<Self::ZkSpec, Self::DaSpec>;
     type ZkRuntime = Runtime<Self::ZkSpec, Self::DaSpec>;
     type ZkSpec = ZkDefaultSpec<

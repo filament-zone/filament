@@ -18,7 +18,7 @@ use sov_rollup_interface::{
 use sov_state::DefaultStorageSpec;
 #[cfg(test)]
 use sov_stf_runner::HttpServerConfig;
-use sov_test_utils::TestSpec;
+use sov_test_utils::{TestHasher, TestSpec};
 use tendermint::crypto::Sha256 as _;
 
 struct TestExpect {
@@ -70,7 +70,7 @@ fn test_helper(test_queries: Vec<TestExpect>, slots: Vec<SlotCommit<MockBlock, u
             path: tmpdir.path().to_path_buf(),
         };
         let mut storage_manager =
-            ProverStorageManager::<MockDaSpec, DefaultStorageSpec>::new(storage_config)
+            ProverStorageManager::<MockDaSpec, DefaultStorageSpec<TestHasher>>::new(storage_config)
                 .expect("ProverStorage initialization failed");
         let genesis_block_header = MockBlockHeader::from_height(0);
 

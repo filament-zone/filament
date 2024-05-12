@@ -10,6 +10,7 @@ use sov_kernels::basic::BasicKernel;
 use sov_mock_zkvm::{MockCodeCommitment, MockZkvm};
 use sov_modules_api::{
     default_spec::{DefaultSpec, ZkDefaultSpec},
+    CryptoSpec,
     Spec,
 };
 use sov_modules_rollup_blueprint::{RollupBlueprint, WalletBlueprint};
@@ -48,7 +49,10 @@ impl RollupBlueprint for CelestiaDemoRollup {
         Self::OuterZkvmHost,
         StfBlueprint<Self::ZkSpec, Self::DaSpec, Self::ZkRuntime, Self::ZkKernel>,
     >;
-    type StorageManager = ProverStorageManager<CelestiaSpec, DefaultStorageSpec>;
+    type StorageManager = ProverStorageManager<
+        CelestiaSpec,
+        DefaultStorageSpec<<<Self::NativeSpec as Spec>::CryptoSpec as CryptoSpec>::Hasher>,
+    >;
     type ZkKernel = BasicKernel<Self::ZkSpec, Self::DaSpec>;
     type ZkRuntime = Runtime<Self::ZkSpec, Self::DaSpec>;
     type ZkSpec = ZkDefaultSpec<

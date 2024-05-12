@@ -14,9 +14,9 @@ use sov_modules_api::{
     StateReaderAndWriter,
     WorkingSet,
 };
-use sov_modules_stf_blueprint::SequencerOutcome;
+use sov_modules_stf_blueprint::BatchSequencerOutcome;
 use sov_rollup_interface::da::DaSpec;
-use sov_sequencer_registry::SequencerRegistry;
+use sov_sequencer_registry::{SequencerRegistry, SequencerStakeMeter};
 use tracing::info;
 
 use crate::runtime::Runtime;
@@ -26,7 +26,7 @@ impl<S: Spec, Da: DaSpec> TxHooks for Runtime<S, Da> {
 }
 
 impl<S: Spec, Da: DaSpec> ApplyBatchHooks<Da> for Runtime<S, Da> {
-    type BatchResult = SequencerOutcome;
+    type BatchResult = BatchSequencerOutcome;
     type Spec = S;
 
     fn begin_batch_hook(
@@ -49,7 +49,7 @@ impl<S: Spec, Da: DaSpec> ApplyBatchHooks<Da> for Runtime<S, Da> {
         // Since we need to make sure the `StfBlueprint` doesn't depend on the module system, we
         // need to convert the `SequencerOutcome` structures manually.
         match result {
-            SequencerOutcome::Rewarded(amount) => {
+            BatchSequencerOutcome::Rewarded(amount) => {
                 info!(%sender, ?amount, "Rewarding sequencer");
                 <SequencerRegistry<S, Da> as ApplyBatchHooks<Da>>::end_batch_hook(
                     &self.sequencer_registry,
@@ -58,8 +58,8 @@ impl<S: Spec, Da: DaSpec> ApplyBatchHooks<Da> for Runtime<S, Da> {
                     state_checkpoint,
                 );
             },
-            SequencerOutcome::Ignored => {},
-            SequencerOutcome::Slashed(reason) => {
+            BatchSequencerOutcome::Ignored => {},
+            BatchSequencerOutcome::Slashed(reason) => {
                 info!(%sender, ?reason, "Slashing sequencer");
                 <SequencerRegistry<S, Da> as ApplyBatchHooks<Da>>::end_batch_hook(
                     &self.sequencer_registry,
@@ -137,7 +137,7 @@ impl<S: Spec, Da: DaSpec> GasEnforcer<S, Da> for Runtime<S, Da> {
         &self,
         tx: &Self::Tx,
         context: &Context<S>,
-        gas_meter: &sov_modules_api::GasMeter<S::Gas>,
+        gas_meter: &sov_modules_api::TxGasMeter<S::Gas>,
         state_checkpoint: &mut StateCheckpoint<S>,
     ) {
         self.bank.refund_remaining_gas(
@@ -152,24 +152,39 @@ impl<S: Spec, Da: DaSpec> GasEnforcer<S, Da> for Runtime<S, Da> {
 }
 
 impl<S: Spec, Da: DaSpec> SequencerAuthorization<S, Da> for Runtime<S, Da> {
+    type SequencerStakeMeter = SequencerStakeMeter<S::Gas>;
+
     fn authorize_sequencer(
         &self,
         sequencer: &<Da as DaSpec>::Address,
+        base_fee_per_gas: &<S::Gas as Gas>::Price,
         state_checkpoint: &mut StateCheckpoint<S>,
-    ) -> Result<(), anyhow::Error> {
+    ) -> Result<SequencerStakeMeter<S::Gas>, anyhow::Error> {
         self.sequencer_registry
-            .authorize_sequencer(sequencer, state_checkpoint)
+            .authorize_sequencer(sequencer, base_fee_per_gas, state_checkpoint)
             .context("An error occurred while checking the sequencer bond")
     }
 
     fn penalize_sequencer(
         &self,
         sequencer: &Da::Address,
-        amount: u64,
+        sequencer_stake_meter: SequencerStakeMeter<S::Gas>,
         state_checkpoint: &mut StateCheckpoint<S>,
     ) {
+        self.sequencer_registry.penalize_sequencer(
+            sequencer,
+            sequencer_stake_meter,
+            state_checkpoint,
+        );
+    }
+
+    fn refund_sequencer(
+        &self,
+        sequencer_stake_meter: &mut Self::SequencerStakeMeter,
+        refund_amount: u64,
+    ) {
         self.sequencer_registry
-            .penalize_sequencer(sequencer, amount, state_checkpoint);
+            .refund_sequencer(sequencer_stake_meter, refund_amount);
     }
 }
 
@@ -205,14 +220,14 @@ impl<S: Spec, Da: DaSpec> RuntimeAuthorization<S, Da> for Runtime<S, Da> {
         sequencer: &Da::Address,
         height: u64,
         working_set: &mut StateCheckpoint<S>,
-    ) -> Context<S> {
+    ) -> Result<Context<S>, anyhow::Error> {
         // TODO(@preston-evans98): This is a temporary hack to get the sequencer address
         // This should be resolved by the sequencer registry during blob selection
         let sequencer = self
             .sequencer_registry
             .resolve_da_address(sequencer, working_set)
             .ok_or(anyhow::anyhow!("Sequencer was no longer registered by the time of context resolution. This is a bug")).unwrap();
-        let sender = self.accounts.resolve_sender_address(tx, working_set);
-        Context::new(sender, sequencer, height)
+        let sender = self.accounts.resolve_sender_address(tx, working_set)?;
+        Ok(Context::new(sender, sequencer, height))
     }
 }

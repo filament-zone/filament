@@ -22,6 +22,7 @@ use sov_rollup_interface::{
 };
 use sov_state::DefaultStorageSpec;
 use sov_stf_runner::{from_toml_path, read_json_file, RollupConfig};
+use sov_test_utils::TestHasher;
 use tempfile::TempDir;
 
 mod datagen;
@@ -60,7 +61,7 @@ async fn test_proof_generation() {
     };
 
     let mut storage_manager =
-        ProverStorageManager::<MockDaSpec, DefaultStorageSpec>::new(storage_config)
+        ProverStorageManager::<MockDaSpec, DefaultStorageSpec<TestHasher>>::new(storage_config)
             .expect("ProverStorageManager initialization has failed");
     let stf = TestSTF::new();
 
