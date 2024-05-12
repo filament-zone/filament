@@ -7,7 +7,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use filament_hub_indexer_registry::IndexerRegistryConfig;
+pub use filament_hub_indexer_registry::IndexerRegistryConfig;
 pub use sov_accounts::{AccountConfig, AccountData};
 pub use sov_bank::{BankConfig, Coins, TokenConfig};
 pub use sov_chain_state::ChainStateConfig;

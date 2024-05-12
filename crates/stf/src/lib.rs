@@ -6,8 +6,6 @@ pub mod authentication;
 pub mod genesis;
 mod hooks;
 pub mod runtime;
-#[cfg(test)]
-mod tests;
 
 use sov_modules_stf_blueprint::StfBlueprint;
 use sov_rollup_interface::da::DaVerifier;

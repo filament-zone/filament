@@ -1,4 +1,5 @@
 use borsh::BorshSerialize;
+use filament_hub_stf::runtime::Runtime;
 use sov_bank::Bank;
 use sov_mock_da::MockDaSpec;
 use sov_modules_api::{
@@ -8,8 +9,6 @@ use sov_modules_api::{
     PrivateKey,
 };
 use sov_test_utils::{bank_data::BankMessageGenerator, MessageGenerator, TestPrivateKey};
-
-use crate::runtime::Runtime;
 
 pub(crate) type S = sov_test_utils::TestSpec;
 type Da = MockDaSpec;

@@ -1,14 +1,23 @@
+use std::{path::Path, vec};
+
+use filament_hub_stf::{
+    genesis::{create_genesis_config, GenesisPaths},
+    runtime::{GenesisConfig, Runtime},
+};
 use sov_accounts::Response;
+use sov_cli::wallet_state::PrivateKeyAndAddress;
+use sov_kernels::basic::{BasicKernel, BasicKernelGenesisConfig};
 use sov_mock_da::{MockAddress, MockBlock, MockDaSpec, MOCK_SEQUENCER_DA_ADDRESS};
 use sov_modules_api::{
     batch::BatchWithId,
     runtime::capabilities::FatalError,
+    DaSpec,
     PrivateKey,
     PublicKey,
     Spec,
     WorkingSet,
 };
-use sov_modules_stf_blueprint::{SequencerOutcome, StfBlueprint, TxEffect};
+use sov_modules_stf_blueprint::{GenesisParams, SequencerOutcome, StfBlueprint, TxEffect};
 use sov_prover_storage_manager::ProverStorageManager;
 use sov_rollup_interface::{
     da::RelevantBlobs,
@@ -17,6 +26,7 @@ use sov_rollup_interface::{
     storage::HierarchicalStorageManager,
 };
 use sov_state::DefaultStorageSpec;
+use sov_stf_runner::read_json_file;
 use sov_test_utils::{
     bank_data::get_default_token_id,
     has_tx_events,
@@ -25,25 +35,25 @@ use sov_test_utils::{
     TestSpec,
 };
 
-use super::{
-    create_genesis_config_for_tests,
-    create_storage_manager_for_tests,
-    read_private_keys,
-    RuntimeTest,
-};
-use crate::{
-    runtime::Runtime,
-    tests::{
-        da_simulation::{
-            simulate_da_with_bad_nonce,
-            simulate_da_with_bad_serialization,
-            simulate_da_with_bad_sig,
-            simulate_da_with_revert_msg,
-        },
-        StfBlueprintTest,
-    },
+mod da_simulation;
+use da_simulation::{
+    simulate_da,
+    simulate_da_with_bad_nonce,
+    simulate_da_with_bad_serialization,
+    simulate_da_with_bad_sig,
+    simulate_da_with_revert_msg,
 };
 
+pub(crate) type S = sov_test_utils::TestSpec;
+pub(crate) type Da = MockDaSpec;
+
+pub(crate) type RuntimeTest = Runtime<S, Da>;
+pub(crate) type StfBlueprintTest = StfBlueprint<S, Da, RuntimeTest, BasicKernel<S, Da>>;
+
+pub(crate) struct TestPrivateKeys<S: Spec> {
+    pub token_deployer: PrivateKeyAndAddress<S>,
+    pub tx_signer: PrivateKeyAndAddress<S>,
+}
 // Assume there was a proper address and we converted it to bytes already.
 const SEQUENCER_DA_ADDRESS: [u8; 32] = [1; 32];
 
@@ -480,4 +490,102 @@ fn test_tx_bad_serialization() {
             .unwrap();
         assert_eq!(sequencer_balance_before, sequencer_balance_after);
     }
+}
+pub fn create_storage_manager_for_tests(
+    path: impl AsRef<Path>,
+) -> ProverStorageManager<MockDaSpec, DefaultStorageSpec> {
+    let config = sov_state::config::Config {
+        path: path.as_ref().to_path_buf(),
+    };
+    ProverStorageManager::new(config).unwrap()
+}
+
+pub fn create_genesis_config_for_tests<Da: DaSpec>(
+) -> GenesisParams<GenesisConfig<S, Da>, BasicKernelGenesisConfig<S, Da>> {
+    let integ_test_conf_dir: &Path = "../../test-data/genesis/stf-tests".as_ref();
+    let rt_params =
+        create_genesis_config::<S, Da>(&GenesisPaths::from_dir(integ_test_conf_dir)).unwrap();
+
+    let chain_state = read_json_file(integ_test_conf_dir.join("chain_state.json")).unwrap();
+    let kernel_params = BasicKernelGenesisConfig { chain_state };
+    GenesisParams {
+        runtime: rt_params,
+        kernel: kernel_params,
+    }
+}
+
+const PRIVATE_KEYS_DIR: &str = "../../test-data/keys";
+
+fn read_and_parse_private_key<S: Spec>(suffix: &str) -> PrivateKeyAndAddress<S> {
+    let data = std::fs::read_to_string(Path::new(PRIVATE_KEYS_DIR).join(suffix))
+        .expect("Unable to read file to string");
+
+    let key_and_address: PrivateKeyAndAddress<S> =
+        serde_json::from_str(&data).unwrap_or_else(|_| {
+            panic!("Unable to convert data {} to PrivateKeyAndAddress", &data);
+        });
+
+    assert!(
+        key_and_address.is_matching_to_default(),
+        "Inconsistent key data"
+    );
+
+    key_and_address
+}
+
+fn read_private_keys<S: Spec>() -> TestPrivateKeys<S> {
+    let token_deployer = read_and_parse_private_key::<S>("token_deployer_private_key.json");
+    let tx_signer = read_and_parse_private_key::<S>("tx_signer_private_key.json");
+
+    TestPrivateKeys::<S> {
+        token_deployer,
+        tx_signer,
+    }
+}
+
+#[test]
+fn test_sequencer_unknown_sequencer() {
+    let tempdir = tempfile::tempdir().unwrap();
+    let path = tempdir.path();
+
+    let mut config = create_genesis_config_for_tests();
+    config.runtime.sequencer_registry.is_preferred_sequencer = false;
+
+    let genesis_block = MockBlock::default();
+    let block_1 = genesis_block.next_mock();
+
+    let mut storage_manager = create_storage_manager_for_tests(path);
+    let stf: StfBlueprintTest = StfBlueprint::new();
+    let (stf_state, ledger_state) = storage_manager
+        .create_state_for(genesis_block.header())
+        .unwrap();
+    let (genesis_root, stf_state) = stf.init_chain(stf_state, config);
+    storage_manager
+        .save_change_set(genesis_block.header(), stf_state, ledger_state.into())
+        .unwrap();
+
+    let some_sequencer: [u8; 32] = [121; 32];
+
+    let private_key = read_private_keys::<TestSpec>().tx_signer.private_key;
+    let txs = simulate_da(private_key);
+    let blob = new_test_blob_from_batch(BatchWithId { txs, id: [0; 32] }, &some_sequencer, [0; 32]);
+
+    let mut relevant_blobs = RelevantBlobs {
+        proof_blobs: Default::default(),
+        batch_blobs: vec![blob],
+    };
+
+    let (stf_state, _ledger_state) = storage_manager.create_state_for(block_1.header()).unwrap();
+
+    let apply_block_result = stf.apply_slot(
+        &genesis_root,
+        stf_state,
+        Default::default(),
+        &block_1.header,
+        &block_1.validity_cond,
+        relevant_blobs.as_iters(),
+    );
+
+    // The sequencer isn't registered, so the blob should be ignored.
+    assert_eq!(0, apply_block_result.batch_receipts.len());
 }
