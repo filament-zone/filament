@@ -43,7 +43,7 @@ pub enum CampaignStatus {
 }
 
 impl fmt::Display for CampaignStatus {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self)
     }
 }
@@ -85,7 +85,7 @@ impl Campaign {
         match self.payout_mech {
             PayoutMechanism::ProportionalPerConversion => {
                 Some(budget.incentives.amount.u128() / self.segment_size as u128)
-            }
+            },
         }
     }
 

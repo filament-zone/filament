@@ -1,9 +1,27 @@
-name: CI
+name: Hub
 on:
   pull_request:
+    paths:
+      - .github/workflows/hub.yml
+      - Cargo.lock
+      - Cargo.toml
+      - config/**
+      - crates/**
+      - .rustfmt.toml
+      - rust-toolchain
+      - test-data/**
   push:
     branches:
       - main
+    paths:
+      - .github/workflows/hub.yml
+      - Cargo.lock
+      - Cargo.toml
+      - config/**
+      - crates/**
+      - .rustfmt.toml
+      - rust-toolchain
+      - test-data/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -23,128 +41,13 @@ permissions:
   pull-requests: read
 
 jobs:
-  lint-commits:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-
-    name: Lint Commits
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: wagoid/commitlint-github-action@v6
-
-  lint-markdown:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-
-    name: Lint Markdown
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-      - run: npm install
-
-      - uses: xt0rted/markdownlint-problem-matcher@v3
-      - run: npm run markdownlint
-
-  fmt:
-    strategy:
-      matrix:
-        os: [ubuntu-22.04-16core]
-        toolchain: [nightly]
-
-    name: Format
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v4
-
-      - name: Install toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: ${{ matrix.toolchain }}
-          override: true
-          components: rustfmt, clippy
-
-      - name: Cache dependencies & tools
-        uses: Swatinem/rust-cache@v2
-        timeout-minutes: 1
-        continue-on-error: true
-        with:
-          key: ${{ matrix.os }}-${{ matrix.toolchain }}
-
-      - name: Run cargo fmt
-        run: cargo fmt --all -- --check
-
-  clippy:
-    strategy:
-      matrix:
-        os: [ubuntu-22.04-16core]
-        toolchain: [stable]
-
-    name: Clippy
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v4
-
-      - name: Set up Git credentials for private repo
-        run: |
-          git config --global --replace-all \
-          "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" \
-          ssh://git@github.com
-
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v3
-        with:
-          version: "23.2"
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: ${{ matrix.toolchain }}
-          override: true
-          components: rustfmt, clippy
-
-      - name: Install mold linker
-        uses: rui314/setup-mold@v1
-
-      - name: Install cargo-risczero
-        uses: taiki-e/install-action@v2
-        with:
-          tool: cargo-risczero@0.20
-
-      - name: Install risc0-zkvm toolchain # Use the risc0 cargo extension to install the risc0 std library for the current toolchain
-        run: make install-risc0-toolchain
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Cache dependencies & tools
-        uses: Swatinem/rust-cache@v2
-        timeout-minutes: 1
-        continue-on-error: true
-        with:
-          key: ${{ matrix.os }}-${{ matrix.toolchain }}
-
-      - name: Run cargo clippy
-        run: cargo metadata --format-version=1 --no-deps | jq -r '.packages[] | select(.name != "filament-hub-cli" and .name != "filament-hub-rollup" and .name != "filament-prover-risc0") | .name' | xargs -I {} cargo clippy -p {} --no-deps -- -Dwarnings -Dnonstandard-style -Drust-2018-idioms -Dunused -Drust-2021-compatibility
-
-  build-hub-rollup:
+  build:
     strategy:
       matrix:
         os: [ubuntu-22.04-16core]
         toolchain: ["1.77"]
 
-    name: Build Hub Rollup
+    name: Build Hub
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -193,13 +96,98 @@ jobs:
       - name: Build Rollup
         run: cargo build -p filament-hub-rollup
 
+  clippy:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04-16core]
+        toolchain: [stable]
+
+    name: Clippy Hub
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Set up Git credentials for private repo
+        run: |
+          git config --global --replace-all \
+          "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" \
+          ssh://git@github.com
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v3
+        with:
+          version: "23.2"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          override: true
+          components: rustfmt, clippy
+
+      - name: Install mold linker
+        uses: rui314/setup-mold@v1
+
+      - name: Install cargo-risczero
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-risczero@0.20
+
+      - name: Install risc0-zkvm toolchain # Use the risc0 cargo extension to install the risc0 std library for the current toolchain
+        run: make install-risc0-toolchain
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cache dependencies & tools
+        uses: Swatinem/rust-cache@v2
+        timeout-minutes: 1
+        continue-on-error: true
+        with:
+          key: ${{ matrix.os }}-${{ matrix.toolchain }}
+
+      - name: Clippy crates
+        run: cargo metadata --format-version=1 --no-deps | jq -r '.packages[] | select(.name != "filament-hub-cli" and .name != "filament-hub-rollup" and .name != "filament-prover-risc0") | .name' | xargs -I {} cargo clippy -p {} --no-deps -- -Dwarnings -Dnonstandard-style -Drust-2018-idioms -Dunused -Drust-2021-compatibility
+
+  fmt:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04-16core]
+        toolchain: [nightly]
+
+    name: Format Hub
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          override: true
+          components: rustfmt, clippy
+
+      - name: Cache dependencies & tools
+        uses: Swatinem/rust-cache@v2
+        timeout-minutes: 1
+        continue-on-error: true
+        with:
+          key: ${{ matrix.os }}-${{ matrix.toolchain }}
+
+      - name: Fmt Hub
+        run: cargo fmt --all -- --check
+
   test:
     strategy:
       matrix:
         os: [ubuntu-22.04-16core]
         toolchain: ["1.77"]
 
-    name: Test
+    name: Test Hub
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository

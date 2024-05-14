@@ -3,39 +3,43 @@ use cosmwasm_std::Deps;
 use crate::{
     msg::{GetCampaignResponse, QueryCampaignsResponse},
     state::{
-        Campaign, CampaignStatus, Config, ATTESTING_CAMPAIGNS, CANCELED_CAMPAIGNS, CONF,
-        CREATED_CAMPAIGNS, FAILED_CAMPAIGNS, FINISHED_CAMPAIGNS, FUNDED_CAMPAIGNS,
+        Campaign,
+        CampaignStatus,
+        Config,
+        ATTESTING_CAMPAIGNS,
+        CANCELED_CAMPAIGNS,
+        CONF,
+        CREATED_CAMPAIGNS,
+        FAILED_CAMPAIGNS,
+        FINISHED_CAMPAIGNS,
+        FUNDED_CAMPAIGNS,
         INDEXING_CAMPAIGNS,
     },
     ContractError,
 };
 
-pub fn get_config(deps: Deps) -> Result<Config, ContractError> {
+pub fn get_config(deps: Deps<'_>) -> Result<Config, ContractError> {
     let conf = CONF.load(deps.storage)?;
 
     Ok(conf)
 }
 
-pub fn get_campaign(deps: Deps, id: u64) -> Result<GetCampaignResponse, ContractError> {
+pub fn get_campaign(deps: Deps<'_>, id: u64) -> Result<GetCampaignResponse, ContractError> {
     let campaign = load_campaign(deps, id)?;
     Ok(GetCampaignResponse { campaign })
 }
 
 // XXX
 pub fn query_campaigns_by_status(
-    _deps: Deps,
+    _deps: Deps<'_>,
     _start: Option<u64>,
     _limit: Option<u32>,
-    status: CampaignStatus,
+    _status: CampaignStatus,
 ) -> Result<QueryCampaignsResponse, ContractError> {
-    let campaigns: Vec<Campaign> = match status {
-        _ => vec![],
-    };
-
-    Ok(QueryCampaignsResponse { campaigns })
+    Ok(QueryCampaignsResponse { campaigns: vec![] })
 }
 
-pub fn load_campaign(deps: Deps, id: u64) -> Result<Campaign, ContractError> {
+pub fn load_campaign(deps: Deps<'_>, id: u64) -> Result<Campaign, ContractError> {
     let c = if CREATED_CAMPAIGNS.has(deps.storage, id) {
         CREATED_CAMPAIGNS.load(deps.storage, id)?
     } else if FUNDED_CAMPAIGNS.has(deps.storage, id) {

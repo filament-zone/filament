@@ -1,0 +1,134 @@
+name: Outposts
+on:
+  pull_request:
+    paths:
+      - .github/workflows/ci-outposts.yml
+      - outposts/CosmWasm/**
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/ci-outposts.yml
+      - outposts/CosmWasm/**
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_INCREMENTAL: 0
+  CARGO_NET_RETRY: 10
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: short
+  RUSTUP_MAX_RETRIES: 10
+
+jobs:
+  format:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04-16core]
+        toolchain: [nightly]
+
+    name: Format CosmWasm outposts
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+
+      - name: Cache dependencies & tools
+        uses: Swatinem/rust-cache@v2
+        timeout-minutes: 1
+        continue-on-error: true
+        with:
+          key: ${{ matrix.os }}
+
+      - name: Run cargo fmt
+        run: cd outposts/CosmWasm && cargo fmt --all -- --check
+
+  lints:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04-16core]
+        toolchain: [stable]
+
+    name: Lint CosmWasm outpost
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        id: toolchain
+        if: steps.cache-toolchain.outputs.cache-hit != 'true'
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          target: wasm32-unknown-unknown
+          components: cargo, clippy, rustfmt
+          override: true
+
+      - name: Cache dependencies & tools
+        uses: Swatinem/rust-cache@v2
+        timeout-minutes: 1
+        continue-on-error: true
+        with:
+          key: ${{ matrix.os }}
+
+      - name: Generate Schemas
+        run: cd outposts/CosmWasm && cargo run --locked -p neutron --bin schema
+
+      - name: Schema Changes
+        # fails if any changes not committed
+        run: git diff --exit-code outposts/CosmWasm/schema
+
+      - name: Clippy
+        run: cd outposts/CosmWasm && cargo clippy --workspace --no-deps -- -Dwarnings -Dnonstandard-style -Drust-2018-idioms -Dunused -Drust-2021-compatibility
+
+  test:
+    strategy:
+      matrix:
+        os: [macos-latest-xlarge, ubuntu-22.04-16core]
+        toolchain: [stable]
+
+    name: Test CosmWasm outpost
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        id: toolchain
+        if: steps.cache-toolchain.outputs.cache-hit != 'true'
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          target: wasm32-unknown-unknown
+          components: cargo, clippy, rustfmt
+          override: true
+
+      - name: Cache dependencies & tools
+        uses: Swatinem/rust-cache@v2
+        timeout-minutes: 1
+        continue-on-error: true
+        with:
+          key: ${{ matrix.os }}
+
+      - name: Run CosmWasm tests
+        env:
+          RUST_BACKTRACE: 1
+        run: cd outposts/CosmWasm &&  cargo --locked test --workspace --lib
+
+      - name: Compile neutron contract
+        env:
+          RUSTFLAGS: "-C link-arg=-s"
+        run: cd outposts/CosmWasm && cargo --locked build -p neutron --release --lib --target wasm32-unknown-unknown

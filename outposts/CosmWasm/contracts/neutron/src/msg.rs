@@ -2,7 +2,13 @@ use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::Addr;
 
 use crate::state::{
-    Campaign, CampaignBudget, CampaignStatus, Config, ConversionDesc, PayoutMechanism, SegmentDesc,
+    Campaign,
+    CampaignBudget,
+    CampaignStatus,
+    Config,
+    ConversionDesc,
+    PayoutMechanism,
+    SegmentDesc,
 };
 
 #[cw_serde]

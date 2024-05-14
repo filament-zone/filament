@@ -1,16 +1,30 @@
 use cosmwasm_std::{Addr, BankMsg, Coin, DepsMut, MessageInfo, Response, Uint128};
 
-use crate::error::ContractError;
-use crate::state::{
-    Campaign, CampaignBudget, CampaignStatus, ConversionDesc, PayoutMechanism, SegmentDesc,
-    ATTESTING_CAMPAIGNS, CAMPAIGN_ID, CANCELED_CAMPAIGNS, CONF, CREATED_CAMPAIGNS,
-    FAILED_CAMPAIGNS, FINISHED_CAMPAIGNS, FUNDED_CAMPAIGNS, INDEXING_CAMPAIGNS,
+use super::query::load_campaign;
+use crate::{
+    error::ContractError,
+    state::{
+        Campaign,
+        CampaignBudget,
+        CampaignStatus,
+        ConversionDesc,
+        PayoutMechanism,
+        SegmentDesc,
+        ATTESTING_CAMPAIGNS,
+        CAMPAIGN_ID,
+        CANCELED_CAMPAIGNS,
+        CONF,
+        CREATED_CAMPAIGNS,
+        FAILED_CAMPAIGNS,
+        FINISHED_CAMPAIGNS,
+        FUNDED_CAMPAIGNS,
+        INDEXING_CAMPAIGNS,
+    },
 };
 
-use super::query::load_campaign;
-
+#[allow(clippy::too_many_arguments)]
 pub fn create_campaign(
-    deps: DepsMut,
+    deps: DepsMut<'_>,
     admin: Addr,
     indexer: Addr,
     attester: Addr,
@@ -40,7 +54,7 @@ pub fn create_campaign(
     Ok(Response::new().add_attribute("campaign_id", id.to_string()))
 }
 
-pub fn is_oracle(deps: &DepsMut, info: &MessageInfo) -> bool {
+pub fn is_oracle(deps: &DepsMut<'_>, info: &MessageInfo) -> bool {
     let conf = CONF.load(deps.storage);
 
     conf.is_ok_and(|c| c.oracle == info.sender)
@@ -51,7 +65,7 @@ pub fn is_oracle(deps: &DepsMut, info: &MessageInfo) -> bool {
 // execution.
 // The creator needs to supply enough funds to cover fee and incentives.
 pub fn fund_campaign(
-    deps: DepsMut,
+    deps: DepsMut<'_>,
     info: MessageInfo,
     id: u64,
     budget: CampaignBudget,
@@ -93,7 +107,7 @@ pub fn fund_campaign(
 }
 
 pub fn register_segment(
-    deps: DepsMut,
+    deps: DepsMut<'_>,
     info: MessageInfo,
     id: u64,
     size: u64,
@@ -114,7 +128,7 @@ pub fn register_segment(
 }
 
 pub fn register_conversion(
-    deps: DepsMut,
+    deps: DepsMut<'_>,
     info: MessageInfo,
     id: u64,
     who: Addr,
@@ -145,7 +159,7 @@ pub fn register_conversion(
 }
 
 pub fn disperse_fees(
-    deps: DepsMut,
+    deps: DepsMut<'_>,
     _info: MessageInfo,
     id: u64,
 ) -> Result<Response, ContractError> {
@@ -160,10 +174,10 @@ pub fn disperse_fees(
         .clone()
         .ok_or(ContractError::CampaignCannotDisperseFees {})?
         .fee;
-    let out = fees.amount / Uint128::from(5 as u128);
+    let out = fees.amount / Uint128::from(5_u128);
 
-    let att_out = out * Uint128::from(2 as u128);
-    let ind_out = out * Uint128::from(2 as u128);
+    let att_out = out * Uint128::from(2_u128);
+    let ind_out = out * Uint128::from(2_u128);
     let pro_out = fees.amount - att_out - ind_out;
 
     let att = BankMsg::Send {
@@ -197,7 +211,7 @@ pub fn disperse_fees(
 }
 
 pub fn abort_campaign(
-    deps: DepsMut,
+    deps: DepsMut<'_>,
     info: MessageInfo,
     id: u64,
 ) -> Result<Response, ContractError> {
@@ -211,13 +225,10 @@ pub fn abort_campaign(
     if campaign.has_budget() {
         // if we have a budget the unwrap should not fail
         let out_coin = campaign.payout_coin().unwrap();
-        let payout = campaign
-            .budget_left()
-            .or(Some(Coin {
-                denom: out_coin.denom,
-                amount: Uint128::from(0 as u128),
-            }))
-            .unwrap();
+        let payout = campaign.budget_left().unwrap_or(Coin {
+            denom: out_coin.denom,
+            amount: Uint128::from(0_u128),
+        });
 
         let snd = BankMsg::Send {
             to_address: info.sender.to_string(),
@@ -236,7 +247,11 @@ pub fn abort_campaign(
     Ok(Response::new().add_messages(msgs))
 }
 
-pub fn write_campaign(deps: DepsMut, id: u64, campaign: &Campaign) -> Result<(), ContractError> {
+pub fn write_campaign(
+    deps: DepsMut<'_>,
+    id: u64,
+    campaign: &Campaign,
+) -> Result<(), ContractError> {
     match campaign.status {
         CampaignStatus::Created => CREATED_CAMPAIGNS.save(deps.storage, id, campaign)?,
         CampaignStatus::Funded => FUNDED_CAMPAIGNS.save(deps.storage, id, campaign)?,
@@ -250,7 +265,7 @@ pub fn write_campaign(deps: DepsMut, id: u64, campaign: &Campaign) -> Result<(),
     Ok(())
 }
 
-pub fn remove_campaign(deps: DepsMut, id: u64, status: CampaignStatus) {
+pub fn remove_campaign(deps: DepsMut<'_>, id: u64, status: CampaignStatus) {
     match status {
         CampaignStatus::Created => CREATED_CAMPAIGNS.remove(deps.storage, id),
         CampaignStatus::Funded => FUNDED_CAMPAIGNS.remove(deps.storage, id),

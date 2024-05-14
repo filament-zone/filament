@@ -1,25 +1,34 @@
 use cosmwasm_std::{to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response};
 use cw2::set_contract_version;
 
-use crate::error::ContractError;
-use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use crate::state::{Config, CAMPAIGN_ID, CONF};
-
-use self::exec::{
-    abort_campaign, create_campaign, disperse_fees, fund_campaign, register_conversion,
-    register_segment,
+use self::{
+    exec::{
+        abort_campaign,
+        create_campaign,
+        disperse_fees,
+        fund_campaign,
+        register_conversion,
+        register_segment,
+    },
+    query::{get_campaign, get_config, query_campaigns_by_status},
 };
-use self::query::{get_campaign, get_config, query_campaigns_by_status};
+use crate::{
+    error::ContractError,
+    msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg},
+    state::{Config, CAMPAIGN_ID, CONF},
+};
 
 mod exec;
 mod query;
 
 // version info for migration info
+#[allow(unused)]
 const CONTRACT_NAME: &str = "crates.io:filament-zone";
+#[allow(unused)]
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub fn instantiate(
-    deps: DepsMut,
+    deps: DepsMut<'_>,
     _env: Env,
     _info: MessageInfo,
     msg: InstantiateMsg,
@@ -40,7 +49,7 @@ pub fn instantiate(
 }
 
 pub fn execute(
-    deps: DepsMut,
+    deps: DepsMut<'_>,
     _env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
@@ -72,12 +81,12 @@ pub fn execute(
     }
 }
 
-pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> Result<Response, ContractError> {
+pub fn migrate(_deps: DepsMut<'_>, _env: Env, _msg: MigrateMsg) -> Result<Response, ContractError> {
     // No state migrations performed, just returned a Response
     Ok(Response::default())
 }
 
-pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> Result<Binary, ContractError> {
+pub fn query(deps: Deps<'_>, _env: Env, msg: QueryMsg) -> Result<Binary, ContractError> {
     let resp = match msg {
         QueryMsg::GetConfig {} => to_json_binary(&get_config(deps)?)?,
         QueryMsg::GetCampaign { id } => to_json_binary(&get_campaign(deps, id)?)?,
@@ -96,11 +105,22 @@ mod tests {
     use cosmwasm_std::{Addr, Attribute, Coin, Event, Uint128};
     use cw_multi_test::{App, BankKeeper, ContractWrapper, Executor};
 
-    use crate::{msg::GetCampaignResponse, state::{
-        Auth, CampaignBudget, CampaignStatus, ConversionDesc, ConversionMechanism, ConversionProofMechanism, PayoutMechanism, SegmentDesc, SegmentKind, SegmentProofMechanism
-    }};
-
     use super::*;
+    use crate::{
+        msg::GetCampaignResponse,
+        state::{
+            Auth,
+            CampaignBudget,
+            CampaignStatus,
+            ConversionDesc,
+            ConversionMechanism,
+            ConversionProofMechanism,
+            PayoutMechanism,
+            SegmentDesc,
+            SegmentKind,
+            SegmentProofMechanism,
+        },
+    };
 
     #[test]
     fn proper_init() {
@@ -262,21 +282,26 @@ mod tests {
         };
 
         let bk = BankKeeper::new();
-        let _ = bk.init_balance(app.storage_mut(), &admin, vec![Coin {
-                denom: "tc".to_string(),
-                amount: Uint128::from(100_000 as u128),
-            }]);
-
-        let _ = app.execute_contract(
-            admin,
-            addr.clone(),
-            &msg,
-            &[Coin {
+        let _ = bk.init_balance(
+            app.storage_mut(),
+            &admin,
+            vec![Coin {
                 denom: "tc".to_string(),
                 amount: Uint128::from(100_000 as u128),
             }],
-        ).unwrap();
+        );
 
+        let _ = app
+            .execute_contract(
+                admin,
+                addr.clone(),
+                &msg,
+                &[Coin {
+                    denom: "tc".to_string(),
+                    amount: Uint128::from(100_000 as u128),
+                }],
+            )
+            .unwrap();
 
         let msg = QueryMsg::GetCampaign { id: 1 };
         let c: GetCampaignResponse = app.wrap().query_wasm_smart(addr.clone(), &msg).unwrap();
@@ -347,92 +372,101 @@ mod tests {
 
         let not_admin = Addr::unchecked("not_admin");
         let bk = BankKeeper::new();
-        let _ = bk.init_balance(app.storage_mut(), &not_admin, vec![Coin {
-                denom: "tc".to_string(),
-                amount: Uint128::from(100_000 as u128),
-            }]);
-
-        let res = app.execute_contract(
-            Addr::unchecked("not_admin"),
-            addr.clone(),
-            &msg,
-            &[Coin {
+        let _ = bk.init_balance(
+            app.storage_mut(),
+            &not_admin,
+            vec![Coin {
                 denom: "tc".to_string(),
                 amount: Uint128::from(100_000 as u128),
             }],
-        ).unwrap_err();
+        );
 
-        assert_eq!(res.downcast::<ContractError>().unwrap(), ContractError::Unauthorized {});
+        let res = app
+            .execute_contract(
+                Addr::unchecked("not_admin"),
+                addr.clone(),
+                &msg,
+                &[Coin {
+                    denom: "tc".to_string(),
+                    amount: Uint128::from(100_000 as u128),
+                }],
+            )
+            .unwrap_err();
+
+        assert_eq!(
+            res.downcast::<ContractError>().unwrap(),
+            ContractError::Unauthorized {}
+        );
     }
 
-    /* #[test]
-    fn fund_campaign_insufficient_funds() {
-        let (mut deps, info) = init_contract();
-        let amount: u128 = 1000;
-        let admin = mock_info(
-            "someone",
-            &[Coin {
-                denom: "tc".to_string(),
-                amount: Uint128::from(amount),
-            }],
-        );
-        let campaign_id = init_campaign(deps.as_mut(), &info, &admin);
-
-        let msg = ExecuteMsg::FundCampaignMsg {
-            id: campaign_id,
-            budget: CampaignBudget {
-                fee: Coin {
-                    denom: "tc".to_string(),
-                    amount: Uint128::from(10000 as u128),
-                },
-                incentives: Coin {
-                    denom: "tc".to_string(),
-                    amount: Uint128::from(90000 as u128),
-                },
-            },
-        };
-
-        let res = execute(deps.as_mut(), mock_env(), admin, msg);
-
-        assert_eq!(res, Err(ContractError::FundsBudgetMismatch {}));
-    }
-
-    #[test]
-    fn register_segment() {
-        let (mut deps, info) = init_contract();
-        let admin = mock_info(
-            "campaign_creator",
-            &[Coin {
-                denom: "tc".to_string(),
-                amount: Uint128::from(100000 as u128),
-            }],
-        );
-        let campaign_id = init_campaign(deps.as_mut(), &info, &admin);
-
-        let msg = ExecuteMsg::FundCampaignMsg {
-            id: campaign_id,
-            budget: CampaignBudget {
-                fee: Coin {
-                    denom: "tc".to_string(),
-                    amount: Uint128::from(10000 as u128),
-                },
-                incentives: Coin {
-                    denom: "tc".to_string(),
-                    amount: Uint128::from(90000 as u128),
-                },
-            },
-        };
-
-        let _ = execute(deps.as_mut(), mock_env(), admin.clone(), msg);
-        assert!(INDEXING_CAMPAIGNS.has(&deps.storage, campaign_id));
-
-        let msg = ExecuteMsg::RegisterSegmentMsg {
-            id: campaign_id,
-            size: 200,
-        };
-        let _ = execute(deps.as_mut(), mock_env(), info, msg);
-
-        assert!(!INDEXING_CAMPAIGNS.has(&deps.storage, campaign_id));
-        assert!(ATTESTING_CAMPAIGNS.has(&deps.storage, campaign_id));
-    } */
+    // #[test]
+    // fn fund_campaign_insufficient_funds() {
+    // let (mut deps, info) = init_contract();
+    // let amount: u128 = 1000;
+    // let admin = mock_info(
+    // "someone",
+    // &[Coin {
+    // denom: "tc".to_string(),
+    // amount: Uint128::from(amount),
+    // }],
+    // );
+    // let campaign_id = init_campaign(deps.as_mut(), &info, &admin);
+    //
+    // let msg = ExecuteMsg::FundCampaignMsg {
+    // id: campaign_id,
+    // budget: CampaignBudget {
+    // fee: Coin {
+    // denom: "tc".to_string(),
+    // amount: Uint128::from(10000 as u128),
+    // },
+    // incentives: Coin {
+    // denom: "tc".to_string(),
+    // amount: Uint128::from(90000 as u128),
+    // },
+    // },
+    // };
+    //
+    // let res = execute(deps.as_mut(), mock_env(), admin, msg);
+    //
+    // assert_eq!(res, Err(ContractError::FundsBudgetMismatch {}));
+    // }
+    //
+    // #[test]
+    // fn register_segment() {
+    // let (mut deps, info) = init_contract();
+    // let admin = mock_info(
+    // "campaign_creator",
+    // &[Coin {
+    // denom: "tc".to_string(),
+    // amount: Uint128::from(100000 as u128),
+    // }],
+    // );
+    // let campaign_id = init_campaign(deps.as_mut(), &info, &admin);
+    //
+    // let msg = ExecuteMsg::FundCampaignMsg {
+    // id: campaign_id,
+    // budget: CampaignBudget {
+    // fee: Coin {
+    // denom: "tc".to_string(),
+    // amount: Uint128::from(10000 as u128),
+    // },
+    // incentives: Coin {
+    // denom: "tc".to_string(),
+    // amount: Uint128::from(90000 as u128),
+    // },
+    // },
+    // };
+    //
+    // let _ = execute(deps.as_mut(), mock_env(), admin.clone(), msg);
+    // assert!(INDEXING_CAMPAIGNS.has(&deps.storage, campaign_id));
+    //
+    // let msg = ExecuteMsg::RegisterSegmentMsg {
+    // id: campaign_id,
+    // size: 200,
+    // };
+    // let _ = execute(deps.as_mut(), mock_env(), info, msg);
+    //
+    // assert!(!INDEXING_CAMPAIGNS.has(&deps.storage, campaign_id));
+    // assert!(ATTESTING_CAMPAIGNS.has(&deps.storage, campaign_id));
+    // }
 }

@@ -11,7 +11,9 @@ pub mod state;
 pub use crate::error::ContractError;
 
 // Version info for migrations.
+#[allow(dead_code)]
 const CONTRACT_NAME: &str = "crates.io:filament-incentives-registry";
+#[allow(dead_code)]
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub type Result<T> = core::result::Result<T, ContractError>;

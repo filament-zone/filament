@@ -1,9 +1,16 @@
 name: Docs
 on:
   pull_request:
+    paths:
+      - .github/workflows/docs.yml
+      - docs/**
+
   push:
     branches:
       - "main"
+    paths:
+      - .github/workflows/docs.yml
+      - docs/**
 
 jobs:
   deploy-docs:
@@ -70,7 +77,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
 
-    name: Summary
+    name: Docs Summary
     needs: [deploy-docs]
     runs-on: ${{ matrix.os }}
     steps:
