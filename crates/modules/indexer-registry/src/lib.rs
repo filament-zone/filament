@@ -8,6 +8,7 @@ use sov_modules_api::{
     ModuleId,
     ModuleInfo,
     Spec,
+    StateAccessor,
     StateMap,
     StateValue,
     StateVec,
@@ -25,6 +26,9 @@ mod event;
 pub use event::Event;
 
 mod genesis;
+
+mod indexer;
+pub use indexer::{Alias, Indexer};
 
 #[cfg(feature = "native")]
 mod rpc;
@@ -88,7 +92,7 @@ impl<S: Spec> IndexerRegistry<S> {
         alias: String,
         working_set: &mut impl TxState<S>,
     ) -> Result<(), IndexerRegistryError<S>> {
-        tracing::info!(%indexer, ?alias, "register_indexer");
+        tracing::info!(%indexer, ?alias, "Register indexer request");
 
         // Only allow admin to update registry for now.
         let admin = self
@@ -154,5 +158,27 @@ impl<S: Spec> IndexerRegistry<S> {
         tracing::info!(%indexer, "Indexer unregistered");
 
         Ok(())
+    }
+}
+
+impl<S: Spec> IndexerRegistry<S> {
+    pub fn get_indexer(
+        &self,
+        addr: S::Address,
+        working_set: &mut impl StateAccessor,
+    ) -> Option<Indexer<S>> {
+        let alias = self.aliases.get(&addr, working_set)?;
+        Some(Indexer { addr, alias })
+    }
+
+    pub fn get_indexers(&self, working_set: &mut WorkingSet<S>) -> Vec<Indexer<S>> {
+        let addrs = self.indexers.iter(working_set).collect::<Vec<_>>();
+        addrs
+            .iter()
+            .map(|addr| Indexer {
+                addr: addr.clone(),
+                alias: self.aliases.get(addr, working_set).unwrap_or_default(),
+            })
+            .collect::<Vec<_>>()
     }
 }

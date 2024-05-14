@@ -29,7 +29,7 @@ pub enum CallMessage<S: Spec> {
 }
 
 impl<S: Spec> IndexerRegistry<S> {
-    pub(crate) fn register(
+    pub fn register(
         &self,
         indexer: S::Address,
         alias: String,
@@ -40,7 +40,7 @@ impl<S: Spec> IndexerRegistry<S> {
         Ok(CallResponse::default())
     }
 
-    pub(crate) fn unregister(
+    pub fn unregister(
         &self,
         indexer: S::Address,
         context: &Context<S>,

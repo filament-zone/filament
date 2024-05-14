@@ -1820,6 +1820,29 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "38793c55593b33412e3ae40c2c9781ffaa6f438f6f8c10f24e71846fbd7ae01e"
 
 [[package]]
+name = "filament-hub-campaigns"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "borsh",
+ "filament-hub-campaigns",
+ "filament-hub-indexer-registry",
+ "jsonrpsee",
+ "schemars",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "sov-bank",
+ "sov-modules-api",
+ "sov-prover-storage-manager",
+ "sov-state",
+ "sov-test-utils",
+ "tempfile",
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
 name = "filament-hub-cli"
 version = "0.1.0"
 dependencies = [
