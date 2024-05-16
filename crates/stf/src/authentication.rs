@@ -33,7 +33,6 @@ impl<S: Spec, Da: DaSpec> RuntimeAuthenticator for Runtime<S, Da> {
 
 #[derive(Debug, PartialEq, Clone, BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 enum Auth {
-    Evm(Vec<u8>),
     Mod(Vec<u8>),
 }
 

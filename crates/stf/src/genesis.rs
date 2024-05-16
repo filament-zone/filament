@@ -7,7 +7,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-pub use filament_hub_indexer_registry::IndexerRegistryConfig;
+pub use filament_hub_core::CoreConfig;
 pub use sov_accounts::{AccountConfig, AccountData};
 pub use sov_bank::{BankConfig, Coins, TokenConfig};
 pub use sov_chain_state::ChainStateConfig;
@@ -26,17 +26,17 @@ use crate::runtime::Runtime;
 
 /// Paths pointing to genesis files.
 pub struct GenesisPaths {
-    /// Bank genesis path.
-    pub bank_genesis_path: PathBuf,
-    /// Sequencer Registry genesis path.
-    pub sequencer_genesis_path: PathBuf,
     /// Accounts genesis path.
     pub accounts_genesis_path: PathBuf,
+    /// Bank genesis path.
+    pub bank_genesis_path: PathBuf,
     /// Prover Incentives genesis path.
     pub prover_incentives_genesis_path: PathBuf,
+    /// Sequencer Registry genesis path.
+    pub sequencer_genesis_path: PathBuf,
 
-    /// Indexer Registry genesis path.
-    pub indexer_registry_genesis_path: PathBuf,
+    /// Core genesis path.
+    pub core_genesis_path: PathBuf,
 }
 
 impl GenesisPaths {
@@ -47,12 +47,12 @@ impl GenesisPaths {
     /// expected files.
     pub fn from_dir(dir: impl AsRef<Path>) -> Self {
         Self {
-            bank_genesis_path: dir.as_ref().join("bank.json"),
-            sequencer_genesis_path: dir.as_ref().join("sequencer_registry.json"),
             accounts_genesis_path: dir.as_ref().join("accounts.json"),
+            bank_genesis_path: dir.as_ref().join("bank.json"),
             prover_incentives_genesis_path: dir.as_ref().join("prover_incentives.json"),
+            sequencer_genesis_path: dir.as_ref().join("sequencer_registry.json"),
 
-            indexer_registry_genesis_path: dir.as_ref().join("indexer_registry.json"),
+            core_genesis_path: dir.as_ref().join("core.json"),
         }
     }
 }
@@ -62,24 +62,23 @@ impl GenesisPaths {
 pub fn create_genesis_config<S: Spec, Da: DaSpec>(
     genesis_paths: &GenesisPaths,
 ) -> anyhow::Result<<Runtime<S, Da> as RuntimeTrait<S, Da>>::GenesisConfig> {
-    let bank_config: BankConfig<S> = read_json_file(&genesis_paths.bank_genesis_path)?;
+    let accounts_config: AccountConfig<S> = read_json_file(&genesis_paths.accounts_genesis_path)?;
 
-    let sequencer_registry_config: SequencerConfig<S, Da> =
-        read_json_file(&genesis_paths.sequencer_genesis_path)?;
+    let bank_config: BankConfig<S> = read_json_file(&genesis_paths.bank_genesis_path)?;
 
     let prover_incentives_config: ProverIncentivesConfig<S> =
         read_json_file(&genesis_paths.prover_incentives_genesis_path)?;
 
-    let accounts_config: AccountConfig<S> = read_json_file(&genesis_paths.accounts_genesis_path)?;
+    let sequencer_registry_config: SequencerConfig<S, Da> =
+        read_json_file(&genesis_paths.sequencer_genesis_path)?;
 
-    let indexer_registry_config: IndexerRegistryConfig<S> =
-        read_json_file(&genesis_paths.indexer_registry_genesis_path)?;
+    let core_config: CoreConfig<S> = read_json_file(&genesis_paths.core_genesis_path)?;
 
     Ok(GenesisConfig::new(
-        bank_config,
-        sequencer_registry_config,
-        prover_incentives_config,
         accounts_config,
-        indexer_registry_config,
+        bank_config,
+        prover_incentives_config,
+        sequencer_registry_config,
+        core_config,
     ))
 }

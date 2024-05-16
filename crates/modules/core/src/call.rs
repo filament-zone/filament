@@ -1,13 +1,9 @@
 use sov_modules_api::{CallResponse, Context, Spec, TxState};
 
-use crate::{
-    campaign::ChainId,
-    error::CampaignsError,
-    playbook::Playbook,
-    segment::Segment,
-    Campaigns,
-};
+use crate::{campaign::ChainId, playbook::Playbook, segment::Segment, Core, CoreError};
 
+/// This enumeration represents the available call messages for interacting with
+/// the `Core` module.
 #[derive(
     Clone,
     Debug,
@@ -36,9 +32,12 @@ pub enum CallMessage<S: Spec> {
         id: u64,
         segment: Segment,
     },
+
+    RegisterIndexer(S::Address, String),
+    UnregisterIndexer(S::Address),
 }
 
-impl<S: Spec> Campaigns<S> {
+impl<S: Spec> Core<S> {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn call_create_campaign(
         &self,
@@ -49,7 +48,7 @@ impl<S: Spec> Campaigns<S> {
         playbook: Playbook,
         context: &Context<S>,
         working_set: &mut impl TxState<S>,
-    ) -> Result<CallResponse, CampaignsError<S>> {
+    ) -> Result<CallResponse, CoreError<S>> {
         self.create_campaign(
             context.sender().clone(),
             origin_id,
@@ -67,7 +66,7 @@ impl<S: Spec> Campaigns<S> {
         id: u64,
         context: &Context<S>,
         working_set: &mut impl TxState<S>,
-    ) -> Result<CallResponse, CampaignsError<S>> {
+    ) -> Result<CallResponse, CoreError<S>> {
         self.index_campaign(context.sender().clone(), id, working_set)?;
         Ok(CallResponse::default())
     }
@@ -78,8 +77,29 @@ impl<S: Spec> Campaigns<S> {
         segment: Segment,
         context: &Context<S>,
         working_set: &mut impl TxState<S>,
-    ) -> Result<CallResponse, CampaignsError<S>> {
+    ) -> Result<CallResponse, CoreError<S>> {
         self.post_segment(context.sender().clone(), id, segment, working_set)?;
+        Ok(CallResponse::default())
+    }
+
+    pub(crate) fn call_register_indexer(
+        &self,
+        indexer: S::Address,
+        alias: String,
+        context: &Context<S>,
+        working_set: &mut impl TxState<S>,
+    ) -> Result<CallResponse, CoreError<S>> {
+        self.register_indexer(context.sender().clone(), indexer, alias, working_set)?;
+        Ok(CallResponse::default())
+    }
+
+    pub(crate) fn call_unregister_indexer(
+        &self,
+        indexer: S::Address,
+        context: &Context<S>,
+        working_set: &mut impl TxState<S>,
+    ) -> Result<CallResponse, CoreError<S>> {
+        self.unregister_indexer(context.sender().clone(), indexer, working_set)?;
         Ok(CallResponse::default())
     }
 }

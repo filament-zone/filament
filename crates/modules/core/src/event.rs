@@ -24,6 +24,14 @@ pub enum Event<S: Spec> {
         indexer: S::Address,
     },
 
+    IndexerRegistered {
+        addr: S::Address,
+        alias: String,
+    },
+    IndexerUnregistered {
+        addr: S::Address,
+    },
+
     SegmentPosted {
         id: u64,
         indexer: S::Address,

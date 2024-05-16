@@ -4,7 +4,10 @@ use thiserror::Error;
 use crate::campaign::{ChainId, Status};
 
 #[derive(Debug, Eq, PartialEq, Error)]
-pub enum CampaignsError<S: Spec> {
+pub enum CoreError<S: Spec> {
+    #[error("Module admin is not set. This is a bug - the admin should be set at genesis")]
+    AdminNotSet,
+
     #[error("Campaign '{origin}-{origin_id}' exists")]
     CampaignExists { origin: ChainId, origin_id: u64 },
 
@@ -36,4 +39,7 @@ pub enum CampaignsError<S: Spec> {
 
     #[error("Segment for '{id}' exists")]
     SegmentExists { id: u64 },
+
+    #[error("Sender '{sender}' is not an admin")]
+    SenderNotAdmin { sender: S::Address },
 }
