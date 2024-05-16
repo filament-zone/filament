@@ -13,7 +13,7 @@ publish       = { workspace = true }
 workspace = true
 
 [dependencies]
-filament-hub-indexer-registry = { workspace = true }
+filament-hub-core = { workspace = true }
 
 sov-accounts              = { workspace = true }
 sov-bank                  = { workspace = true }
@@ -54,7 +54,7 @@ default = []
 offchain = [ "filament-hub-stf/offchain" ]
 native = [
 	"clap",
-	"filament-hub-indexer-registry/native",
+	"filament-hub-core/native",
 	"filament-hub-stf/native",
 	"jsonrpsee",
 	"serde_json",

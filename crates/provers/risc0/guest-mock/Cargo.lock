@@ -673,12 +673,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "38793c55593b33412e3ae40c2c9781ffaa6f438f6f8c10f24e71846fbd7ae01e"
 
 [[package]]
-name = "filament-hub-indexer-registry"
+name = "filament-hub-core"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "borsh 0.10.3",
  "serde",
+ "serde_bytes",
+ "sov-bank",
  "sov-modules-api",
  "sov-state",
  "thiserror",
@@ -691,7 +693,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "borsh 0.10.3",
- "filament-hub-indexer-registry",
+ "filament-hub-core",
  "serde",
  "sov-accounts",
  "sov-bank",
@@ -1469,6 +1471,15 @@ name = "serde-big-array"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "11fc7cc2c76d73e0f27ee52abbd64eec84d46f370c88371120433196934e4b7f"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "serde_bytes"
+version = "0.11.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8b8497c313fd43ab992087548117643f6fcd935cbf36f176ffda0aacf9591734"
 dependencies = [
  "serde",
 ]

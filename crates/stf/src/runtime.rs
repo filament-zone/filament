@@ -35,7 +35,7 @@
 #![allow(unused_doc_comments)]
 
 #[cfg(feature = "native")]
-use filament_hub_indexer_registry::{IndexerRegistryRpcImpl, IndexerRegistryRpcServer};
+use filament_hub_core::{CoreRpcImpl, CoreRpcServer};
 #[cfg(feature = "native")]
 use sov_accounts::{AccountsRpcImpl, AccountsRpcServer};
 #[cfg(feature = "native")]
@@ -62,17 +62,17 @@ use crate::genesis::GenesisPaths;
     serde::Deserialize
 )]
 pub struct Runtime<S: Spec, Da: DaSpec> {
-    /// The Bank module.
-    pub bank: sov_bank::Bank<S>,
-    /// The Sequencer Registry module.
-    pub sequencer_registry: sov_sequencer_registry::SequencerRegistry<S, Da>,
-    /// The Prover Incentives module.
-    pub prover_incentives: sov_prover_incentives::ProverIncentives<S, Da>,
     /// The Accounts module.
     pub accounts: sov_accounts::Accounts<S>,
+    /// The Bank module.
+    pub bank: sov_bank::Bank<S>,
+    /// The Prover Incentives module.
+    pub prover_incentives: sov_prover_incentives::ProverIncentives<S, Da>,
+    /// The Sequencer Registry module.
+    pub sequencer_registry: sov_sequencer_registry::SequencerRegistry<S, Da>,
 
-    /// The Indexer Registry module.
-    pub indexer_registry: filament_hub_indexer_registry::IndexerRegistry<S>,
+    /// The hub core module.
+    pub core: filament_hub_core::Core<S>,
 }
 
 impl<S, Da> sov_modules_stf_blueprint::Runtime<S, Da> for Runtime<S, Da>

@@ -1016,12 +1016,14 @@ name = "filament-hub-config"
 version = "0.1.0"
 
 [[package]]
-name = "filament-hub-indexer-registry"
+name = "filament-hub-core"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "borsh 0.10.3",
  "serde",
+ "serde_bytes",
+ "sov-bank",
  "sov-modules-api",
  "sov-state",
  "thiserror",
@@ -1034,7 +1036,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "borsh 0.10.3",
- "filament-hub-indexer-registry",
+ "filament-hub-core",
  "serde",
  "sov-accounts",
  "sov-bank",

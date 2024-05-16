@@ -3,8 +3,7 @@ resolver  = "2"
 members   = [
   "crates/cli",
   "crates/config",
-  "crates/modules/campaigns",
-  "crates/modules/indexer-registry",
+  "crates/modules/core",
   "crates/provers/risc0",
   "crates/rollup",
   "crates/stf",
@@ -38,12 +37,11 @@ dead_code         = "deny"
 non_ascii_idents  = "deny" # Bad for readability and it can also be a security vulnerability
 
 [workspace.dependencies]
-filament-hub-campaigns        = { path = "./crates/modules/campaigns" }
-filament-hub-config           = { path = "./crates/config" }
-filament-hub-indexer-registry = { path = "./crates/modules/indexer-registry" }
-filament-hub-rollup           = { path = "./crates/rollup" }
-filament-hub-stf              = { path = "./crates/stf" }
-filament-prover-risc0         = { path = "./crates/provers/risc0" }
+filament-hub-config   = { path = "./crates/config" }
+filament-hub-core     = { path = "./crates/modules/core" }
+filament-hub-rollup   = { path = "./crates/rollup" }
+filament-hub-stf      = { path = "./crates/stf" }
+filament-prover-risc0 = { path = "./crates/provers/risc0" }
 
 sov-accounts                  = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "5d375bc" }
 sov-bank                      = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "5d375bc" }
