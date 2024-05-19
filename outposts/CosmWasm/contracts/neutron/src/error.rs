@@ -32,6 +32,33 @@ pub enum ContractError {
     #[error("CampaignCannotPayout")]
     CampaignCannotPayout {},
 
+    #[error("CampaignNoLongerRunning")]
+    CampaignNoLongerRunning {},
+
+    #[error("CampaignDeadlinePassed")]
+    CampaignDeadlinePassed {},
+
     #[error("CampaignCannotDisperseFees")]
     CampaignCannotDisperseFees {},
+
+    #[error("CampaignAllFundsPledged")]
+    CampaignAllFundsPledged {},
+
+    #[error("CampaignNotAllConversionsRegistered")]
+    CampaignNotAllConversionsRegistered {},
+
+    #[error("CampaignNotFinished")]
+    CampaignNotFinished {},
+
+    #[error("CampaignCanceled")]
+    CampaignCanceled {},
+
+    #[error("ConversionAlreadyRegistered")]
+    ConversionAlreadyRegistered {},
+
+    #[error("ConversionAlreadyClaimed")]
+    ConversionAlreadyClaimed {},
+
+    #[error("AllConversionsRegistered")]
+    AllConversionsRegistered {},
 }

@@ -32,6 +32,8 @@ pub const FINISHED_CAMPAIGNS: Map<u64, Campaign> = Map::new("finished_campaigns"
 pub const CANCELED_CAMPAIGNS: Map<u64, Campaign> = Map::new("canceled_campaigns");
 pub const FAILED_CAMPAIGNS: Map<u64, Campaign> = Map::new("failed_campaigns");
 
+pub const CONVERSIONS: Map<(u64, Addr), (u128, bool)> = Map::new("campaign_conversions");
+
 #[cw_serde]
 pub enum CampaignStatus {
     Created,
@@ -92,6 +94,14 @@ impl Campaign {
         self.budget.is_some()
     }
 
+    pub fn is_incentive_denom(&self, denom: String) -> bool {
+        self.has_budget() && self.budget.clone().unwrap().incentives.denom == denom
+    }
+
+    pub fn is_beyond_deadline(&self, curr: u64) -> bool {
+        self.ends_at > 0 && self.ends_at < curr
+    }
+
     pub fn payout_amount(&self) -> Option<u128> {
         let budget = self.budget.clone()?;
         match self.payout_mech {
@@ -99,17 +109,6 @@ impl Campaign {
                 Some(budget.incentives.amount.u128() / self.segment_size as u128)
             },
         }
-    }
-
-    pub fn payout_coin(&self) -> Option<Coin> {
-        let budget = self.budget.clone()?;
-        let amount = self.payout_amount()?;
-
-        // TODO: denom might depend on the payout mechanism too
-        Some(Coin {
-            denom: budget.incentives.denom,
-            amount: Uint128::from(amount),
-        })
     }
 
     pub fn can_payout(&self) -> bool {
@@ -127,16 +126,16 @@ impl Campaign {
         self.spent + out <= budget.incentives.amount.u128()
     }
 
-    pub fn budget_left(&self) -> Option<Coin> {
+    pub fn budget_left(&self) -> u128 {
         if !self.has_budget() {
-            return None;
+            return 0;
         }
 
-        let mut budget = self.budget.clone()?.incentives;
+        let mut budget = self.budget.clone().unwrap().incentives;
 
         budget.amount -= Uint128::from(self.spent);
 
-        Some(budget)
+        budget.amount.u128()
     }
 }
 

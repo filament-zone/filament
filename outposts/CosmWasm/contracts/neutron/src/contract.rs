@@ -4,11 +4,13 @@ use cw2::set_contract_version;
 use self::{
     exec::{
         abort_campaign,
+        claim_incentives,
         create_campaign,
-        disperse_fees,
+        finalized_campaign,
         fund_campaign,
         register_conversion,
         register_segment,
+        set_status_indexing,
     },
     query::{get_campaign, get_config, query_campaigns_by_status},
 };
@@ -50,7 +52,7 @@ pub fn instantiate(
 
 pub fn execute(
     deps: DepsMut<'_>,
-    _env: Env,
+    env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
@@ -74,9 +76,13 @@ pub fn execute(
             ends_at,
         ),
         ExecuteMsg::FundCampaignMsg { id, budget } => fund_campaign(deps, info, id, budget),
+        ExecuteMsg::SetStatusIndexingMsg { id } => set_status_indexing(deps, info, id),
         ExecuteMsg::RegisterSegmentMsg { id, size } => register_segment(deps, info, id, size),
-        ExecuteMsg::RegisterConversionsMsg { id, who } => register_conversion(deps, info, id, who),
-        ExecuteMsg::DisperseFees { id } => disperse_fees(deps, info, id),
+        ExecuteMsg::RegisterConversionsMsg { id, who, amount } => {
+            register_conversion(deps, env, info, id, who, amount)
+        },
+        ExecuteMsg::FinalizeCampaignMsg { id } => finalized_campaign(deps, env, info, id),
+        ExecuteMsg::ClaimIncentivesMsg { id } => claim_incentives(deps, info, id),
         ExecuteMsg::AbortCampaignMsg { id } => abort_campaign(deps, info, id),
     }
 }
@@ -211,12 +217,10 @@ mod tests {
         assert!(res
             .events
             .iter()
-            .filter(|e: &&Event| e.attributes.contains(&Attribute {
+            .any(|e: &Event| e.attributes.contains(&Attribute {
                 key: "campaign_id".to_string(),
                 value: "1".to_string()
-            }))
-            .next()
-            .is_some());
+            })));
     }
 
     #[test]
@@ -272,11 +276,11 @@ mod tests {
             budget: CampaignBudget {
                 fee: Coin {
                     denom: "tc".to_string(),
-                    amount: Uint128::from(10000 as u128),
+                    amount: Uint128::from(10000_u128),
                 },
                 incentives: Coin {
                     denom: "tc".to_string(),
-                    amount: Uint128::from(90000 as u128),
+                    amount: Uint128::from(90000_u128),
                 },
             },
         };
@@ -287,7 +291,7 @@ mod tests {
             &admin,
             vec![Coin {
                 denom: "tc".to_string(),
-                amount: Uint128::from(100_000 as u128),
+                amount: Uint128::from(100_000_u128),
             }],
         );
 
@@ -298,14 +302,14 @@ mod tests {
                 &msg,
                 &[Coin {
                     denom: "tc".to_string(),
-                    amount: Uint128::from(100_000 as u128),
+                    amount: Uint128::from(100_000_u128),
                 }],
             )
             .unwrap();
 
         let msg = QueryMsg::GetCampaign { id: 1 };
         let c: GetCampaignResponse = app.wrap().query_wasm_smart(addr.clone(), &msg).unwrap();
-        assert_eq!(c.campaign.status, CampaignStatus::Indexing);
+        assert_eq!(c.campaign.status, CampaignStatus::Funded);
     }
 
     #[test]
@@ -361,11 +365,11 @@ mod tests {
             budget: CampaignBudget {
                 fee: Coin {
                     denom: "tc".to_string(),
-                    amount: Uint128::from(10000 as u128),
+                    amount: Uint128::from(10000_u128),
                 },
                 incentives: Coin {
                     denom: "tc".to_string(),
-                    amount: Uint128::from(90000 as u128),
+                    amount: Uint128::from(90000_u128),
                 },
             },
         };
@@ -377,7 +381,7 @@ mod tests {
             &not_admin,
             vec![Coin {
                 denom: "tc".to_string(),
-                amount: Uint128::from(100_000 as u128),
+                amount: Uint128::from(100_000_u128),
             }],
         );
 
@@ -388,7 +392,7 @@ mod tests {
                 &msg,
                 &[Coin {
                     denom: "tc".to_string(),
-                    amount: Uint128::from(100_000 as u128),
+                    amount: Uint128::from(100_000_u128),
                 }],
             )
             .unwrap_err();
@@ -399,74 +403,191 @@ mod tests {
         );
     }
 
-    // #[test]
-    // fn fund_campaign_insufficient_funds() {
-    // let (mut deps, info) = init_contract();
-    // let amount: u128 = 1000;
-    // let admin = mock_info(
-    // "someone",
-    // &[Coin {
-    // denom: "tc".to_string(),
-    // amount: Uint128::from(amount),
-    // }],
-    // );
-    // let campaign_id = init_campaign(deps.as_mut(), &info, &admin);
-    //
-    // let msg = ExecuteMsg::FundCampaignMsg {
-    // id: campaign_id,
-    // budget: CampaignBudget {
-    // fee: Coin {
-    // denom: "tc".to_string(),
-    // amount: Uint128::from(10000 as u128),
-    // },
-    // incentives: Coin {
-    // denom: "tc".to_string(),
-    // amount: Uint128::from(90000 as u128),
-    // },
-    // },
-    // };
-    //
-    // let res = execute(deps.as_mut(), mock_env(), admin, msg);
-    //
-    // assert_eq!(res, Err(ContractError::FundsBudgetMismatch {}));
-    // }
-    //
-    // #[test]
-    // fn register_segment() {
-    // let (mut deps, info) = init_contract();
-    // let admin = mock_info(
-    // "campaign_creator",
-    // &[Coin {
-    // denom: "tc".to_string(),
-    // amount: Uint128::from(100000 as u128),
-    // }],
-    // );
-    // let campaign_id = init_campaign(deps.as_mut(), &info, &admin);
-    //
-    // let msg = ExecuteMsg::FundCampaignMsg {
-    // id: campaign_id,
-    // budget: CampaignBudget {
-    // fee: Coin {
-    // denom: "tc".to_string(),
-    // amount: Uint128::from(10000 as u128),
-    // },
-    // incentives: Coin {
-    // denom: "tc".to_string(),
-    // amount: Uint128::from(90000 as u128),
-    // },
-    // },
-    // };
-    //
-    // let _ = execute(deps.as_mut(), mock_env(), admin.clone(), msg);
-    // assert!(INDEXING_CAMPAIGNS.has(&deps.storage, campaign_id));
-    //
-    // let msg = ExecuteMsg::RegisterSegmentMsg {
-    // id: campaign_id,
-    // size: 200,
-    // };
-    // let _ = execute(deps.as_mut(), mock_env(), info, msg);
-    //
-    // assert!(!INDEXING_CAMPAIGNS.has(&deps.storage, campaign_id));
-    // assert!(ATTESTING_CAMPAIGNS.has(&deps.storage, campaign_id));
-    // }
+    #[test]
+    fn fund_campaign_insufficient_funds() {
+        let mut app = App::default();
+
+        let code = ContractWrapper::new(execute, instantiate, query);
+        let code_id = app.store_code(Box::new(code));
+
+        let creator = Addr::unchecked("contract_creator");
+
+        let addr = app
+            .instantiate_contract(
+                code_id,
+                creator.clone(),
+                &InstantiateMsg {
+                    chain: "test-1".to_string(),
+                    controller: creator.clone(),
+                    oracle: creator.clone(),
+                    fee_recipient: creator.clone(),
+                },
+                &[],
+                "self",
+                None,
+            )
+            .unwrap();
+
+        let admin = Addr::unchecked("campaign_admin");
+
+        let msg = ExecuteMsg::CreateCampaignMsg {
+            admin: admin.clone(),
+            indexer: Addr::unchecked("indexer".to_string()),
+            attester: Addr::unchecked("attester".to_string()),
+            segment_desc: SegmentDesc {
+                kind: SegmentKind::GithubAllContributors,
+                sources: vec!["bitcoin/bitcoin".to_string()],
+                proof: SegmentProofMechanism::Ed25519Signature,
+            },
+            conversion_desc: ConversionDesc {
+                kind: ConversionMechanism::Social(Auth::Github),
+                proof: ConversionProofMechanism::Ed25519Signature,
+            },
+            payout_mech: PayoutMechanism::ProportionalPerConversion,
+            ends_at: 0,
+        };
+
+        let _ = app
+            .execute_contract(admin.clone(), addr.clone(), &msg, &[])
+            .unwrap();
+
+        let msg = ExecuteMsg::FundCampaignMsg {
+            id: 1,
+            budget: CampaignBudget {
+                fee: Coin {
+                    denom: "tc".to_string(),
+                    amount: Uint128::from(10000_u128),
+                },
+                incentives: Coin {
+                    denom: "tc".to_string(),
+                    amount: Uint128::from(90000_u128),
+                },
+            },
+        };
+
+        let not_admin = Addr::unchecked("not_admin");
+        let bk = BankKeeper::new();
+        let _ = bk.init_balance(
+            app.storage_mut(),
+            &not_admin,
+            vec![Coin {
+                denom: "tc".to_string(),
+                amount: Uint128::from(100_000_u128),
+            }],
+        );
+
+        let res = app
+            .execute_contract(
+                Addr::unchecked("not_admin"),
+                addr.clone(),
+                &msg,
+                &[Coin {
+                    denom: "tc".to_string(),
+                    amount: Uint128::from(80_000_u128),
+                }],
+            )
+            .unwrap_err();
+
+        assert_eq!(
+            res.downcast::<ContractError>().unwrap(),
+            ContractError::FundsBudgetMismatch {}
+        );
+    }
+
+    #[test]
+    fn register_segment() {
+        let mut app = App::default();
+
+        let code = ContractWrapper::new(execute, instantiate, query);
+        let code_id = app.store_code(Box::new(code));
+
+        let creator = Addr::unchecked("contract_creator");
+
+        let addr = app
+            .instantiate_contract(
+                code_id,
+                creator.clone(),
+                &InstantiateMsg {
+                    chain: "test-1".to_string(),
+                    controller: creator.clone(),
+                    oracle: creator.clone(),
+                    fee_recipient: creator.clone(),
+                },
+                &[],
+                "self",
+                None,
+            )
+            .unwrap();
+
+        let admin = Addr::unchecked("campaign_admin");
+
+        let msg = ExecuteMsg::CreateCampaignMsg {
+            admin: admin.clone(),
+            indexer: Addr::unchecked("indexer".to_string()),
+            attester: Addr::unchecked("attester".to_string()),
+            segment_desc: SegmentDesc {
+                kind: SegmentKind::GithubAllContributors,
+                sources: vec!["bitcoin/bitcoin".to_string()],
+                proof: SegmentProofMechanism::Ed25519Signature,
+            },
+            conversion_desc: ConversionDesc {
+                kind: ConversionMechanism::Social(Auth::Github),
+                proof: ConversionProofMechanism::Ed25519Signature,
+            },
+            payout_mech: PayoutMechanism::ProportionalPerConversion,
+            ends_at: 0,
+        };
+
+        let _ = app
+            .execute_contract(admin.clone(), addr.clone(), &msg, &[])
+            .unwrap();
+
+        let msg = ExecuteMsg::FundCampaignMsg {
+            id: 1,
+            budget: CampaignBudget {
+                fee: Coin {
+                    denom: "tc".to_string(),
+                    amount: Uint128::from(10000_u128),
+                },
+                incentives: Coin {
+                    denom: "tc".to_string(),
+                    amount: Uint128::from(90000_u128),
+                },
+            },
+        };
+
+        let bk = BankKeeper::new();
+        let _ = bk.init_balance(
+            app.storage_mut(),
+            &admin,
+            vec![Coin {
+                denom: "tc".to_string(),
+                amount: Uint128::from(100_000_u128),
+            }],
+        );
+
+        let _ = app
+            .execute_contract(
+                admin.clone(),
+                addr.clone(),
+                &msg,
+                &[Coin {
+                    denom: "tc".to_string(),
+                    amount: Uint128::from(100_000_u128),
+                }],
+            )
+            .unwrap();
+
+        let msg = ExecuteMsg::SetStatusIndexingMsg { id: 1 };
+        let _ = app.execute_contract(creator.clone(), addr.clone(), &msg, &[]);
+
+        let msg = ExecuteMsg::RegisterSegmentMsg { id: 1, size: 200 };
+        let res = app.execute_contract(creator, addr.clone(), &msg, &[]);
+        assert!(res.is_ok());
+
+        let msg = QueryMsg::GetCampaign { id: 1 };
+        let c: GetCampaignResponse = app.wrap().query_wasm_smart(addr.clone(), &msg).unwrap();
+        assert_eq!(c.campaign.status, CampaignStatus::Attesting);
+        assert_eq!(c.campaign.segment_size, 200);
+    }
 }
