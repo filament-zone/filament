@@ -34,6 +34,9 @@ pub enum ExecuteMsg {
         id: u64,
         budget: CampaignBudget,
     },
+    SetStatusIndexingMsg {
+        id: u64,
+    },
 
     RegisterSegmentMsg {
         id: u64,
@@ -42,13 +45,17 @@ pub enum ExecuteMsg {
     RegisterConversionsMsg {
         id: u64,
         who: Addr,
+        amount: u128,
     },
-
-    AbortCampaignMsg {
+    FinalizeCampaignMsg {
         id: u64,
     },
 
-    DisperseFees {
+    ClaimIncentivesMsg {
+        id: u64,
+    },
+
+    AbortCampaignMsg {
         id: u64,
     },
 }

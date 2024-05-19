@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, BankMsg, Coin, DepsMut, MessageInfo, Response, Uint128};
+use cosmwasm_std::{Addr, BankMsg, Coin, DepsMut, Env, MessageInfo, Order, Response, Uint128};
 
 use super::query::load_campaign;
 use crate::{
@@ -14,6 +14,7 @@ use crate::{
         CAMPAIGN_ID,
         CANCELED_CAMPAIGNS,
         CONF,
+        CONVERSIONS,
         CREATED_CAMPAIGNS,
         FAILED_CAMPAIGNS,
         FINISHED_CAMPAIGNS,
@@ -98,9 +99,30 @@ pub fn fund_campaign(
         return Err(ContractError::AlreadyFunded {});
     }
 
-    campaign.status = CampaignStatus::Indexing;
+    campaign.status = CampaignStatus::Funded;
 
     CREATED_CAMPAIGNS.remove(deps.storage, id);
+    FUNDED_CAMPAIGNS.save(deps.storage, id, &campaign)?;
+
+    Ok(Response::new().add_attribute("campaign_id", id.to_string()))
+}
+
+pub fn set_status_indexing(
+    deps: DepsMut<'_>,
+    info: MessageInfo,
+    id: u64,
+) -> Result<Response, ContractError> {
+    if !is_oracle(&deps, &info) {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    let mut campaign = FUNDED_CAMPAIGNS
+        .load(deps.storage, id)
+        .map_err(|_| ContractError::CampaignIdNotFound(id))?;
+
+    campaign.status = CampaignStatus::Indexing;
+
+    FUNDED_CAMPAIGNS.remove(deps.storage, id);
     INDEXING_CAMPAIGNS.save(deps.storage, id, &campaign)?;
 
     Ok(Response::new().add_attribute("campaign_id", id.to_string()))
@@ -129,9 +151,11 @@ pub fn register_segment(
 
 pub fn register_conversion(
     deps: DepsMut<'_>,
+    env: Env,
     info: MessageInfo,
     id: u64,
     who: Addr,
+    amount: u128,
 ) -> Result<Response, ContractError> {
     if !is_oracle(&deps, &info) {
         return Err(ContractError::Unauthorized {});
@@ -139,36 +163,85 @@ pub fn register_conversion(
 
     let mut campaign = ATTESTING_CAMPAIGNS.load(deps.storage, id)?;
 
-    if !campaign.can_payout() {
-        return Err(ContractError::CampaignCannotPayout {});
+    if !campaign.is_running() {
+        return Err(ContractError::CampaignNoLongerRunning {});
     }
 
-    let payout = campaign
-        .payout_coin()
-        .ok_or(ContractError::CampaignCannotPayout {})?;
-    let snd = BankMsg::Send {
-        to_address: who.to_string(),
-        amount: vec![payout.clone()],
-    };
+    if campaign.is_beyond_deadline(env.block.time.nanos()) {
+        return Err(ContractError::CampaignDeadlinePassed {});
+    }
 
-    campaign.spent += payout.amount.u128();
+    if CONVERSIONS.has(deps.storage, (id, who.clone())) {
+        return Err(ContractError::ConversionAlreadyRegistered {});
+    }
+
+    let cs: u64 = CONVERSIONS
+        .prefix(id)
+        .range(deps.storage, None, None, Order::Ascending)
+        .count()
+        .try_into()
+        .unwrap();
+
+    if cs == campaign.segment_size {
+        return Err(ContractError::AllConversionsRegistered {});
+    }
+
+    if campaign.budget_left() == 0 || campaign.budget_left() < amount {
+        return Err(ContractError::CampaignAllFundsPledged {});
+    }
+
+    CONVERSIONS.save(deps.storage, (id, who), &(amount, false))?;
+
+    campaign.spent += amount;
 
     ATTESTING_CAMPAIGNS.save(deps.storage, id, &campaign)?;
 
-    Ok(Response::new().add_message(snd))
+    Ok(Response::new().add_attributes(vec![("campaign_id", id.to_string())]))
 }
 
-pub fn disperse_fees(
+// Anyone can finalize a campaign given it is in the correct state:
+//   - in Attesting state
+//   AND
+//   - all conversions are posted (count(conversion) == segment_size)
+//   - or we are beyond the deadline (block.time > ends_at)
+// If that is the case, then the campaign moves from Attesting to Finalized
+// and fees are dispersed to the attester, indexer and protocol.
+pub fn finalized_campaign(
     deps: DepsMut<'_>,
+    env: Env,
     _info: MessageInfo,
     id: u64,
 ) -> Result<Response, ContractError> {
-    let mut campaign = load_campaign(deps.as_ref(), id)?;
+    let mut campaign = ATTESTING_CAMPAIGNS.load(deps.storage, id)?;
 
-    if campaign.is_running() || !campaign.has_budget() || campaign.fee_claimed {
-        return Err(ContractError::CampaignCannotDisperseFees {});
+    let cs: u64 = CONVERSIONS
+        .prefix(id)
+        .range(deps.storage, None, None, Order::Ascending)
+        .count()
+        .try_into()
+        .unwrap();
+
+    if cs != campaign.segment_size && !campaign.is_beyond_deadline(env.block.time.nanos()) {
+        return Err(ContractError::CampaignNotAllConversionsRegistered {});
     }
 
+    let mut msgs = vec![];
+    if !campaign.fee_claimed {
+        msgs.append(fee_msgs(&deps, &campaign)?.as_mut())
+    }
+
+    campaign.fee_claimed = true;
+    campaign.status = CampaignStatus::Finished;
+
+    ATTESTING_CAMPAIGNS.remove(deps.storage, id);
+    FINISHED_CAMPAIGNS.save(deps.storage, id, &campaign)?;
+
+    Ok(Response::new().add_messages(msgs))
+}
+
+// XXX: currently just splitting the fees 40/40/20 between attester, indexer
+//      and protocol
+pub fn fee_msgs(deps: &DepsMut<'_>, campaign: &Campaign) -> Result<Vec<BankMsg>, ContractError> {
     let fees = campaign
         .budget
         .clone()
@@ -204,10 +277,45 @@ pub fn disperse_fees(
         }],
     };
 
-    campaign.fee_claimed = true;
-    write_campaign(deps, id, &campaign)?;
+    Ok(vec![att, ind, pro])
+}
 
-    Ok(Response::new().add_messages(vec![att, ind, pro]))
+pub fn claim_incentives(
+    deps: DepsMut<'_>,
+    info: MessageInfo,
+    id: u64,
+) -> Result<Response, ContractError> {
+    let campaign = load_campaign(deps.as_ref(), id)?;
+
+    if campaign.is_running() {
+        return Err(ContractError::CampaignNotFinished {});
+    }
+
+    if campaign.status == CampaignStatus::Canceled {
+        return Err(ContractError::CampaignCanceled {});
+    }
+
+    let (payout, claimed) = CONVERSIONS.load(deps.storage, (id, info.sender.clone()))?;
+
+    if claimed {
+        return Err(ContractError::ConversionAlreadyClaimed {});
+    }
+    // How did we even get here if there is no budget at this point?
+    let out_coin = campaign
+        .budget
+        .ok_or(ContractError::CampaignCannotPayout {})?
+        .incentives;
+
+    let msg = BankMsg::Send {
+        to_address: info.sender.to_string(),
+        amount: vec![Coin {
+            denom: out_coin.denom,
+            amount: Uint128::from(payout),
+        }],
+    };
+    CONVERSIONS.save(deps.storage, (id, info.sender.clone()), &(payout, true))?;
+
+    Ok(Response::new().add_message(msg))
 }
 
 pub fn abort_campaign(
@@ -221,18 +329,20 @@ pub fn abort_campaign(
         return Err(ContractError::Unauthorized {});
     }
 
+    // XXX: right now this means that once all conversions are registered,
+    //      the campaigner can no longer get a refund
     let mut msgs = vec![];
     if campaign.has_budget() {
         // if we have a budget the unwrap should not fail
-        let out_coin = campaign.payout_coin().unwrap();
-        let payout = campaign.budget_left().unwrap_or(Coin {
-            denom: out_coin.denom,
-            amount: Uint128::from(0_u128),
-        });
+        let out_coin = campaign.budget.clone().unwrap().incentives;
+        let payout = campaign.budget_left();
 
         let snd = BankMsg::Send {
             to_address: info.sender.to_string(),
-            amount: vec![payout],
+            amount: vec![Coin {
+                denom: out_coin.denom,
+                amount: Uint128::from(payout),
+            }],
         };
 
         msgs.push(snd);
@@ -245,24 +355,6 @@ pub fn abort_campaign(
     remove_campaign(deps, id, status);
 
     Ok(Response::new().add_messages(msgs))
-}
-
-pub fn write_campaign(
-    deps: DepsMut<'_>,
-    id: u64,
-    campaign: &Campaign,
-) -> Result<(), ContractError> {
-    match campaign.status {
-        CampaignStatus::Created => CREATED_CAMPAIGNS.save(deps.storage, id, campaign)?,
-        CampaignStatus::Funded => FUNDED_CAMPAIGNS.save(deps.storage, id, campaign)?,
-        CampaignStatus::Indexing => INDEXING_CAMPAIGNS.save(deps.storage, id, campaign)?,
-        CampaignStatus::Attesting => ATTESTING_CAMPAIGNS.save(deps.storage, id, campaign)?,
-        CampaignStatus::Finished => FINISHED_CAMPAIGNS.save(deps.storage, id, campaign)?,
-        CampaignStatus::Canceled => CANCELED_CAMPAIGNS.save(deps.storage, id, campaign)?,
-        CampaignStatus::Failed => FAILED_CAMPAIGNS.save(deps.storage, id, campaign)?,
-    };
-
-    Ok(())
 }
 
 pub fn remove_campaign(deps: DepsMut<'_>, id: u64, status: CampaignStatus) {
