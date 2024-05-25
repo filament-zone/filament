@@ -3,6 +3,7 @@ use std::fmt;
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Addr, Coin, Uint128};
 use cw_storage_plus::{Item, Map};
+use serde::{de::Error, Deserialize, Deserializer};
 
 #[cw_serde]
 pub struct Config {
@@ -48,12 +49,23 @@ impl fmt::Display for CampaignStatus {
     }
 }
 
+pub fn number_from_string<'de, D>(deserializer: D) -> Result<u128, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let input: String = Deserialize::deserialize(deserializer)?;
+    input
+        .parse::<u128>()
+        .map_err(|e| D::Error::custom(format!("could not deserialize u128: {:}", e)))
+}
+
 #[cw_serde]
 pub struct Campaign {
     pub id: u64,
     pub admin: Addr,
     pub status: CampaignStatus,
     pub budget: Option<CampaignBudget>,
+    #[serde(deserialize_with = "number_from_string")]
     pub spent: u128,
     pub indexer: Addr,
     pub attester: Addr,
