@@ -1,0 +1,39 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+    tags: ["*"]
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+env:
+  FOUNDRY_PROFILE: ci
+
+jobs:
+  check:
+    strategy:
+      fail-fast: true
+
+    name: Foundry project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Run Forge build
+        run: |
+          forge --version
+          forge build --sizes --root control
+        id: build
+
+      - name: Run Forge tests
+        run: |
+          forge test -vvv --root control/
+        id: test

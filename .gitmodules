@@ -1,0 +1,8 @@
+[submodule "control/lib/forge-std"]
+	path = control/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+	branch = chore/v1.9.1
+[submodule "control/lib/openzeppelin-contracts"]
+	path = control/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+	branch = release-v5.0

@@ -14,6 +14,8 @@ node_modules
 
 .idea
 
+.env
+
 /crates/provers/risc0/guest-celestia/target
 /crates/provers/risc0/guest-mock/target
 /rollup-data/
@@ -21,3 +23,6 @@ node_modules
 docker/credentials/*
 !docker/credentials/bridge-0.addr
 !docker/credentials/bridge-0.key
+
+control/out
+control/cache
