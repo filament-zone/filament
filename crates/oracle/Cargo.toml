@@ -1,0 +1,50 @@
+[package]
+name          = "oracle"
+version       = { workspace = true }
+authors       = { workspace = true }
+edition       = { workspace = true }
+license       = { workspace = true }
+homepage      = { workspace = true }
+repository    = { workspace = true }
+rust-version  = { workspace = true }
+publish       = { workspace = true }
+
+[lints]
+workspace = true
+
+[dependencies]
+# filament-hub-rollup    = { workspace = true }
+filament-hub-stf       = { workspace = true }
+filament-hub-core      = { workspace = true }
+
+# sov-accounts           = { workspace = true }
+sov-bank               = { workspace = true }
+sov-cli                = { workspace = true }
+sov-ledger-apis        = { workspace = true }
+sov-modules-api        = { workspace = true }
+# sov-modules-rollup-blueprint  = { workspace = true }
+sov-risc0-adapter      = { workspace = true }
+sov-rollup-interface   = { workspace = true }
+
+argh                   = { version = "0.1.12" }
+borsh                  = { workspace = true, default-features = false }
+cosmrs                 = { version = "0.16.0", default-features = false, features = [ "cosmwasm", "grpc", "rpc" ] }
+eyre                   = { version = "0.6",  default-features = false }
+futures                = { version = "0.3", default-features = false, features = ["async-await", "std"] }
+hex                    = { workspace = true }
+jsonrpsee              = { workspace = true, default-features = false }
+# reqwest                = { workspace = true, default-features = false, features = [ "default-tls", "json", "rustls-tls", "stream" ] }
+serde                  = { workspace = true }
+serde_json             = { workspace = true }
+# serde_with             = { version = "3.7", features = [ "schemars_0_8", "base64" ] }
+tendermint             = { version = "0.36", default-features = false }
+tendermint-rpc         = { version = "0.36", default-features = true,  features = [ "http-client", "tracing", "websocket-client", "secp256k1" ] }
+tokio                  = { workspace = true,  default-features = false, features = [ "macros", "rt-multi-thread", "sync", "time" ] }
+tonic                  = { version = "0.11.0", features = [ ] }
+tracing                = { version = "0.1",  default-features = false, features = [ "release_max_level_debug" ] }
+tracing-subscriber     = { version = "0.3",  default-features = false, features = [ "env-filter", "fmt" ] }
+neutron                = { path = "../../outposts/CosmWasm/contracts/neutron/" }
+
+[patch.crates-io]
+tendermint-rpc = { path = "../../tendermint-rs/rpc" }
+tendermint = { path = "../../tendermint-rs/tendermint" }
