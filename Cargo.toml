@@ -4,6 +4,7 @@ members   = [
   "crates/cli",
   "crates/config",
   "crates/modules/core",
+  "crates/oracle",
   "crates/provers/risc0",
   "crates/rollup",
   "crates/stf",
@@ -91,3 +92,7 @@ thiserror           = { version = "1.0.50",   default-features = false }
 tokio               = { version = "1.35",     default-features = false }
 tracing             = { version = "0.1.40",   default-features = false }
 tracing-subscriber  = { version = "0.3.17",   default-features = false }
+
+[patch.crates-io]
+tendermint-rpc = { path = "../../tendermint-rs/rpc" }
+tendermint = { path = "../../tendermint-rs/tendermint" }

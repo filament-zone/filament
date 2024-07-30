@@ -52,7 +52,10 @@ pub fn create_campaign(
         fee_claimed: false,
     };
     CREATED_CAMPAIGNS.save(deps.storage, id, &c)?;
-    Ok(Response::new().add_attribute("campaign_id", id.to_string()))
+    Ok(Response::new().add_attributes(vec![
+        ("campaign_id", id.to_string()),
+        ("campaign_status", c.status.to_string()),
+    ]))
 }
 
 pub fn is_oracle(deps: &DepsMut<'_>, info: &MessageInfo) -> bool {
@@ -99,7 +102,8 @@ pub fn fund_campaign(
         return Err(ContractError::AlreadyFunded {});
     }
 
-    campaign.status = CampaignStatus::Funded;
+    campaign.status = CampaignStatus::Indexing;
+    campaign.budget = Some(budget);
 
     CREATED_CAMPAIGNS.remove(deps.storage, id);
     FUNDED_CAMPAIGNS.save(deps.storage, id, &campaign)?;
@@ -125,7 +129,10 @@ pub fn set_status_indexing(
     FUNDED_CAMPAIGNS.remove(deps.storage, id);
     INDEXING_CAMPAIGNS.save(deps.storage, id, &campaign)?;
 
-    Ok(Response::new().add_attribute("campaign_id", id.to_string()))
+    Ok(Response::new().add_attributes(vec![
+        ("campaign_id", id.to_string()),
+        ("campaign_status", campaign.status.to_string()),
+    ]))
 }
 
 pub fn register_segment(
@@ -146,7 +153,10 @@ pub fn register_segment(
 
     ATTESTING_CAMPAIGNS.save(deps.storage, id, &campaign)?;
 
-    Ok(Response::new().add_attribute("campaign_id", id.to_string()))
+    Ok(Response::new().add_attributes(vec![
+        ("campaign_id", id.to_string()),
+        ("campaign_status", campaign.status.to_string()),
+    ]))
 }
 
 pub fn register_conversion(
@@ -354,7 +364,10 @@ pub fn abort_campaign(
     CANCELED_CAMPAIGNS.save(deps.storage, id, &campaign)?;
     remove_campaign(deps, id, status);
 
-    Ok(Response::new().add_messages(msgs))
+    Ok(Response::new().add_messages(msgs).add_attributes(vec![
+        ("campaign_id", id.to_string()),
+        ("campaign_status", campaign.status.to_string()),
+    ]))
 }
 
 pub fn remove_campaign(deps: DepsMut<'_>, id: u64, status: CampaignStatus) {
