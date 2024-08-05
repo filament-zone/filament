@@ -1,0 +1,8 @@
+[submodule "outposts/solidity/ethereum/lib/openzeppelin-contracts"]
+	path = outposts/solidity/ethereum/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+	branch = release-v5.0
+[submodule "outposts/solidity/ethereum/lib/forge-std"]
+	path = outposts/solidity/ethereum/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+	branch = chore/v1.9.1
