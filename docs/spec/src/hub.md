@@ -1,4 +1,11 @@
-# Incentive Hub
+# Spec
+
+The Filament Hub is the central coordination point to conduct incentive
+campaigns originting from outpost deployed on foreign chains. Incentives are
+generally defined as a set of funds that are dispersed to a segment based on
+on/off-chain data. This is accomplished by offering access to a variety of
+indexers with access to datasets as well as attesters responsible for tracking
+conversions.
 
 <!-- toc -->
 
@@ -12,22 +19,30 @@ sequenceDiagram
 
     actor C as Campaigner
     participant O as Outpost
+    actor Cs as Conversions
     participant H as Hub
+    participant I as Indexer
     participant A as Attester
 
     C->>O: create Campaign
     C->>O: fund Campaign
     O--)H: relay Campaign
-    A->>H: lock Campaign
+    I->>H: lock Campaign
     H--)O: relay Lock
-    create actor S as Segment
-    A->>S: produce
-    A->>A: compute Witness
-    A->>H: attest Segment
-    H--)O: relay Segment
-    O->>S: settle Payment
-    O--)H: relay Payment
-    H->>A: pays Fee
+
+    I->>H: post Segment
+    A->>H: read Segment
+
+    loop
+        A->>Cs: attest Conversion
+    end
+
+    H--)O: finish conversion window
+    O->>Cs: payout Incentive
+    O--)H: relay Fees
+    H->>I: pay Fee
+    H->>A: pay Fee
+    H->>H: collect Fee
 ```
 
 ### Payment flow
@@ -83,7 +98,7 @@ sequenceDiagram
 
 ### State Machines
 
-#### $H$ub
+#### Hub
 
 The central coordination point between all Outputs and off-chain
 actors.
@@ -91,7 +106,7 @@ actors.
 * $H$<sub>pre</sub> - pre conditions on the Hub state machine.
 * $H$<sub>post</sub> - post conditions on the Hub state machine.
 
-#### $O$utpost
+#### Outpost
 
 A deployment on a foreign chain to allow local access to the
 system and native composability. Generally responsible for settlemnt of payments.
@@ -103,37 +118,37 @@ system and native composability. Generally responsible for settlemnt of payments
 
 ### Actors
 
-#### $C$ampaigner
+#### Campaigner
 
 > *TODO*
 
-#### $A$ttester
+#### Attester
 
 Off-chain actor generating and providiing witness data.
 
-#### $In$dexer
+#### Indexer
 
 The data provider required to produce witness data.
 
 ### Data
 
-#### $Ca$mpaign
+#### Campaign
 
 * $ca\_id$ - `chain_id || '-' || id_ctx`
 
-#### $Q$uery
+#### Query
 
 > *TODO*
 
-#### $S$egment
+#### Segment
 
 Describes the audience for a campaign.
 
-#### $I$ncentive
+#### Incentive
 
 Describes the payout mechanism of the budgets on settlement.
 
-#### $B$udget
+#### Budget
 
 The budget is the total amount of funds available for a campaign, including
 incentives ($B_i$) and fee payments ($B_f$).
@@ -142,7 +157,7 @@ $B = (B_i, B_f)$
 
 Fees will be used to pay for proof and segment generation on the hub.
 
-#### $P$roofs
+#### Proofs
 
 There will be different proofs with a variety of integrity and costs.
 A simple signature from a trusted party is very low on verifiability for the
@@ -164,7 +179,7 @@ We offer the following proof types:
 
 ## Actions
 
-### Outpost
+### Outpost actions
 
 #### `init(chain_id)`
 
@@ -216,7 +231,7 @@ hub.
 | $Ca$ is locked    | $Ca$ is complete   |
 |                   | $B$ is paid        |
 
-### Hub
+### Hub actions
 
 #### `attest(campaign_id, proof, segment)`
 
@@ -255,9 +270,6 @@ Relayss the settled payment from an outpost.
 
 ## TODOS
 
-* [ ] write/copy introduction
-  * [ ] flow chart with actor activities
-  * [ ] showing who pays who
 * [ ] make spec more concrete in terms of shape and data types
 * [ ] how are segments specified?
 * [ ] further define and clarify conditions
