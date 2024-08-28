@@ -1,6 +1,14 @@
 use sov_modules_api::{CallResponse, Context, Spec, TxState};
 
-use crate::{campaign::ChainId, playbook::Playbook, segment::Segment, Core, CoreError};
+use crate::{
+    campaign::Payment,
+    criteria::Criteria,
+    delegate::Eviction,
+    playbook::Budget,
+    segment::Segment,
+    Core,
+    CoreError,
+};
 
 /// This enumeration represents the available call messages for interacting with
 /// the `Core` module.
@@ -14,14 +22,25 @@ use crate::{campaign::ChainId, playbook::Playbook, segment::Segment, Core, CoreE
     serde::Serialize,
 )]
 pub enum CallMessage<S: Spec> {
-    CreateCampaign {
-        origin: String,
-        origin_id: u64,
+    Init {
+        criteria: Criteria,
+        budget: Budget,
+        payment: Option<Payment>,
+        evictions: Vec<Eviction<S>>,
+    },
 
-        indexer: S::Address,
-        attester: S::Address,
+    ProposeCriteria {
+        campaign_id: u64,
+        criteria: Criteria,
+    },
 
-        playbook: Playbook,
+    ConfirmCriteria {
+        campaign_id: u64,
+        proposal_id: Option<u64>,
+    },
+
+    RejectCriteria {
+        id: u64,
     },
 
     IndexCampaign {
@@ -38,26 +57,55 @@ pub enum CallMessage<S: Spec> {
 }
 
 impl<S: Spec> Core<S> {
-    #[allow(clippy::too_many_arguments)]
-    pub(crate) fn call_create_campaign(
+    pub(crate) fn call_init_campaign(
         &self,
-        origin: ChainId,
-        origin_id: u64,
-        indexer: S::Address,
-        attester: S::Address,
-        playbook: Playbook,
+        criteria: Criteria,
+        budget: Budget,
+        payment: Option<Payment>,
+        evictions: Vec<Eviction<S>>,
         context: &Context<S>,
         working_set: &mut impl TxState<S>,
     ) -> Result<CallResponse, CoreError<S>> {
-        self.create_campaign(
+        self.init_campaign(
             context.sender().clone(),
-            origin_id,
-            origin,
-            indexer,
-            attester,
-            playbook,
+            criteria,
+            budget,
+            payment,
+            evictions,
             working_set,
         )?;
+        Ok(CallResponse::default())
+    }
+
+    pub(crate) fn call_propose_criteria(
+        &self,
+        id: u64,
+        criteria: Criteria,
+        context: &Context<S>,
+        working_set: &mut impl TxState<S>,
+    ) -> Result<CallResponse, CoreError<S>> {
+        self.propose_criteria(context.sender().clone(), id, criteria, working_set)?;
+        Ok(CallResponse::default())
+    }
+
+    pub(crate) fn call_confirm_criteria(
+        &self,
+        id: u64,
+        proposal_id: Option<u64>,
+        context: &Context<S>,
+        working_set: &mut impl TxState<S>,
+    ) -> Result<CallResponse, CoreError<S>> {
+        self.confirm_criteria(context.sender().clone(), id, proposal_id, working_set)?;
+        Ok(CallResponse::default())
+    }
+
+    pub(crate) fn call_reject_criteria(
+        &self,
+        id: u64,
+        context: &Context<S>,
+        working_set: &mut impl TxState<S>,
+    ) -> Result<CallResponse, CoreError<S>> {
+        self.reject_criteria(context.sender().clone(), id, working_set)?;
         Ok(CallResponse::default())
     }
 

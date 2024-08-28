@@ -14,6 +14,7 @@ pub struct CoreConfig<S: Spec> {
     pub admin: S::Address,
 
     pub campaigns: Vec<Campaign<S>>,
+    pub delegates: Vec<S::Address>,
     pub indexers: Vec<Indexer<S>>,
 }
 
@@ -27,7 +28,11 @@ impl<S: Spec> Core<S> {
 
         self.admin.set(&config.admin, working_set);
 
-        let mut id = 1;
+        for delegate in config.delegates.iter() {
+            self.delegates.push(delegate, working_set);
+        }
+
+        let mut id = 0;
         for campaign in config.campaigns.iter() {
             self.campaigns.set(&id, campaign, working_set);
             id += 1;
@@ -39,7 +44,7 @@ impl<S: Spec> Core<S> {
             self.indexer_aliases.set(addr, alias, working_set);
         }
 
-        tracing::info!("completed campaigns genesis");
+        tracing::info!("completed core genesis");
 
         Ok(())
     }

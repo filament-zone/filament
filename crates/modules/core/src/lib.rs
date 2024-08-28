@@ -19,9 +19,15 @@ mod call;
 pub use call::CallMessage;
 
 pub mod campaign;
-use campaign::{Campaign, ChainId, Status};
+use campaign::{Campaign, Payment, Phase};
+
+pub mod criteria;
+use criteria::{Criteria, CriteriaProposal};
 
 pub mod crypto;
+
+pub mod delegate;
+use delegate::Eviction;
 
 mod error;
 pub use error::CoreError;
@@ -36,7 +42,7 @@ mod indexer;
 pub use indexer::{Alias, Indexer};
 
 pub mod playbook;
-pub use playbook::Playbook;
+pub use playbook::{Budget, Playbook};
 
 pub mod segment;
 pub use segment::Segment;
@@ -55,13 +61,16 @@ pub struct Core<S: Spec> {
     pub(crate) admin: StateValue<S::Address>,
 
     #[state]
+    pub(crate) delegates: StateVec<S::Address>,
+
+    #[state]
     pub(crate) next_campaign_id: StateValue<u64>,
 
     #[state]
     pub(crate) campaigns: StateMap<u64, Campaign<S>>,
 
     #[state]
-    pub(crate) campaigns_by_origin: StateMap<(ChainId, u64), u64>,
+    pub(crate) criteria_proposals: StateMap<u64, Vec<CriteriaProposal<S>>>,
 
     #[state]
     pub(crate) indexers: StateVec<S::Address>,
@@ -90,25 +99,30 @@ impl<S: Spec> Module for Core<S> {
         working_set: &mut impl TxState<S>,
     ) -> Result<CallResponse, Error> {
         match msg {
-            call::CallMessage::CreateCampaign {
-                origin,
-                origin_id,
-
-                indexer,
-                attester,
-
-                playbook,
+            call::CallMessage::Init {
+                criteria,
+                budget,
+                payment,
+                evictions,
             } => self
-                .call_create_campaign(
-                    origin,
-                    origin_id,
-                    indexer,
-                    attester,
-                    playbook,
-                    context,
-                    working_set,
-                )
+                .call_init_campaign(criteria, budget, payment, evictions, context, working_set)
                 .map_err(|e| Error::ModuleError(e.into())),
+            call::CallMessage::ProposeCriteria {
+                campaign_id,
+                criteria,
+            } => self
+                .call_propose_criteria(campaign_id, criteria, context, working_set)
+                .map_err(|e| Error::ModuleError(e.into())),
+            call::CallMessage::ConfirmCriteria {
+                campaign_id,
+                proposal_id,
+            } => self
+                .call_confirm_criteria(campaign_id, proposal_id, context, working_set)
+                .map_err(|e| Error::ModuleError(e.into())),
+            call::CallMessage::RejectCriteria { id } => self
+                .call_reject_criteria(id, context, working_set)
+                .map_err(|e| Error::ModuleError(e.into())),
+
             call::CallMessage::IndexCampaign { id } => self
                 .call_index_campaign(id, context, working_set)
                 .map_err(|e| Error::ModuleError(e.into())),
@@ -126,37 +140,22 @@ impl<S: Spec> Module for Core<S> {
     }
 }
 
+// Campaign handlers.
 impl<S: Spec> Core<S> {
-    #[allow(clippy::too_many_arguments)]
-    fn create_campaign(
+    fn init_campaign(
         &self,
         sender: S::Address,
-        origin_id: u64,
-        origin: ChainId,
-        indexer: S::Address,
-        attester: S::Address,
-        playbook: playbook::Playbook,
+        criteria: Criteria,
+        budget: Budget,
+        payment: Option<Payment>,
+        evictions: Vec<Eviction<S>>,
         working_set: &mut impl TxState<S>,
     ) -> Result<(), CoreError<S>> {
-        tracing::info!(%sender, %origin, %origin_id, "Create campaign request");
+        tracing::info!(%sender, "Init campaign request");
 
-        // TODO(xla): Only accept if sender is a trusted oracle.
-        // TODO(xla): Validate that attester is registered.
-        // TODO(xla): Check that all Coins exist and amount are payable.
-
-        self.indexer_aliases
-            .get(&indexer.clone(), working_set)
-            .ok_or(CoreError::<S>::IndexerNotRegistered {
-                indexer: indexer.clone(),
-            })?;
-
-        if self
-            .campaigns_by_origin
-            .get(&(origin.clone(), origin_id), working_set)
-            .is_some()
-        {
-            return Err(CoreError::CampaignExists { origin, origin_id });
-        }
+        // TODO(xla): Expect bond and assert bond is locked for sender.
+        // TODO(xla): Only accept if sender is a valid campaigner.
+        // TODO(xla): Check that all Coins exist and amounts are payable.
 
         let id = self
             .next_campaign_id
@@ -167,35 +166,166 @@ impl<S: Spec> Core<S> {
             return Err(CoreError::IdExists { id });
         }
 
+        if criteria.len() == 0 {
+            return Err(CoreError::MissingCriteria);
+        }
+
+        // TODO(xla): Compute list of proposed delegates based on matching criteria.
+        let proposed_delegates = self.delegates.iter(working_set).collect::<Vec<_>>();
+
+        if !evictions.iter().all(|e| proposed_delegates.contains(e)) {
+            return Err(CoreError::InvalidEviction);
+        }
+
+        let delegates = {
+            let mut delegates = proposed_delegates.clone();
+            delegates.retain(|d| !evictions.contains(d));
+            delegates
+        };
+
+        // TODO(xla): Settle payment in case of evictions.
+        let mut payments = vec![];
+        if let Some(ref payment) = payment {
+            payments.push(payment.clone());
+        }
+
         self.campaigns.set(
             &id,
             &Campaign {
-                status: campaign::Status::Funded,
-                origin: origin.clone(),
-                origin_id,
-                indexer,
-                attester,
-                playbook,
+                campaigner: sender.clone(),
+                phase: Phase::Criteria,
+
+                criteria,
+                budget,
+                payments,
+
+                proposed_delegates,
+                evictions: evictions.clone(),
+                delegates,
+
+                indexer: None,
             },
             working_set,
         );
-        self.campaigns_by_origin
-            .set(&(origin.clone(), origin_id), &id, working_set);
         self.next_campaign_id.set(&(id + 1), working_set);
 
         self.emit_event(
             working_set,
-            "campaign_created",
-            Event::CampaignCreated {
+            "campaign_initialized",
+            Event::CampaignInitialized {
                 id,
-                origin: origin.clone(),
-                origin_id,
+                campaigner: sender,
+                payment,
+                evictions,
             },
         );
 
-        tracing::info!(%id, %origin, %origin_id, "Campaign created");
+        tracing::info!(%id, "Campaign initialized");
 
         Ok(())
+    }
+
+    fn propose_criteria(
+        &self,
+        sender: S::Address,
+        campaign_id: u64,
+        criteria: Criteria,
+        working_set: &mut impl TxState<S>,
+    ) -> Result<(), CoreError<S>> {
+        tracing::info!(%sender, %campaign_id, "Criteria propose request");
+
+        let campaign = self
+            .campaigns
+            .get(&campaign_id, working_set)
+            .ok_or(CoreError::CampaignNotFound { id: campaign_id })?;
+
+        if campaign.phase != Phase::Criteria {
+            return Err(CoreError::InvalidCriteriaProposal { campaign_id });
+        }
+
+        if !campaign.delegates.contains(&sender) {
+            return Err(CoreError::InvalidProposer {
+                reason: format!("{} is not a campaign delegate", sender),
+            });
+        }
+
+        let mut proposals = self
+            .criteria_proposals
+            .get(&campaign_id, working_set)
+            .unwrap_or_default();
+        let proposal_id = (proposals.len()) as u64;
+
+        proposals.push(CriteriaProposal {
+            campaign_id: proposal_id,
+            proposer: sender.clone(),
+            criteria,
+        });
+
+        self.criteria_proposals
+            .set(&campaign_id, &proposals, working_set);
+
+        self.emit_event(
+            working_set,
+            "criteria_proposed",
+            Event::CriteriaProposed {
+                campaign_id,
+                proposer: sender,
+                proposal_id,
+            },
+        );
+
+        tracing::info!(%campaign_id, %proposal_id, "Criteria proposed");
+
+        Ok(())
+    }
+
+    fn confirm_criteria(
+        &self,
+        sender: S::Address,
+        campaign_id: u64,
+        proposal_id: Option<u64>,
+        working_set: &mut impl TxState<S>,
+    ) -> Result<(), CoreError<S>> {
+        tracing::info!(%sender, %campaign_id, "Criteria confirm request");
+
+        let mut campaign = self
+            .campaigns
+            .get(&campaign_id, working_set)
+            .ok_or(CoreError::CampaignNotFound { id: campaign_id })?;
+
+        if campaign.campaigner != sender {
+            return Err(CoreError::SenderNotCampaigner { sender });
+        }
+
+        if campaign.phase != Phase::Criteria {
+            return Err(CoreError::InvalidCriteriaProposal { campaign_id });
+        }
+
+        campaign.phase = Phase::Publish;
+
+        self.campaigns.set(&campaign_id, &campaign, working_set);
+
+        self.emit_event(
+            working_set,
+            "criteria_confirmed",
+            Event::CriteriaConfirmed {
+                campaign_id,
+                proposal_id,
+            },
+        );
+
+        tracing::info!(%campaign_id, ?proposal_id, "Criteria proposed");
+
+        Ok(())
+    }
+
+    fn reject_criteria(
+        &self,
+        _sender: S::Address,
+        _id: u64,
+        _working_set: &mut impl TxState<S>,
+    ) -> Result<(), CoreError<S>> {
+        todo!()
     }
 
     fn index_campaign(
@@ -211,22 +341,22 @@ impl<S: Spec> Core<S> {
             .get(&id, working_set)
             .ok_or(CoreError::CampaignNotFound { id })?;
 
-        if sender != campaign.indexer {
+        if campaign.indexer.is_none() || sender != campaign.indexer.clone().unwrap() {
             return Err(CoreError::IndexerMissmatch {
                 id,
                 indexer: campaign.indexer,
                 sender,
             });
         }
-        if campaign.status != Status::Funded {
+        if campaign.phase != Phase::Publish {
             return Err(CoreError::InvalidTransition {
                 id,
-                current: campaign.status,
-                attempted: Status::Indexing,
+                current: campaign.phase,
+                attempted: Phase::Indexing,
             });
         }
 
-        campaign.status = Status::Indexing;
+        campaign.phase = Phase::Indexing;
         self.campaigns.set(&id, &campaign, working_set);
 
         self.emit_event(
@@ -257,25 +387,25 @@ impl<S: Spec> Core<S> {
             .get(&id, working_set)
             .ok_or(CoreError::CampaignNotFound { id })?;
 
-        if sender != campaign.indexer {
+        if campaign.indexer.is_none() || sender != campaign.indexer.clone().unwrap() {
             return Err(CoreError::IndexerMissmatch {
                 id,
                 indexer: campaign.indexer,
                 sender,
             });
         }
-        if campaign.status != Status::Indexing {
+        if campaign.phase != Phase::Indexing {
             return Err(CoreError::InvalidTransition {
                 id,
-                current: campaign.status,
-                attempted: Status::Attesting,
+                current: campaign.phase,
+                attempted: Phase::Distribution,
             });
         }
         if self.segments.get(&id, working_set).is_some() {
             return Err(CoreError::SegmentExists { id });
         }
 
-        campaign.status = Status::Attesting;
+        campaign.phase = Phase::Distribution;
         self.campaigns.set(&id, &campaign, working_set);
         self.segments.set(&id, &segment, working_set);
 
@@ -292,7 +422,10 @@ impl<S: Spec> Core<S> {
 
         Ok(())
     }
+}
 
+// Indexer handlers.
+impl<S: Spec> Core<S> {
     fn register_indexer(
         &self,
         sender: S::Address,
@@ -363,9 +496,24 @@ impl<S: Spec> Core<S> {
     }
 }
 
+// Queries.
 impl<S: Spec> Core<S> {
     pub fn get_campaign(&self, id: u64, working_set: &mut WorkingSet<S>) -> Option<Campaign<S>> {
         self.campaigns.get(&id, working_set)
+    }
+
+    pub fn get_criteria_proposal(
+        &self,
+        campaign_id: u64,
+        proposal_id: u64,
+        working_set: &mut WorkingSet<S>,
+    ) -> Option<CriteriaProposal<S>> {
+        let proposals = self.criteria_proposals.get(&campaign_id, working_set);
+        if proposals.is_none() {
+            return None;
+        }
+
+        proposals.unwrap().get((proposal_id) as usize).cloned()
     }
 
     pub fn get_indexer(

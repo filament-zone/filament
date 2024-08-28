@@ -20,6 +20,7 @@ sov-state       = { workspace = true }
 anyhow          = { workspace = true }
 borsh           = { workspace = true, features = [ "rc" ] }
 jsonrpsee       = { workspace = true, optional = true, features = [ "client-core", "macros", "server" ] }
+lazy_static     = { workspace = true }
 schemars        = { workspace = true, optional = true }
 serde           = { workspace = true }
 serde_bytes     = { workspace = true }
@@ -32,8 +33,10 @@ filament-hub-core = { path = ".", version = "*", features = [ "native" ] }
 sov-test-utils              = { workspace = true }
 sov-prover-storage-manager  = { workspace = true, features = [ "test-utils" ] }
 
-serde_json  = { workspace = true }
-tempfile    = { workspace = true }
+assert_matches    = { workspace = true }
+pretty_assertions = { workspace = true, features = [ "alloc" ] }
+serde_json        = { workspace = true }
+tempfile          = { workspace = true }
 
 [features]
 default = []
