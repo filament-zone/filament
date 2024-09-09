@@ -32,46 +32,50 @@
 //! that implements the `DispatchCall` trait.  The `DispatchCall` implementation (derived by a
 //! macro) forwards the message to the appropriate module and executes its `call` method.
 
-#![allow(unused_doc_comments)]
-
+use sov_capabilities::StandardProvenRollupCapabilities as StandardCapabilities;
 #[cfg(feature = "native")]
-use filament_hub_core::{CoreRpcImpl, CoreRpcServer};
-#[cfg(feature = "native")]
-use sov_accounts::{AccountsRpcImpl, AccountsRpcServer};
-#[cfg(feature = "native")]
-use sov_bank::{BankRpcImpl, BankRpcServer};
-#[cfg(feature = "native")]
-use sov_modules_api::macros::{expose_rpc, CliWallet};
-use sov_modules_api::{DispatchCall, Event, Genesis, MessageCodec, Spec};
-#[cfg(feature = "native")]
-use sov_prover_incentives::{ProverIncentivesRpcImpl, ProverIncentivesRpcServer};
+use sov_modules_api::macros::{expose_rpc, CliWallet, UniversalWallet};
+use sov_modules_api::{
+    capabilities::{AuthorizationData, Guard, HasCapabilities},
+    prelude::*,
+    DispatchCall,
+    Event,
+    Genesis,
+    MessageCodec,
+    Spec,
+};
 use sov_rollup_interface::da::DaSpec;
-#[cfg(feature = "native")]
-use sov_sequencer_registry::{SequencerRegistryRpcImpl, SequencerRegistryRpcServer};
+use sov_sequencer_registry::SequencerStakeMeter;
 
+pub use crate::authentication::EthereumToRollupAddressConverter;
 #[cfg(feature = "native")]
-use crate::genesis::GenesisPaths;
-
-/// The hub-stf runtime.
+use crate::genesis_config::GenesisPaths;
+/// The `demo-stf runtime`.
 #[cfg_attr(feature = "native", derive(CliWallet), expose_rpc)]
-#[derive(Default, Genesis, DispatchCall, Event, MessageCodec)]
-#[serialization(
-    borsh::BorshDeserialize,
-    borsh::BorshSerialize,
-    serde::Serialize,
-    serde::Deserialize
-)]
+#[derive(Default, Genesis, DispatchCall, Event, MessageCodec, RuntimeRestApi)]
+#[dispatch_call(derive(UniversalWallet))]
 pub struct Runtime<S: Spec, Da: DaSpec> {
-    /// The Accounts module.
-    pub accounts: sov_accounts::Accounts<S>,
     /// The Bank module.
     pub bank: sov_bank::Bank<S>,
-    /// The Prover Incentives module.
-    pub prover_incentives: sov_prover_incentives::ProverIncentives<S, Da>,
     /// The Sequencer Registry module.
     pub sequencer_registry: sov_sequencer_registry::SequencerRegistry<S, Da>,
+    /// The Value Setter module.
+    pub value_setter: sov_value_setter::ValueSetter<S>,
+    /// The Attester Incentives module.
+    pub attester_incentives: sov_attester_incentives::AttesterIncentives<S, Da>,
+    /// The Prover Incentives module.
+    pub prover_incentives: sov_prover_incentives::ProverIncentives<S, Da>,
+    /// The Accounts module.
+    pub accounts: sov_accounts::Accounts<S>,
+    /// The Nonces module.
+    pub nonces: sov_nonces::Nonces<S>,
+    /// The NFT module.
+    pub nft: sov_nft::NonFungibleToken<S>,
+    #[cfg_attr(feature = "native", cli_skip)]
+    /// The EVM module.
+    pub evm: sov_evm::Evm<S>,
 
-    /// The hub core module.
+    /// The Core module of the Filament Hub.
     pub core: filament_hub_core::Core<S>,
 }
 
@@ -79,20 +83,50 @@ impl<S, Da> sov_modules_stf_blueprint::Runtime<S, Da> for Runtime<S, Da>
 where
     S: Spec,
     Da: DaSpec,
+    EthereumToRollupAddressConverter: TryInto<S::Address>,
 {
     type GenesisConfig = GenesisConfig<S, Da>;
     #[cfg(feature = "native")]
     type GenesisPaths = GenesisPaths;
 
     #[cfg(feature = "native")]
-    fn rpc_methods(storage: tokio::sync::watch::Receiver<S::Storage>) -> jsonrpsee::RpcModule<()> {
-        get_rpc_methods::<S, Da>(storage)
+    fn endpoints(
+        storage: tokio::sync::watch::Receiver<S::Storage>,
+    ) -> sov_modules_stf_blueprint::RuntimeEndpoints {
+        use ::sov_modules_api::{prelude::*, rest::HasRestApi};
+        use utoipa_swagger_ui::{Config, SwaggerUi};
+
+        let axum_router = Self::default().rest_api(storage.clone()).merge(
+            SwaggerUi::new("/swagger-ui")
+                .external_url_unchecked("/openapi-v3.yaml", Self::default().openapi_spec().unwrap())
+                .config(Config::from("/openapi-v3.yaml")),
+        );
+
+        sov_modules_stf_blueprint::RuntimeEndpoints {
+            jsonrpsee_module: get_rpc_methods::<S, Da>(storage.clone()),
+            axum_router,
+        }
     }
 
     #[cfg(feature = "native")]
-    fn genesis_config(
-        genesis_paths: &Self::GenesisPaths,
-    ) -> Result<Self::GenesisConfig, anyhow::Error> {
-        crate::genesis::create_genesis_config(genesis_paths)
+    fn genesis_config(genesis_paths: &Self::GenesisPaths) -> anyhow::Result<Self::GenesisConfig> {
+        crate::genesis_config::create_genesis_config(genesis_paths)
+    }
+}
+
+impl<S: Spec, Da: DaSpec> HasCapabilities<S, Da> for Runtime<S, Da> {
+    type AuthorizationData = AuthorizationData<S>;
+    type Capabilities<'a> = StandardCapabilities<'a, S, Da>;
+    type SequencerStakeMeter = SequencerStakeMeter<S::Gas>;
+
+    fn capabilities(&self) -> Guard<Self::Capabilities<'_>> {
+        Guard::new(StandardCapabilities {
+            bank: &self.bank,
+            sequencer_registry: &self.sequencer_registry,
+            accounts: &self.accounts,
+            nonces: &self.nonces,
+            prover_incentives: &self.prover_incentives,
+            attester_incentives: &self.attester_incentives,
+        })
     }
 }

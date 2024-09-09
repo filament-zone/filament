@@ -1,3 +1,4 @@
+use sov_bank::Coins;
 use sov_modules_api::Spec;
 
 use crate::{
@@ -11,23 +12,12 @@ pub const MAX_EVICTIONS: u64 = 3;
 
 pub type ChainId = String;
 
-#[derive(
-    Clone,
-    Debug,
-    Eq,
-    PartialEq,
-    borsh::BorshDeserialize,
-    borsh::BorshSerialize,
-    serde::Deserialize,
-    serde::Serialize,
-)]
 #[cfg_attr(
     feature = "native",
     derive(schemars::JsonSchema),
+    derive(sov_modules_api::macros::UniversalWallet),
     schemars(rename = "Payment")
 )]
-pub struct Payment {}
-
 #[derive(
     Clone,
     Debug,
@@ -38,10 +28,25 @@ pub struct Payment {}
     serde::Deserialize,
     serde::Serialize,
 )]
+pub struct Payment {
+    coins: Coins,
+}
+
 #[cfg_attr(
     feature = "native",
     derive(schemars::JsonSchema),
+    derive(sov_modules_api::macros::UniversalWallet),
     schemars(bound = "S: ::sov_modules_api::Spec", rename = "Campaign")
+)]
+#[derive(
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    borsh::BorshDeserialize,
+    borsh::BorshSerialize,
+    serde::Deserialize,
+    serde::Serialize,
 )]
 #[serde(bound = "S::Address: serde::Serialize + serde::de::DeserializeOwned")]
 pub struct Campaign<S: Spec> {
@@ -59,6 +64,12 @@ pub struct Campaign<S: Spec> {
     pub indexer: Option<S::Address>,
 }
 
+#[cfg_attr(
+    feature = "native",
+    derive(schemars::JsonSchema),
+    derive(sov_modules_api::macros::UniversalWallet),
+    schemars(rename = "Phase")
+)]
 #[derive(
     Clone,
     Debug,
@@ -68,11 +79,6 @@ pub struct Campaign<S: Spec> {
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
-)]
-#[cfg_attr(
-    feature = "native",
-    derive(schemars::JsonSchema),
-    schemars(rename = "Phase")
 )]
 pub enum Phase {
     Init,

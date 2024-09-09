@@ -2,6 +2,12 @@ use sov_bank::Coins;
 
 use crate::crypto::Ed25519Signature;
 
+#[cfg_attr(
+    feature = "native",
+    derive(schemars::JsonSchema),
+    derive(sov_modules_api::macros::UniversalWallet),
+    schemars(rename = "Playbook")
+)]
 #[derive(
     Clone,
     Debug,
@@ -11,11 +17,6 @@ use crate::crypto::Ed25519Signature;
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
-)]
-#[cfg_attr(
-    feature = "native",
-    derive(schemars::JsonSchema),
-    schemars(rename = "Playbook")
 )]
 pub struct Playbook {
     pub budget: Budget,
@@ -25,6 +26,12 @@ pub struct Playbook {
     pub ends_at: u128,
 }
 
+#[cfg_attr(
+    feature = "native",
+    derive(schemars::JsonSchema),
+    derive(sov_modules_api::macros::UniversalWallet),
+    schemars(rename = "Budget")
+)]
 #[derive(
     Clone,
     Debug,
@@ -34,17 +41,18 @@ pub struct Playbook {
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
-)]
-#[cfg_attr(
-    feature = "native",
-    derive(schemars::JsonSchema),
-    schemars(rename = "Budget")
 )]
 pub struct Budget {
     pub fee: Coins,
     pub incentives: Coins,
 }
 
+#[cfg_attr(
+    feature = "native",
+    derive(schemars::JsonSchema),
+    derive(sov_modules_api::macros::UniversalWallet),
+    schemars(rename = "SegmentDescription")
+)]
 #[derive(
     Clone,
     Debug,
@@ -54,11 +62,6 @@ pub struct Budget {
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
-)]
-#[cfg_attr(
-    feature = "native",
-    derive(schemars::JsonSchema),
-    schemars(rename = "SegmentDescription")
 )]
 pub struct SegmentDescription {
     pub kind: SegmentKind,
@@ -66,6 +69,12 @@ pub struct SegmentDescription {
     pub proof: SegmentProofMechanism,
 }
 
+#[cfg_attr(
+    feature = "native",
+    derive(schemars::JsonSchema),
+    derive(sov_modules_api::macros::UniversalWallet),
+    schemars(rename = "SegmentKind")
+)]
 #[derive(
     Clone,
     Debug,
@@ -75,17 +84,18 @@ pub struct SegmentDescription {
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
-)]
-#[cfg_attr(
-    feature = "native",
-    derive(schemars::JsonSchema),
-    schemars(rename = "SegmentKind")
 )]
 pub enum SegmentKind {
     GithubTopNContributors(u16),
     GithubAllContributors,
 }
 
+#[cfg_attr(
+    feature = "native",
+    derive(schemars::JsonSchema),
+    derive(sov_modules_api::macros::UniversalWallet),
+    schemars(rename = "SegmentProofMechanism")
+)]
 #[derive(
     Clone,
     Debug,
@@ -95,16 +105,17 @@ pub enum SegmentKind {
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
-)]
-#[cfg_attr(
-    feature = "native",
-    derive(schemars::JsonSchema),
-    schemars(rename = "SegmentProofMechanism")
 )]
 pub enum SegmentProofMechanism {
     Ed25519Signature,
 }
 
+#[cfg_attr(
+    feature = "native",
+    derive(schemars::JsonSchema),
+    derive(sov_modules_api::macros::UniversalWallet),
+    schemars(rename = "ConversionDescription")
+)]
 #[derive(
     Clone,
     Debug,
@@ -114,17 +125,18 @@ pub enum SegmentProofMechanism {
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
-)]
-#[cfg_attr(
-    feature = "native",
-    derive(schemars::JsonSchema),
-    schemars(rename = "ConversionDescription")
 )]
 pub struct ConversionDescription {
     pub kind: ConversionMechanism,
     pub proof: ConversionProofMechanism,
 }
 
+#[cfg_attr(
+    feature = "native",
+    derive(schemars::JsonSchema),
+    derive(sov_modules_api::macros::UniversalWallet),
+    schemars(rename = "ConversionMechanism")
+)]
 #[derive(
     Clone,
     Debug,
@@ -134,16 +146,17 @@ pub struct ConversionDescription {
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
-)]
-#[cfg_attr(
-    feature = "native",
-    derive(schemars::JsonSchema),
-    schemars(rename = "ConversionMechanism")
 )]
 pub enum ConversionMechanism {
     Social(Auth),
 }
 
+#[cfg_attr(
+    feature = "native",
+    derive(schemars::JsonSchema),
+    derive(sov_modules_api::macros::UniversalWallet),
+    schemars(rename = "ConversionProofMechanism")
+)]
 #[derive(
     Clone,
     Debug,
@@ -153,16 +166,17 @@ pub enum ConversionMechanism {
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
-)]
-#[cfg_attr(
-    feature = "native",
-    derive(schemars::JsonSchema),
-    schemars(rename = "ConversionProofMechanism")
 )]
 pub enum ConversionProofMechanism {
     Ed25519Signature,
 }
 
+#[cfg_attr(
+    feature = "native",
+    derive(schemars::JsonSchema),
+    derive(sov_modules_api::macros::UniversalWallet),
+    schemars(rename = "ConversionProof")
+)]
 #[derive(
     Clone,
     Debug,
@@ -172,16 +186,17 @@ pub enum ConversionProofMechanism {
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
-)]
-#[cfg_attr(
-    feature = "native",
-    derive(schemars::JsonSchema),
-    schemars(rename = "ConversionProof")
 )]
 pub enum ConversionProof {
     Ed25519Signature(Ed25519Signature),
 }
 
+#[cfg_attr(
+    feature = "native",
+    derive(schemars::JsonSchema),
+    derive(sov_modules_api::macros::UniversalWallet),
+    schemars(rename = "Auth")
+)]
 #[derive(
     Clone,
     Debug,
@@ -191,16 +206,17 @@ pub enum ConversionProof {
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
-)]
-#[cfg_attr(
-    feature = "native",
-    derive(schemars::JsonSchema),
-    schemars(rename = "Auth")
 )]
 pub enum Auth {
     Github,
 }
 
+#[cfg_attr(
+    feature = "native",
+    derive(schemars::JsonSchema),
+    derive(sov_modules_api::macros::UniversalWallet),
+    schemars(rename = "PayoutMechanism")
+)]
 #[derive(
     Clone,
     Debug,
@@ -210,11 +226,6 @@ pub enum Auth {
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
-)]
-#[cfg_attr(
-    feature = "native",
-    derive(schemars::JsonSchema),
-    schemars(rename = "PayoutMechanism")
 )]
 pub enum PayoutMechanism {
     ProportionalPerConversion,

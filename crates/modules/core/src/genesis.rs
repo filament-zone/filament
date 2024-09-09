@@ -1,5 +1,5 @@
 use anyhow::Result;
-use sov_modules_api::{Spec, WorkingSet};
+use sov_modules_api::{GenesisState, Spec};
 
 use crate::{Campaign, Core, Indexer};
 
@@ -22,26 +22,26 @@ impl<S: Spec> Core<S> {
     pub(crate) fn init_module(
         &self,
         config: &<Self as sov_modules_api::Module>::Config,
-        working_set: &mut WorkingSet<S>,
+        working_set: &mut impl GenesisState<S>,
     ) -> Result<()> {
         tracing::info!(?config, "starting core genesis");
 
-        self.admin.set(&config.admin, working_set);
+        self.admin.set(&config.admin, working_set)?;
 
         for delegate in config.delegates.iter() {
-            self.delegates.push(delegate, working_set);
+            self.delegates.push(delegate, working_set)?;
         }
 
         let mut id = 0;
         for campaign in config.campaigns.iter() {
-            self.campaigns.set(&id, campaign, working_set);
+            self.campaigns.set(&id, campaign, working_set)?;
             id += 1;
         }
-        self.next_campaign_id.set(&id, working_set);
+        self.next_campaign_id.set(&id, working_set)?;
 
         for Indexer { addr, alias } in config.indexers.iter() {
-            self.indexers.push(addr, working_set);
-            self.indexer_aliases.set(addr, alias, working_set);
+            self.indexers.push(addr, working_set)?;
+            self.indexer_aliases.set(addr, alias, working_set)?;
         }
 
         tracing::info!("completed core genesis");

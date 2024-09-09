@@ -7,7 +7,7 @@ use filament_hub_stf::{runtime::Runtime, StfVerifier};
 use sov_celestia_adapter::{types::Namespace, verifier::CelestiaVerifier};
 use sov_kernels::basic::BasicKernel;
 use sov_mock_zkvm::{MockZkGuest, MockZkVerifier};
-use sov_modules_api::default_spec::ZkDefaultSpec;
+use sov_modules_api::{default_spec::DefaultSpec, execution_mode::Zk};
 use sov_modules_stf_blueprint::StfBlueprint;
 use sov_risc0_adapter::{guest::Risc0Guest, Risc0Verifier};
 use sov_state::ZkStorage;
@@ -22,7 +22,7 @@ pub fn main() {
     let guest = Risc0Guest::new();
     let storage = ZkStorage::new();
     let stf: StfBlueprint<
-        ZkDefaultSpec<Risc0Verifier, MockZkVerifier>,
+        DefaultSpec<Risc0Verifier, MockZkVerifier, Zk>,
         _,
         Runtime<_, _>,
         BasicKernel<_, _>,

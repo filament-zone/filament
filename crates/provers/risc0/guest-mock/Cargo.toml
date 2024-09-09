@@ -1,32 +1,30 @@
 [package]
-name = "sov-demo-prover-guest-mock"
-version = "0.3.0"
-edition = "2021"
-resolver = "2"
+name      = "filament-prover-guest-mock"
+version   = "0.3.0"
+edition   = "2021"
+resolver  = "2"
 
 [workspace]
 
 [dependencies]
 filament-hub-stf = { path = "../../../stf" }
 
-sov-kernels                   = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "5d375bc" }
-sov-mock-da                   = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "5d375bc" }
-sov-mock-zkvm                 = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "5d375bc" }
-sov-modules-api               = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "5d375bc" }
-sov-modules-stf-blueprint     = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "5d375bc" }
-sov-risc0-adapter             = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "5d375bc" }
-sov-state                     = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "5d375bc" }
+sov-kernels               = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "f4318b3" }
+sov-mock-da               = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "f4318b3" }
+sov-mock-zkvm             = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "f4318b3" }
+sov-modules-api           = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "f4318b3" }
+sov-modules-stf-blueprint = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "f4318b3" }
+sov-risc0-adapter         = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "f4318b3" }
+sov-state                 = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "f4318b3" }
 
-anyhow              = { version = "1.0.68" }
-risc0-zkvm          = { version = "0.20", default-features = false, features = ["std"] }
-risc0-zkvm-platform = { version = "0.20" }
+risc0-zkvm          = { version = "1.0.5", default-features = false, features = ["std"] }
+risc0-zkvm-platform = { version = "1.0.5" }
 
 [patch.crates-io]
-crypto-bigint   = { git = "https://github.com/risc0/RustCrypto-crypto-bigint", tag = "v0.5.2-risc0" }
-ed25519-dalek   = { git = "https://github.com/risc0/curve25519-dalek", tag = "curve25519-4.1.0-risczero.1" }
-sha2            = { git = "https://github.com/risc0/RustCrypto-hashes", tag = "sha2-v0.10.8-risczero.0" }
-secp256k1_v027  = { package = "secp256k1", version = "0.27", git = "https://github.com/Sovereign-Labs/rust-secp256k1.git", branch = "risc0-compatible-0-27-0" }
-secp256k1_v028  = { package = "secp256k1", version = "0.28", git = "https://github.com/Sovereign-Labs/rust-secp256k1.git", branch = "risc0-compatible-0-28-2" }
+sha2 = { git = "https://github.com/risc0/RustCrypto-hashes", tag = "sha2-v0.10.8-risczero.0" }
+# Corresponding release: <https://github.com/risc0/curve25519-dalek/releases/tag/curve25519-4.1.2-risczero.0>
+ed25519-dalek = { git = "https://github.com/risc0/curve25519-dalek", rev = "3dccc5b71b806f500e73829e2a5cbfe288cce2a0" }
+crypto-bigint = { git = "https://github.com/risc0/RustCrypto-crypto-bigint", tag = "v0.5.5-risczero.0" }
 
 
 [profile.dev]
@@ -43,4 +41,5 @@ lto = true
 opt-level = 3
 
 [features]
-bench = ["sov-modules-api/bench", "sov-state/bench", "sov-modules-stf-blueprint/bench"]
+bench = ["sov-modules-api/bench", "sov-state/bench", "sov-modules-stf-blueprint/bench", "sov-risc0-adapter/bench"]
+bincode = ["sov-risc0-adapter/bincode"]

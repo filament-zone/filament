@@ -1,40 +1,38 @@
-use std::{
-    time::{SystemTime, UNIX_EPOCH},
-    vec,
-};
+use std::time::{SystemTime, UNIX_EPOCH};
 
-use assert_matches::assert_matches;
+use anyhow::anyhow;
 use filament_hub_core::{
     campaign::{Campaign, Phase},
     criteria::{Criteria, CriteriaProposal, Criterion},
     crypto::Ed25519Signature,
-    playbook::{
-        Auth,
-        Budget,
-        ConversionDescription,
-        ConversionMechanism,
-        ConversionProofMechanism,
-        PayoutMechanism,
-        Playbook,
-        SegmentDescription,
-        SegmentKind,
-        SegmentProofMechanism,
-    },
-    segment::{GithubSegment, Segment, SegmentData, SegmentProof},
+    segment::{GithubSegment, SegmentData, SegmentProof},
+    Budget,
     CallMessage,
     Core,
     CoreConfig,
-    CoreError,
     Event,
     Indexer,
+    Segment,
 };
 use lazy_static::lazy_static;
 use pretty_assertions::assert_eq;
 use sov_bank::{get_token_id, Coins, TokenId};
-use sov_modules_api::{utils::generate_address, Context, Module, ModuleError, Spec, WorkingSet};
-use sov_prover_storage_manager::new_orphan_storage;
-use sov_state::{DefaultStorageSpec, ProverStorage};
-use sov_test_utils::{TestHasher, TestSpec};
+use sov_modules_api::{
+    prelude::UnwrapInfallible,
+    test_utils::generate_address,
+    Error,
+    Spec,
+    TxEffect,
+};
+use sov_test_utils::{
+    generate_optimistic_runtime,
+    runtime::{genesis::optimistic::HighLevelOptimisticGenesisConfig, TestRunner},
+    AsUser,
+    MockDaSpec,
+    TestSpec,
+    TestUser,
+    TransactionTestCase,
+};
 
 lazy_static! {
     static ref FILA_TOKEN_ID: TokenId = {
@@ -46,466 +44,390 @@ lazy_static! {
 }
 
 type S = TestSpec;
-pub type Storage = ProverStorage<DefaultStorageSpec<TestHasher>>;
+
+generate_optimistic_runtime!(TestCoreRuntime <= core: Core<S>);
+
+struct TestRoles<S: Spec> {
+    admin: TestUser<S>,
+    campaign: Campaign<S>,
+    campaigner: TestUser<S>,
+    delegates: Vec<S::Address>,
+    delegate0: TestUser<S>,
+    indexer: TestUser<S>,
+    staker: TestUser<S>,
+}
 
 #[test]
 fn init_campaign() {
-    let tmpdir = tempfile::tempdir().unwrap();
-    let mut working_set = WorkingSet::new(new_orphan_storage(tmpdir.path()).unwrap());
+    let (
+        TestRoles {
+            campaigner,
+            delegates,
+            ..
+        },
+        mut runner,
+    ) = setup();
 
-    let sequencer_addr = generate_address::<S>("sequencer");
-    let campaigner_addr = generate_address::<S>("campaigner");
-    let delegate_addr = generate_address::<S>("delegate");
-
-    let core = generate_test_core(vec![delegate_addr], vec![], vec![], &mut working_set);
-    assert_eq!(None, core.get_campaign(1, &mut working_set));
-
-    // Test RPC response.
-    #[cfg(feature = "native")]
+    // Init should fail if no criteria is provided.
     {
-        let query_response = core.rpc_get_campaign(1, &mut working_set).unwrap();
-        assert_eq!(None, query_response);
+        let campaigner = campaigner.clone();
+        runner.execute_transaction(TransactionTestCase {
+            input: campaigner.create_plain_message::<Core<S>>(CallMessage::Init {
+                criteria: vec![],
+                budget: generate_test_budget(),
+                payment: None,
+                evictions: vec![],
+            }),
+            assert: Box::new(move |result, _state| {
+                assert_eq!(
+                    result.tx_receipt,
+                    TxEffect::Reverted(Error::ModuleError(anyhow!("missing criteria",)))
+                );
+            }),
+        });
     }
 
-    // Attempted initialisation with empty criteria should fail.
-    {
-        let call_msg = CallMessage::Init {
-            criteria: Default::default(),
-            budget: generate_test_budget(),
-            payment: None,
-            evictions: vec![],
-        };
-        let context = Context::<S>::new(campaigner_addr, sequencer_addr, 1);
-
-        assert_matches!(
-            core.call(call_msg, &context, &mut working_set).unwrap_err(),
-            ModuleError::ModuleError(err) => {
-                assert_eq!(err.downcast::<CoreError<S>>().unwrap(), <CoreError<S>>::MissingCriteria)
-            }
-        );
-    }
-
-    // Init should fail if the eviction is not a proposed candidate.
-    {
-        let call_msg = CallMessage::Init {
+    runner.execute_transaction(TransactionTestCase {
+        input: campaigner.create_plain_message::<Core<S>>(CallMessage::Init {
             criteria: generate_test_criteria(),
             budget: generate_test_budget(),
             payment: None,
-            evictions: vec![generate_address::<S>("fake_delegate")],
-        };
-        let context = Context::<S>::new(campaigner_addr, sequencer_addr, 2);
+            evictions: vec![],
+        }),
+        assert: Box::new(move |result, state| {
+            assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+            assert_eq!(result.events.len(), 1);
+            assert_eq!(
+                result.events[0],
+                TestCoreRuntimeEvent::Core(Event::CampaignInitialized {
+                    campaign_id: 1,
+                    campaigner: campaigner.address(),
+                    payment: None,
+                    evictions: vec![]
+                })
+            );
 
-        assert_matches!(
-            core.call(call_msg, &context, &mut working_set).unwrap_err(),
-            ModuleError::ModuleError(err) => {
-                assert_eq!(err.downcast::<CoreError<S>>().unwrap(), CoreError::<S>::InvalidEviction)
-            }
-        );
-    }
-
-    // Init campaign.
-    let call_msg = CallMessage::Init {
-        criteria: generate_test_criteria(),
-        budget: generate_test_budget(),
-        payment: None,
-        evictions: vec![],
-    };
-    let context = Context::<S>::new(campaigner_addr, sequencer_addr, 3);
-    core.call(call_msg, &context, &mut working_set).unwrap();
-
-    let typed_event = working_set.take_event(0).unwrap();
-    assert_eq!(
-        typed_event.downcast::<Event<S>>().unwrap(),
-        Event::CampaignInitialized {
-            id: 0,
-            campaigner: campaigner_addr,
-            payment: None,
-            evictions: vec![]
-        }
-    );
-
-    let mut expected = generate_test_campaign(campaigner_addr);
-    expected.phase = Phase::Criteria;
-    expected.proposed_delegates = vec![delegate_addr];
-    expected.delegates = vec![delegate_addr];
-
-    assert_eq!(
-        Some(expected.clone()),
-        core.get_campaign(0, &mut working_set)
-    );
-
-    // Test RPC response.
-    #[cfg(feature = "native")]
-    {
-        let query_response = core.rpc_get_campaign(0, &mut working_set).unwrap();
-        assert_eq!(Some(expected), query_response);
-    }
+            let expected = {
+                let mut campaign = generate_test_campaign(campaigner.address());
+                campaign.proposed_delegates = delegates.clone();
+                campaign.delegates = delegates;
+                campaign
+            };
+            assert_eq!(
+                Core::<S>::default()
+                    .get_campaign(1, state)
+                    .unwrap_infallible(),
+                Some(expected)
+            );
+        }),
+    });
 }
 
 #[test]
 fn propose_criteria() {
-    let tmpdir = tempfile::tempdir().unwrap();
-    let mut working_set = WorkingSet::new(new_orphan_storage(tmpdir.path()).unwrap());
-
-    let sequencer_addr = generate_address::<S>("sequencer");
-    let campaigner_addr = generate_address::<S>("campaigner");
-    let delegate_addr = generate_address::<S>("delegate");
-
-    let mut campaign = generate_test_campaign(campaigner_addr);
-    campaign.phase = Phase::Criteria;
-    campaign.delegates = vec![delegate_addr];
-
-    let core = generate_test_core(
-        vec![delegate_addr],
-        vec![campaign],
-        vec![],
-        &mut working_set,
-    );
+    let (
+        TestRoles {
+            campaigner,
+            delegate0,
+            ..
+        },
+        mut runner,
+    ) = setup();
 
     // Propose should fail if the proposer not a delegate of the campaign.
     {
-        let proposer_addr = generate_address::<S>("proposer");
-        let call_msg = CallMessage::ProposeCriteria {
+        let campaigner = campaigner.clone();
+        runner.execute_transaction(TransactionTestCase {
+            input: campaigner.clone().create_plain_message::<Core<S>>(
+                CallMessage::ProposeCriteria {
+                    campaign_id: 0,
+                    criteria: generate_test_criteria(),
+                },
+            ),
+            assert: Box::new(move |result, _state| {
+                assert_eq!(
+                    result.tx_receipt,
+                    TxEffect::Reverted(Error::ModuleError(anyhow!(
+                        "invalid proposer, '{}' is not a campaign delegate",
+                        campaigner.address()
+                    )))
+                );
+            }),
+        });
+    }
+
+    runner.execute_transaction(TransactionTestCase {
+        input: delegate0.create_plain_message::<Core<S>>(CallMessage::ProposeCriteria {
             campaign_id: 0,
             criteria: generate_test_criteria(),
-        };
-        let context = Context::<S>::new(proposer_addr, sequencer_addr, 2);
+        }),
+        assert: Box::new(move |result, state| {
+            assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+            assert_eq!(result.events.len(), 1);
+            assert_eq!(
+                result.events[0],
+                TestCoreRuntimeEvent::Core(Event::CriteriaProposed {
+                    campaign_id: 0,
+                    proposer: delegate0.address(),
+                    proposal_id: 0
+                })
+            );
 
-        assert_matches!(
-            core.call(call_msg, &context, &mut working_set).unwrap_err(),
-            ModuleError::ModuleError(err) => {
-                assert_eq!(
-                    err.downcast::<CoreError<S>>().unwrap(),
-                    CoreError::<S>::InvalidProposer { reason: format!("{} is not a campaign delegate", proposer_addr)  }
-                )
-            }
-        );
-    }
-
-    // Propose.
-    let call_msg = CallMessage::ProposeCriteria {
-        campaign_id: 0,
-        criteria: generate_test_criteria(),
-    };
-    let context = Context::<S>::new(delegate_addr, sequencer_addr, 3);
-    core.call(call_msg, &context, &mut working_set).unwrap();
-
-    let typed_event = working_set.take_event(0).unwrap();
-    assert_eq!(
-        typed_event.downcast::<Event<S>>().unwrap(),
-        Event::CriteriaProposed {
-            campaign_id: 0,
-            proposer: delegate_addr,
-            proposal_id: 0
-        }
-    );
-
-    let expected = CriteriaProposal {
-        campaign_id: 0,
-        proposer: delegate_addr,
-        criteria: generate_test_criteria(),
-    };
-
-    assert_eq!(
-        Some(expected.clone()),
-        core.get_criteria_proposal(0, 0, &mut working_set)
-    );
-
-    // Test RPC response.
-    #[cfg(feature = "native")]
-    {
-        let query_response = core
-            .rpc_get_criteria_proposal(0, 0, &mut working_set)
-            .unwrap();
-        assert_eq!(Some(expected), query_response);
-    }
+            assert_eq!(
+                Core::<S>::default()
+                    .get_criteria_proposal(0, 0, state)
+                    .unwrap_infallible(),
+                Some(CriteriaProposal {
+                    campaign_id: 0,
+                    proposer: delegate0.address(),
+                    criteria: generate_test_criteria(),
+                })
+            );
+        }),
+    });
 }
 
 #[test]
 fn confirm_criteria() {
-    let tmpdir = tempfile::tempdir().unwrap();
-    let mut working_set = WorkingSet::new(new_orphan_storage(tmpdir.path()).unwrap());
-
-    let sequencer_addr = generate_address::<S>("sequencer");
-    let campaigner_addr = generate_address::<S>("campaigner");
-    let delegate_addr = generate_address::<S>("delegate");
-
-    let mut campaign = generate_test_campaign(campaigner_addr);
-    campaign.phase = Phase::Criteria;
-    campaign.delegates = vec![delegate_addr];
-
-    let core = generate_test_core(
-        vec![delegate_addr],
-        vec![campaign.clone()],
-        vec![],
-        &mut working_set,
-    );
+    let (
+        TestRoles {
+            campaign,
+            campaigner,
+            staker,
+            ..
+        },
+        mut runner,
+    ) = setup();
 
     // Confirm should fail if sender is not campaigner.
     {
-        let fake_campaigner = generate_address::<S>("fake_campaigner");
-        let call_msg = CallMessage::ConfirmCriteria {
-            campaign_id: 0,
-            proposal_id: None,
-        };
-        let context = Context::<S>::new(fake_campaigner, sequencer_addr, 1);
-
-        assert_matches!(
-            core.call(call_msg, &context, &mut working_set).unwrap_err(),
-            ModuleError::ModuleError(err) => {
+        runner.execute_transaction(TransactionTestCase {
+            input: staker.create_plain_message::<Core<S>>(CallMessage::ConfirmCriteria {
+                campaign_id: 0,
+                proposal_id: None,
+            }),
+            assert: Box::new(move |result, _state| {
                 assert_eq!(
-                    err.downcast::<CoreError<S>>().unwrap(),
-                    CoreError::<S>::SenderNotCampaigner { sender: fake_campaigner }
-                )
-            }
-        );
+                    result.tx_receipt,
+                    TxEffect::Reverted(Error::ModuleError(anyhow!(
+                        "sender '{}' is not the campaigner",
+                        staker.address()
+                    )))
+                );
+            }),
+        });
     }
 
-    // Confirm.
-    let call_msg = CallMessage::ConfirmCriteria {
-        campaign_id: 0,
-        proposal_id: None,
-    };
-    let context = Context::<S>::new(campaigner_addr, sequencer_addr, 2);
-    core.call(call_msg, &context, &mut working_set).unwrap();
-
-    let typed_event = working_set.take_event(0).unwrap();
-    assert_eq!(
-        typed_event.downcast::<Event<S>>().unwrap(),
-        Event::CriteriaConfirmed {
+    runner.execute_transaction(TransactionTestCase {
+        input: campaigner.create_plain_message::<Core<S>>(CallMessage::ConfirmCriteria {
             campaign_id: 0,
             proposal_id: None,
-        }
-    );
+        }),
+        assert: Box::new(move |result, state| {
+            assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+            assert_eq!(result.events.len(), 1);
+            assert_eq!(
+                result.events[0],
+                TestCoreRuntimeEvent::Core(Event::CriteriaConfirmed {
+                    campaign_id: 0,
+                    proposal_id: None,
+                })
+            );
 
-    let mut expected = campaign;
-    expected.phase = Phase::Publish;
-
-    assert_eq!(
-        Some(expected.clone()),
-        core.get_campaign(0, &mut working_set)
-    );
-
-    // Test RPC response.
-    #[cfg(feature = "native")]
-    {
-        let query_response = core.rpc_get_campaign(0, &mut working_set).unwrap();
-        assert_eq!(Some(expected), query_response);
-    }
+            let campaign = {
+                let mut campaign = campaign.clone();
+                campaign.phase = Phase::Publish;
+                campaign
+            };
+            assert_eq!(
+                Core::<S>::default()
+                    .get_campaign(0, state)
+                    .unwrap_infallible(),
+                Some(campaign)
+            );
+        }),
+    });
 }
 
 #[test]
 fn post_segment() {
-    let tmpdir = tempfile::tempdir().unwrap();
-    let mut working_set = WorkingSet::new(new_orphan_storage(tmpdir.path()).unwrap());
+    let (
+        TestRoles {
+            campaigner,
+            indexer,
+            staker,
+            campaign,
+            ..
+        },
+        mut runner,
+    ) = setup();
 
-    let indexer_addr = generate_address::<S>("indexer");
-    let sequencer_addr = generate_address::<S>("sequencer");
-    let campaigner_addr = generate_address::<S>("campaigner");
+    // Transition to Publish phase.
+    runner.execute_transaction(TransactionTestCase {
+        input: campaigner.create_plain_message::<Core<S>>(CallMessage::ConfirmCriteria {
+            campaign_id: 0,
+            proposal_id: None,
+        }),
+        assert: Box::new(move |_, _| {}),
+    });
+    // Start indexing.
+    runner.execute_transaction(TransactionTestCase {
+        input: indexer
+            .create_plain_message::<Core<S>>(CallMessage::IndexCampaign { campaign_id: 0 }),
+        assert: Box::new(move |_, _| {}),
+    });
+
+    // Confirm that only the associated indexer can start indexing for the campaign.
+    {
+        runner.execute_transaction(TransactionTestCase {
+            input: staker.create_plain_message::<Core<S>>(CallMessage::PostSegment {
+                campaign_id: 0,
+                segment: generate_test_segment(),
+            }),
+            assert: Box::new(move |result, _state| {
+                assert_eq!(
+                    result.tx_receipt,
+                    TxEffect::Reverted(Error::ModuleError(anyhow!(
+                        "sender '{}' is not the registered indexer '{:?}' for campaign '0'",
+                        staker.address(),
+                        campaign.indexer,
+                    )))
+                );
+            }),
+        });
+    }
+
+    let segment = generate_test_segment();
+    runner.execute_transaction(TransactionTestCase {
+        input: indexer.create_plain_message::<Core<S>>(CallMessage::PostSegment {
+            campaign_id: 0,
+            segment: segment.clone(),
+        }),
+        assert: Box::new(move |result, state| {
+            assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+            assert_eq!(result.events.len(), 1);
+            assert_eq!(
+                result.events[0],
+                TestCoreRuntimeEvent::Core(Event::SegmentPosted {
+                    campaign_id: 0,
+                    indexer: indexer.address()
+                })
+            );
+
+            assert_eq!(
+                Core::<S>::default()
+                    .get_segment(0, state)
+                    .unwrap_infallible(),
+                Some(segment)
+            );
+        }),
+    });
+}
+
+#[test]
+fn indexer_registration() {
+    let (TestRoles { admin, indexer, .. }, mut runner) = setup();
+
+    {
+        let indexer = indexer.clone();
+        runner.execute_transaction(TransactionTestCase {
+            input: admin.create_plain_message::<Core<S>>(CallMessage::RegisterIndexer(
+                indexer.address(),
+                "numia".to_string(),
+            )),
+            assert: Box::new(move |result, state| {
+                assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+                assert_eq!(result.events.len(), 1);
+                assert_eq!(
+                    result.events[0],
+                    TestCoreRuntimeEvent::Core(Event::IndexerRegistered {
+                        addr: indexer.address(),
+                        alias: "numia".to_string()
+                    })
+                );
+
+                assert_eq!(
+                    Core::<S>::default()
+                        .get_indexer(indexer.address(), state)
+                        .unwrap_infallible(),
+                    Some(Indexer {
+                        addr: indexer.address(),
+                        alias: "numia".to_string()
+                    })
+                );
+            }),
+        });
+    }
+
+    runner.execute_transaction(TransactionTestCase {
+        input: admin
+            .create_plain_message::<Core<S>>(CallMessage::UnregisterIndexer(indexer.address())),
+        assert: Box::new(move |result, state| {
+            assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+            assert_eq!(result.events.len(), 1);
+            assert_eq!(
+                result.events[0],
+                TestCoreRuntimeEvent::Core(Event::IndexerUnregistered {
+                    addr: indexer.address()
+                })
+            );
+
+            assert_eq!(
+                Core::<S>::default()
+                    .get_indexer(indexer.address(), state)
+                    .unwrap_infallible(),
+                None
+            );
+        }),
+    });
+}
+
+fn setup() -> (TestRoles<S>, TestRunner<TestCoreRuntime<S, MockDaSpec>, S>) {
+    let genesis_config =
+        HighLevelOptimisticGenesisConfig::generate().add_accounts_with_default_balance(7);
+
+    let admin = genesis_config.additional_accounts.first().unwrap().clone();
+    let staker = genesis_config.additional_accounts[1].clone();
+    let indexer = genesis_config.additional_accounts[2].clone();
+    let campaigner = genesis_config.additional_accounts[3].clone();
+    let delegate0 = genesis_config.additional_accounts[4].clone();
+    let delegate1 = genesis_config.additional_accounts[5].clone();
+    let delegate2 = genesis_config.additional_accounts[6].clone();
+    let delegates = vec![
+        delegate0.address(),
+        delegate1.address(),
+        delegate2.address(),
+    ];
+
     let campaign = {
-        let mut campaign = generate_test_campaign(campaigner_addr);
-        campaign.phase = Phase::Publish;
-        campaign.indexer = Some(indexer_addr);
+        let mut campaign = generate_test_campaign(campaigner.address());
+        campaign.delegates = delegates.clone();
+        campaign.indexer = Some(indexer.address());
         campaign
     };
 
-    let indexer = Indexer {
-        addr: indexer_addr,
-        alias: "Numia".to_string(),
-    };
-
-    let core = generate_test_core(
-        vec![],
-        vec![campaign.clone()],
-        vec![indexer],
-        &mut working_set,
-    );
-    assert_eq!(Some(campaign), core.get_campaign(0, &mut working_set));
-
-    // Test that only the associated indexer can start indexing for the campaign.
-    {
-        let fake_indexer = generate_address::<S>("fake_indexer");
-        let call_msg = CallMessage::IndexCampaign { id: 0 };
-        let context = Context::<S>::new(fake_indexer, sequencer_addr, 1);
-        // TODO(xla): Test for expected error.
-        assert!(core.call(call_msg, &context, &mut working_set).is_err())
-    }
-
-    // Start campaign indexing.
-    {
-        let call_msg = CallMessage::IndexCampaign { id: 0 };
-        let context = Context::<S>::new(indexer_addr, sequencer_addr, 2);
-        core.call(call_msg, &context, &mut working_set).unwrap();
-
-        let typed_event = working_set.take_event(0).unwrap();
-        assert_eq!(
-            typed_event.downcast::<Event<S>>().unwrap(),
-            Event::CampaignIndexing {
-                id: 0,
-                indexer: indexer_addr
-            }
-        );
-
-        let expected = {
-            let mut campaign = generate_test_campaign(campaigner_addr);
-            campaign.phase = Phase::Indexing;
-            campaign.indexer = Some(indexer_addr);
-            campaign
-        };
-        assert_eq!(Some(expected), core.get_campaign(0, &mut working_set));
-    }
-
-    // Post Segment.
-    let segment = Segment {
-        data: SegmentData::GithubSegment(GithubSegment { entries: vec![] }),
-        proof: SegmentProof::Ed25519Signature(Ed25519Signature { pk: [0; 32] }),
-        retrieved_at: SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_millis(),
-    };
-    let call_msg = CallMessage::PostSegment {
-        id: 0,
-        segment: segment.clone(),
-    };
-    let context = Context::<S>::new(indexer_addr, sequencer_addr, 3);
-    core.call(call_msg, &context, &mut working_set).unwrap();
-
-    let typed_event = working_set.take_event(0).unwrap();
-    assert_eq!(
-        typed_event.downcast::<Event<S>>().unwrap(),
-        Event::SegmentPosted {
-            id: 0,
-            indexer: indexer_addr
-        }
+    let genesis = GenesisConfig::from_minimal_config(
+        genesis_config.clone().into(),
+        CoreConfig {
+            admin: admin.address(),
+            campaigns: vec![campaign.clone()],
+            delegates: delegates.clone(),
+            indexers: vec![],
+        },
     );
 
-    assert_eq!(segment, core.get_segment(0, &mut working_set).unwrap());
-
-    // Test RPC response.
-    #[cfg(feature = "native")]
-    {
-        let query_response = core.rpc_get_segment(0, &mut working_set).unwrap();
-        assert_eq!(Some(segment), query_response);
-    }
-}
-
-#[test]
-fn register_indexer() {
-    let tmpdir = tempfile::tempdir().unwrap();
-    let mut working_set = WorkingSet::new(new_orphan_storage(tmpdir.path()).unwrap());
-
-    let admin_addr = generate_address::<S>("admin");
-    let sequencer_addr = generate_address::<S>("sequencer");
-
-    let indexer_addr = generate_address::<S>("indexer");
-    let indexer_alias = "Numia".to_string();
-
-    let core = generate_test_core(vec![], vec![], vec![], &mut working_set);
-
-    assert_eq!(None, core.get_indexer(indexer_addr, &mut working_set));
-    assert_eq!(
-        Vec::<Indexer<S>>::new(),
-        core.get_indexers(&mut working_set)
-    );
-
-    // Test RPC responses.
-    #[cfg(feature = "native")]
-    {
-        let query_response = core
-            .rpc_get_indexer(indexer_addr, &mut working_set)
-            .unwrap();
-        assert_eq!(None, query_response);
-
-        let query_response = core.rpc_get_indexers(&mut working_set).unwrap();
-        assert_eq!(Vec::<Indexer<S>>::new(), query_response);
-    }
-
-    // Call and check for event.
-    {
-        let context = Context::<S>::new(admin_addr, sequencer_addr, 1);
-        let call_msg = CallMessage::RegisterIndexer(indexer_addr, indexer_alias.clone());
-        core.call(call_msg, &context, &mut working_set).unwrap();
-        let typed_event = working_set.take_event(0).unwrap();
-        assert_eq!(
-            typed_event.downcast::<Event<S>>().unwrap(),
-            Event::IndexerRegistered {
-                addr: indexer_addr,
-                alias: indexer_alias.clone(),
-            }
-        );
-    }
-
-    let expected = Indexer {
-        addr: indexer_addr,
-        alias: indexer_alias,
-    };
-    assert_eq!(
-        Some(expected.clone()),
-        core.get_indexer(indexer_addr, &mut working_set)
-    );
-    assert_eq!(vec![expected.clone()], core.get_indexers(&mut working_set));
-
-    // Test RPC responses.
-    #[cfg(feature = "native")]
-    {
-        let query_response = core
-            .rpc_get_indexer(indexer_addr, &mut working_set)
-            .unwrap();
-        assert_eq!(Some(expected.clone()), query_response);
-
-        let query_response = core.rpc_get_indexers(&mut working_set).unwrap();
-        assert_eq!(vec![expected], query_response);
-    }
-}
-
-#[test]
-fn unregister_indexer() {
-    let tmpdir = tempfile::tempdir().unwrap();
-    let mut working_set = WorkingSet::new(new_orphan_storage(tmpdir.path()).unwrap());
-
-    let admin_addr = generate_address::<S>("admin");
-    let sequencer_addr = generate_address::<S>("sequencer");
-
-    let indexer_addr = generate_address::<S>("indexer");
-    let indexer_alias = "Numia".to_string();
-    let indexer = Indexer {
-        addr: indexer_addr.clone(),
-        alias: indexer_alias.clone(),
-    };
-
-    let core = generate_test_core(vec![], vec![], vec![indexer], &mut working_set);
-
-    // Query initial state.
-    #[cfg(feature = "native")]
-    {
-        let query_response = core.rpc_get_indexers(&mut working_set).unwrap();
-        assert_eq!(
-            vec![Indexer {
-                addr: indexer_addr,
-                alias: indexer_alias.clone(),
-            }],
-            query_response
-        );
-    }
-
-    {
-        let context = Context::<S>::new(admin_addr, sequencer_addr, 1);
-        let call_msg = CallMessage::UnregisterIndexer(indexer_addr);
-        core.call(call_msg, &context, &mut working_set).unwrap();
-        let typed_event = working_set.take_event(0).unwrap();
-        assert_eq!(
-            typed_event.downcast::<Event<S>>().unwrap(),
-            Event::IndexerUnregistered { addr: indexer_addr }
-        );
-    }
-
-    // Test query
-    #[cfg(feature = "native")]
-    {
-        let query_response = core.rpc_get_indexers(&mut working_set).unwrap();
-        assert_eq!(Vec::<Indexer<S>>::new(), query_response);
-    }
+    (
+        TestRoles {
+            admin,
+            campaign,
+            campaigner,
+            delegates,
+            delegate0,
+            indexer,
+            staker,
+        },
+        TestRunner::new_with_genesis(genesis.into_genesis_params(), TestCoreRuntime::default()),
+    )
 }
 
 fn generate_test_budget() -> Budget {
@@ -520,17 +442,11 @@ fn generate_test_budget() -> Budget {
         },
     }
 }
-fn generate_test_criteria() -> Criteria {
-    vec![Criterion {
-        dataset_id: "osmosis".to_string(),
-        parameters: Default::default(),
-    }]
-}
 
 fn generate_test_campaign(campaigner: <S as Spec>::Address) -> Campaign<S> {
     Campaign {
         campaigner,
-        phase: Phase::Init,
+        phase: Phase::Criteria,
 
         criteria: generate_test_criteria(),
         budget: generate_test_budget(),
@@ -545,55 +461,20 @@ fn generate_test_campaign(campaigner: <S as Spec>::Address) -> Campaign<S> {
     }
 }
 
-fn generate_test_core(
-    delegates: Vec<<S as Spec>::Address>,
-    campaigns: Vec<Campaign<S>>,
-    indexers: Vec<Indexer<S>>,
-    working_set: &mut WorkingSet<S>,
-) -> Core<S> {
-    let admin = generate_address::<S>("admin");
-
-    let core = Core::<S>::default();
-    let config = CoreConfig {
-        admin,
-
-        delegates,
-        campaigns,
-        indexers,
-    };
-    core.genesis(&config, working_set).unwrap();
-
-    core
+fn generate_test_criteria() -> Criteria {
+    vec![Criterion {
+        dataset_id: "osmosis".to_string(),
+        parameters: Default::default(),
+    }]
 }
 
-#[allow(dead_code)]
-fn generate_test_playbook(oracle_addr: <S as Spec>::Address) -> Playbook {
-    let token_id = {
-        let salt = 0;
-        let token_name = "Token_New".to_owned();
-        get_token_id::<S>(&token_name, &oracle_addr, salt)
-    };
-    Playbook {
-        budget: Budget {
-            fee: Coins {
-                amount: 100,
-                token_id,
-            },
-            incentives: Coins {
-                amount: 100,
-                token_id,
-            },
-        },
-        segment_description: SegmentDescription {
-            kind: SegmentKind::GithubTopNContributors(10),
-            proof: SegmentProofMechanism::Ed25519Signature,
-            sources: vec![],
-        },
-        conversion_description: ConversionDescription {
-            kind: ConversionMechanism::Social(Auth::Github),
-            proof: ConversionProofMechanism::Ed25519Signature,
-        },
-        payout: PayoutMechanism::ProportionalPerConversion,
-        ends_at: 0,
+fn generate_test_segment() -> Segment {
+    Segment {
+        data: SegmentData::GithubSegment(GithubSegment { entries: vec![] }),
+        proof: SegmentProof::Ed25519Signature(Ed25519Signature { pk: [0; 32] }),
+        retrieved_at: SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_millis(),
     }
 }

@@ -1,3 +1,9 @@
+#[cfg_attr(
+    feature = "native",
+    derive(schemars::JsonSchema),
+    derive(sov_modules_api::macros::UniversalWallet),
+    schemars(rename = "Ed25519Signature")
+)]
 #[derive(
     Clone,
     Debug,
@@ -7,11 +13,6 @@
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
-)]
-#[cfg_attr(
-    feature = "native",
-    derive(schemars::JsonSchema),
-    schemars(rename = "Ed25519Signature")
 )]
 pub struct Ed25519Signature {
     // FIXME(xla): Deriving JsonSchena breaks serde with, therefore we have to be explicitly assign

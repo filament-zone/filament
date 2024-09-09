@@ -31,7 +31,6 @@ tracing         = { workspace = true }
 filament-hub-core = { path = ".", version = "*", features = [ "native" ] }
 
 sov-test-utils              = { workspace = true }
-sov-prover-storage-manager  = { workspace = true, features = [ "test-utils" ] }
 
 assert_matches    = { workspace = true }
 pretty_assertions = { workspace = true, features = [ "alloc" ] }

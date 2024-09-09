@@ -11,20 +11,17 @@ use crate::{campaign::Payment, delegate::Eviction};
     serde::Serialize,
     serde::Deserialize,
 )]
+#[serde(bound = "S::Address: serde::Serialize + serde::de::DeserializeOwned")]
 pub enum Event<S: Spec> {
-    CampaignCreated {
-        campaigner: S::Address,
-        id: u64,
-    },
     CampaignInitialized {
-        id: u64,
+        campaign_id: u64,
         campaigner: S::Address,
         payment: Option<Payment>,
         evictions: Vec<Eviction<S>>,
     },
 
     CampaignIndexing {
-        id: u64,
+        campaign_id: u64,
         indexer: S::Address,
     },
 
@@ -48,7 +45,7 @@ pub enum Event<S: Spec> {
     },
 
     SegmentPosted {
-        id: u64,
+        campaign_id: u64,
         indexer: S::Address,
     },
 }

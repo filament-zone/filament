@@ -1,63 +1,83 @@
 use async_trait::async_trait;
-use filament_hub_stf::{authentication::ModAuth, genesis::StorageConfig, runtime::Runtime};
+use backon::ExponentialBuilder;
+use filament_hub_stf::{
+    authentication::ModAuth,
+    runtime::{EthereumToRollupAddressConverter, Runtime},
+};
 use sov_celestia_adapter::{
     verifier::{CelestiaSpec, CelestiaVerifier, RollupParams},
-    CelestiaConfig,
     CelestiaService,
 };
-use sov_db::ledger_db::LedgerDb;
+use sov_db::{ledger_db::LedgerDb, storage_manager::NativeStorageManager};
 use sov_kernels::basic::BasicKernel;
-use sov_mock_zkvm::{MockCodeCommitment, MockZkvm};
+use sov_mock_zkvm::{MockCodeCommitment, MockZkVerifier, MockZkvm};
 use sov_modules_api::{
-    default_spec::{DefaultSpec, ZkDefaultSpec},
+    default_spec::DefaultSpec,
+    execution_mode::{ExecutionMode, Native, Zk},
     CryptoSpec,
+    SovApiProofSerializer,
     Spec,
 };
-use sov_modules_rollup_blueprint::{RollupBlueprint, WalletBlueprint};
-use sov_modules_stf_blueprint::StfBlueprint;
-use sov_prover_storage_manager::ProverStorageManager;
-use sov_risc0_adapter::host::Risc0Host;
-use sov_rollup_interface::zk::{aggregated_proof::CodeCommitment, Zkvm, ZkvmGuest, ZkvmHost};
-use sov_sequencer::SequencerDb;
-use sov_state::{DefaultStorageSpec, Storage, ZkStorage};
+use sov_modules_rollup_blueprint::{
+    pluggable_traits::PluggableSpec,
+    FullNodeBlueprint,
+    RollupBlueprint,
+    WalletBlueprint,
+};
+use sov_modules_stf_blueprint::{RuntimeEndpoints, StfBlueprint};
+use sov_risc0_adapter::{host::Risc0Host, Risc0Verifier};
+use sov_rollup_interface::{
+    node::da::{DaService, DaServiceWithRetries},
+    zk::{aggregated_proof::CodeCommitment, Zkvm},
+};
+use sov_sequencer::{FairBatchBuilderConfig, SequencerDb};
+use sov_state::{DefaultStorageSpec, ProverStorage, Storage, ZkStorage};
 use sov_stf_runner::{ParallelProverService, ProverService, RollupConfig, RollupProverConfig};
 use tokio::sync::watch;
 
 use crate::{ROLLUP_BATCH_NAMESPACE, ROLLUP_PROOF_NAMESPACE};
 
 /// Rollup with CelestiaDa
-pub struct CelestiaDemoRollup {}
+#[derive(Default)]
+pub struct CelestiaDemoRollup<M> {
+    phantom: std::marker::PhantomData<M>,
+}
+
+impl<M: ExecutionMode> RollupBlueprint<M> for CelestiaDemoRollup<M>
+where
+    DefaultSpec<Risc0Verifier, MockZkVerifier, M>: PluggableSpec,
+    EthereumToRollupAddressConverter:
+        TryInto<<DefaultSpec<Risc0Verifier, MockZkVerifier, M> as Spec>::Address>,
+{
+    type DaSpec = CelestiaSpec;
+    type Kernel = BasicKernel<Self::Spec, Self::DaSpec>;
+    type Runtime = Runtime<Self::Spec, Self::DaSpec>;
+    type Spec = DefaultSpec<Risc0Verifier, MockZkVerifier, M>;
+}
 
 #[async_trait]
-impl RollupBlueprint for CelestiaDemoRollup {
-    type DaConfig = CelestiaConfig;
-    type DaService = CelestiaService;
-    type DaSpec = CelestiaSpec;
+impl FullNodeBlueprint<Native> for CelestiaDemoRollup<Native> {
+    type DaService = DaServiceWithRetries<CelestiaService>;
     type InnerZkvmHost = Risc0Host<'static>;
-    type NativeKernel = BasicKernel<Self::NativeSpec, Self::DaSpec>;
-    type NativeRuntime = Runtime<Self::NativeSpec, Self::DaSpec>;
-    type NativeSpec = DefaultSpec<
-        <<Self::InnerZkvmHost as ZkvmHost>::Guest as ZkvmGuest>::Verifier,
-        <<Self::OuterZkvmHost as ZkvmHost>::Guest as ZkvmGuest>::Verifier,
-    >;
     type OuterZkvmHost = MockZkvm;
+    type ProofSerializer = SovApiProofSerializer<Self::Spec>;
     type ProverService = ParallelProverService<
-        <<Self::NativeSpec as Spec>::Storage as Storage>::Root,
-        <<Self::NativeSpec as Spec>::Storage as Storage>::Witness,
+        <Self::Spec as Spec>::Address,
+        <<Self::Spec as Spec>::Storage as Storage>::Root,
+        <<Self::Spec as Spec>::Storage as Storage>::Witness,
         Self::DaService,
         Self::InnerZkvmHost,
         Self::OuterZkvmHost,
-        StfBlueprint<Self::ZkSpec, Self::DaSpec, Self::ZkRuntime, Self::ZkKernel>,
+        StfBlueprint<
+            <CelestiaDemoRollup<Zk> as RollupBlueprint<Zk>>::Spec,
+            Self::DaSpec,
+            <CelestiaDemoRollup<Zk> as RollupBlueprint<Zk>>::Runtime,
+            <CelestiaDemoRollup<Zk> as RollupBlueprint<Zk>>::Kernel,
+        >,
     >;
-    type StorageManager = ProverStorageManager<
+    type StorageManager = NativeStorageManager<
         CelestiaSpec,
-        DefaultStorageSpec<<<Self::NativeSpec as Spec>::CryptoSpec as CryptoSpec>::Hasher>,
-    >;
-    type ZkKernel = BasicKernel<Self::ZkSpec, Self::DaSpec>;
-    type ZkRuntime = Runtime<Self::ZkSpec, Self::DaSpec>;
-    type ZkSpec = ZkDefaultSpec<
-        <<Self::InnerZkvmHost as ZkvmHost>::Guest as ZkvmGuest>::Verifier,
-        <<Self::OuterZkvmHost as ZkvmHost>::Guest as ZkvmGuest>::Verifier,
+        ProverStorage<DefaultStorageSpec<<<Self::Spec as Spec>::CryptoSpec as CryptoSpec>::Hasher>>,
     >;
 
     fn create_outer_code_commitment(
@@ -68,47 +88,70 @@ impl RollupBlueprint for CelestiaDemoRollup {
 
     fn create_endpoints(
         &self,
-        storage: watch::Receiver<<Self::NativeSpec as Spec>::Storage>,
+        storage: watch::Receiver<<Self::Spec as Spec>::Storage>,
         ledger_db: &LedgerDb,
         sequencer_db: &SequencerDb,
         da_service: &Self::DaService,
-        rollup_config: &RollupConfig<Self::DaConfig>,
-    ) -> Result<(jsonrpsee::RpcModule<()>, axum::Router<()>), anyhow::Error> {
-        let sequencer = rollup_config.da.own_celestia_address.clone();
-
-        #[allow(unused_mut)]
-        let (mut rpc_methods, axum_router) = sov_modules_rollup_blueprint::register_endpoints::<
+        rollup_config: &RollupConfig<
+            <Self::Spec as Spec>::Address,
+            <Self::DaService as DaService>::Config,
+            FairBatchBuilderConfig<Self::DaSpec>,
+        >,
+    ) -> anyhow::Result<RuntimeEndpoints> {
+        let mut endpoints = sov_modules_rollup_blueprint::register_endpoints::<
             Self,
-            ModAuth<Self::NativeSpec, Self::DaSpec>,
+            _,
+            ModAuth<Self::Spec, Self::DaSpec>,
         >(
             storage.clone(),
             ledger_db,
             sequencer_db,
             da_service,
-            sequencer,
+            &rollup_config.sequencer,
         )?;
 
-        Ok((rpc_methods, axum_router))
+        // TODO: Add issue for Sequencer level RPC injection:
+        //   https://github.com/Sovereign-Labs/sovereign-sdk-wip/issues/366
+        crate::eth::register_ethereum::<Self::Spec, Self::DaService>(
+            da_service.clone(),
+            storage.clone(),
+            &mut endpoints.jsonrpsee_module,
+        )?;
+
+        Ok(endpoints)
     }
 
     async fn create_da_service(
         &self,
-        rollup_config: &RollupConfig<Self::DaConfig>,
+        rollup_config: &RollupConfig<
+            <Self::Spec as Spec>::Address,
+            <Self::DaService as DaService>::Config,
+            FairBatchBuilderConfig<Self::DaSpec>,
+        >,
     ) -> Self::DaService {
-        CelestiaService::new(
-            rollup_config.da.clone(),
-            RollupParams {
-                rollup_batch_namespace: ROLLUP_BATCH_NAMESPACE,
-                rollup_proof_namespace: ROLLUP_PROOF_NAMESPACE,
-            },
+        DaServiceWithRetries::with_exponential_backoff(
+            CelestiaService::new(
+                rollup_config.da.clone(),
+                RollupParams {
+                    rollup_batch_namespace: ROLLUP_BATCH_NAMESPACE,
+                    rollup_proof_namespace: ROLLUP_PROOF_NAMESPACE,
+                },
+            )
+            .await,
+            // NOTE: Current exponential backoff policy defaults:
+            // jitter: false, factor: 2, min_delay: 1s, max_delay: 60s, max_times: 3,
+            ExponentialBuilder::default(),
         )
-        .await
     }
 
     async fn create_prover_service(
         &self,
         prover_config: RollupProverConfig,
-        _rollup_config: &RollupConfig<Self::DaConfig>,
+        rollup_config: &RollupConfig<
+            <Self::Spec as Spec>::Address,
+            <Self::DaService as DaService>::Config,
+            FairBatchBuilderConfig<Self::DaSpec>,
+        >,
         _da_service: &Self::DaService,
     ) -> Self::ProverService {
         let inner_vm = Risc0Host::new(filament_prover_risc0::ROLLUP_ELF);
@@ -130,18 +173,20 @@ impl RollupBlueprint for CelestiaDemoRollup {
             prover_config,
             zk_storage,
             CodeCommitment::default(),
+            rollup_config.proof_manager.prover_address,
         )
     }
 
     fn create_storage_manager(
         &self,
-        rollup_config: &RollupConfig<Self::DaConfig>,
-    ) -> Result<Self::StorageManager, anyhow::Error> {
-        let storage_config = StorageConfig {
-            path: rollup_config.storage.path.clone(),
-        };
-        ProverStorageManager::new(storage_config)
+        rollup_config: &RollupConfig<
+            <Self::Spec as Spec>::Address,
+            <Self::DaService as DaService>::Config,
+            FairBatchBuilderConfig<Self::DaSpec>,
+        >,
+    ) -> anyhow::Result<Self::StorageManager> {
+        NativeStorageManager::new(&rollup_config.storage.path)
     }
 }
 
-impl WalletBlueprint for CelestiaDemoRollup {}
+impl WalletBlueprint<Native> for CelestiaDemoRollup<Native> {}

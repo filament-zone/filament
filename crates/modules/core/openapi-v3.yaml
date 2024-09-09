@@ -1,0 +1,31 @@
+# Specification for custom bank REST API endpoints
+openapi: "3.0.2"
+info:
+  title: Filament Hub core custom endpoints
+  version: 0.1.0
+paths:
+  /campaigns/{campaign_id}:
+    get:
+      summary: Fetch a campaign
+      parameters:
+        - name: campaign_id
+          in: path
+          required: true
+          schemas:
+            type: integer
+            format: uint64
+          description: The id of the campaign
+      responses:
+        '200':
+          $ref: '#/components/responses/Campaign'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  schemas:
+    Campaign:
+      type: object
+      description: Campaign
+      properties:
+        campaigner:
+          type: string

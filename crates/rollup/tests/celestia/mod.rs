@@ -1,22 +1,20 @@
-use std::{collections::HashSet, ops::Range, time::Duration};
+use std::collections::HashSet;
+use std::ops::Range;
+use std::time::Duration;
 
-use borsh::BorshSerialize;
-use filament_hub_stf::runtime;
-use jsonrpsee::{
-    core::client::{Subscription, SubscriptionClientT},
-    rpc_params,
-};
+use demo_stf::runtime;
+use futures::StreamExt;
 use rand::Rng;
 use sov_celestia_adapter::verifier::CelestiaSpec;
 use sov_cli::wallet_state::PrivateKeyAndAddress;
-use sov_modules_api::{
-    default_spec::DefaultSpec,
-    transaction::{PriorityFeeBips, Transaction},
-    Spec,
-};
+use sov_modules_api::default_spec::DefaultSpec;
+use sov_modules_api::execution_mode::Native;
+use sov_modules_api::transaction::{Transaction, UnsignedTransaction};
+use sov_modules_api::Spec;
+use sov_modules_macros::config_value;
 use sov_risc0_adapter::Risc0Verifier;
 use sov_rollup_interface::da::DaSpec;
-use sov_sequencer::utils::SimpleClient;
+use sov_test_utils::{ApiClient, TEST_DEFAULT_MAX_FEE, TEST_DEFAULT_MAX_PRIORITY_FEE};
 
 fn generate_dynamic_random_vectors(len_range: Range<usize>) -> Vec<Vec<u8>> {
     let mut rng = rand::thread_rng();
@@ -41,7 +39,14 @@ fn generate_call_message<S: Spec, Da: DaSpec>(
     len_range: Range<usize>,
 ) -> Vec<runtime::RuntimeCall<S, Da>> {
     let payloads = generate_dynamic_random_vectors(len_range);
-    let messages = Vec::with_capacity(payloads.len());
+    let mut messages = Vec::with_capacity(payloads.len());
+
+    for payload in payloads {
+        messages.push(runtime::RuntimeCall::ValueSetter(
+            sov_value_setter::CallMessage::SetManyValues(payload),
+        ));
+    }
+
     messages
 }
 
@@ -54,10 +59,10 @@ async fn submit_blobs_increasing_size<Da: DaSpec>() -> anyhow::Result<()> {
     // This test requires appropriate rollup running on port 12345
     let blobs_payload_bytes_range = 1..10000;
     let token_deployer_data =
-        std::fs::read_to_string("../../test-data/keys/token_deployer_private_key.json")
+        std::fs::read_to_string("../test-data/keys/token_deployer_private_key.json")
             .expect("Unable to read file to string");
 
-    let token_deployer: PrivateKeyAndAddress<DefaultSpec<Risc0Verifier, Risc0Verifier>> =
+    let token_deployer: PrivateKeyAndAddress<DefaultSpec<Risc0Verifier, Risc0Verifier, Native>> =
         serde_json::from_str(&token_deployer_data).unwrap_or_else(|_| {
             panic!(
                 "Unable to convert data {} to PrivateKeyAndAddress",
@@ -65,41 +70,42 @@ async fn submit_blobs_increasing_size<Da: DaSpec>() -> anyhow::Result<()> {
             )
         });
 
-    let chain_id = 0;
-    let max_priority_fee_bips = PriorityFeeBips::ZERO;
-    let max_fee = 0;
+    let chain_id = config_value!("CHAIN_ID");
+    let max_priority_fee_bips = TEST_DEFAULT_MAX_PRIORITY_FEE;
+    let max_fee = TEST_DEFAULT_MAX_FEE;
 
-    let messages = generate_call_message::<DefaultSpec<Risc0Verifier, Risc0Verifier>, Da>(
+    let messages = generate_call_message::<DefaultSpec<Risc0Verifier, Risc0Verifier, Native>, Da>(
         blobs_payload_bytes_range,
     );
     println!("Generate {} messages", messages.len());
 
-    let client = SimpleClient::new("localhost", 12345).await?;
+    let rpc_port = 12345;
+    let rest_port = 12346;
+    let client = ApiClient::new(rpc_port, rest_port).await?;
 
-    let mut slot_subscription: Subscription<u64> = client
-        .ws()
-        .subscribe(
-            "ledger_subscribeSlots",
-            rpc_params![],
-            "ledger_unsubscribeSlots",
-        )
-        .await
-        .unwrap();
+    let mut slot_subscription = client.ledger.subscribe_slots().await.unwrap();
 
     for (idx, message) in messages.into_iter().enumerate() {
         println!("Nonce {} . Going to submit message: {:?}", idx, message);
-        let tx = Transaction::<DefaultSpec<Risc0Verifier, Risc0Verifier>>::new_signed_tx(
+        let tx = Transaction::<DefaultSpec<Risc0Verifier, Risc0Verifier, Native>>::new_signed_tx(
             &token_deployer.private_key,
-            message.try_to_vec().unwrap(),
-            chain_id,
-            max_priority_fee_bips,
-            max_fee,
-            None,
-            idx as u64,
+            UnsignedTransaction::new(
+                borsh::to_vec(&message).unwrap(),
+                chain_id,
+                max_priority_fee_bips,
+                max_fee,
+                idx as u64,
+                None,
+            ),
         );
-        client.send_transactions(&[tx]).await.unwrap();
+
+        client
+            .sequencer
+            .publish_batch_with_serialized_txs(&[tx])
+            .await
+            .unwrap();
         let slot = slot_subscription.next().await.unwrap().unwrap();
-        println!("SLOT: {} received", slot);
+        println!("SLOT: {} received", slot.number);
         tokio::time::sleep(Duration::from_millis(1000)).await;
     }
 
@@ -109,7 +115,6 @@ async fn submit_blobs_increasing_size<Da: DaSpec>() -> anyhow::Result<()> {
 #[tokio::test]
 #[ignore = "Run manually"]
 async fn test_celestia_increasing_blob_sizes() -> anyhow::Result<()> {
-    // cargo test -p sov-demo-rollup --test all_tests celestia::test_celestia_increasing_blob_sizes
-    // -- --nocapture --ignored
+    // cargo test -p sov-demo-rollup --test all_tests celestia::test_celestia_increasing_blob_sizes -- --nocapture --ignored
     submit_blobs_increasing_size::<CelestiaSpec>().await
 }

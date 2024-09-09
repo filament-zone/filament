@@ -15,63 +15,66 @@ workspace = true
 [dependencies]
 filament-hub-core = { workspace = true }
 
-sov-accounts              = { workspace = true }
-sov-bank                  = { workspace = true }
-sov-blob-storage          = { workspace = true }
-sov-chain-state           = { workspace = true }
-sov-cli                   = { workspace = true, optional = true }
-sov-kernels               = { workspace = true }
-sov-mock-da               = { workspace = true }
-sov-mock-zkvm             = { workspace = true }
-sov-modules-api           = { workspace = true }
-sov-modules-stf-blueprint = { workspace = true }
-sov-prover-incentives     = { workspace = true }
-sov-rollup-interface      = { workspace = true }
-sov-sequencer-registry    = { workspace = true }
-sov-state                 = { workspace = true }
-sov-stf-runner            = { workspace = true }
+anyhow = { workspace = true }
+borsh = { workspace = true }
+serde = { workspace = true }
+jsonrpsee = { workspace = true, features = ["jsonrpsee-http-client", "server-core", "tokio"], optional = true }
+tokio = { workspace = true, features = ["sync"], optional = true }
+tracing = { workspace = true }
 
-anyhow      = { workspace = true }
-borsh       = { workspace = true }
-clap        = { workspace = true, optional = true }
-jsonrpsee   = { workspace = true, optional = true, features = ["http-client", "server"] }
-serde       = { workspace = true,                  features = ["alloc", "derive"] }
-serde_json  = { workspace = true, optional = true }
-tokio       = { workspace = true, optional = true, features = [ "sync" ] }
-tracing     = { workspace = true }
+sov-rollup-interface = { workspace = true }
+sov-cli = { workspace = true, optional = true }
+sov-sequencer-registry = { workspace = true }
+sov-prover-incentives = { workspace = true }
+sov-attester-incentives = { workspace = true }
+sov-bank = { workspace = true }
+sov-nft = { workspace = true }
+sov-kernels = { workspace = true }
+sov-capabilities = { workspace = true }
+
+sov-mock-da = { workspace = true }
+sov-chain-state = { workspace = true }
+sov-modules-stf-blueprint = { workspace = true }
+sov-value-setter = { workspace = true }
+sov-accounts = { workspace = true }
+sov-nonces = { workspace = true }
+sov-state = { workspace = true }
+sov-modules-api = { workspace = true }
+sov-evm = { workspace = true }
 
 [dev-dependencies]
 filament-hub-stf = { path = ".", features = ["native"] }
-
-sov-modules-stf-blueprint   = { workspace = true, features = [ "test-utils" ] }
-sov-prover-storage-manager  = { workspace = true, features = [ "test-utils" ] }
-sov-test-utils              = { workspace = true }
-
 tempfile = { workspace = true }
+rand = { workspace = true }
+sov-test-utils = { workspace = true }
+sov-mock-zkvm = { workspace = true }
+sov-modules-stf-blueprint = { workspace = true, features = ["test-utils"] }
 
 [features]
 default = []
-offchain = [ "filament-hub-stf/offchain" ]
+offchain = [ "filament-hub-stf/offchain", "sov-nft/offchain"]
 native = [
-	"clap",
-	"filament-hub-core/native",
-	"filament-hub-stf/native",
-	"jsonrpsee",
-	"serde_json",
-	"sov-accounts/native",
-	"sov-bank/native",
-	"sov-blob-storage/native",
-	"sov-chain-state/native",
-	"sov-cli",
-	"sov-kernels/native",
-	"sov-mock-da/native",
-	"sov-mock-zkvm/native",
-	"sov-modules-api/native",
-	"sov-modules-stf-blueprint/native",
-	"sov-prover-incentives/native",
-	"sov-rollup-interface/native",
-	"sov-sequencer-registry/native",
-	"sov-state/native",
-	"sov-stf-runner/native",
-	"tokio",
+    "filament-hub-core/native",
+    "filament-hub-stf/native",
+    "jsonrpsee",
+    "sov-accounts/native",
+    "sov-bank/native",
+    "sov-capabilities/native",
+    "sov-chain-state/native",
+    "sov-cli",
+    "sov-evm/native",
+    "sov-kernels/native",
+    "sov-mock-da/native",
+    "sov-mock-zkvm/native",
+    "sov-modules-api/native",
+    "sov-modules-stf-blueprint/native",
+    "sov-nft/native",
+    "sov-nonces/native",
+    "sov-prover-incentives/native",
+    "sov-attester-incentives/native",
+    "sov-rollup-interface/native",
+    "sov-sequencer-registry/native",
+    "sov-state/native",
+    "sov-value-setter/native",
+    "tokio",
 ]

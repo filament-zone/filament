@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 fn main() {
-    println!("cargo:rerun-if-env-changed=SKIP_GUEST_BUILD");
-    println!("cargo:rerun-if-env-changed=OUT_DIR");
+    println!("cargo::rerun-if-env-changed=SKIP_GUEST_BUILD");
+    println!("cargo::rerun-if-env-changed=OUT_DIR");
 
     if std::env::var("SKIP_GUEST_BUILD").is_ok() {
         println!("Skipping guest build for CI run");
@@ -29,8 +29,11 @@ fn get_guest_options() -> HashMap<&'static str, risc0_build::GuestOptions> {
     if cfg!(feature = "bench") {
         features.push("bench".to_string());
     }
+    if cfg!(feature = "bincode") {
+        features.push("bincode".to_string());
+    }
     guest_pkg_to_options.insert(
-        "sov-demo-prover-guest-mock",
+        "sov-demo-prover-guest-mock-risc0",
         risc0_build::GuestOptions {
             features,
             ..Default::default()

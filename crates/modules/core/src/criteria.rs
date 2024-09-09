@@ -6,6 +6,12 @@ type DatasetId = String;
 type Field = String;
 type Predicate = String;
 
+#[cfg_attr(
+    feature = "native",
+    derive(schemars::JsonSchema),
+    derive(sov_modules_api::macros::UniversalWallet),
+    schemars(rename = "Criterion")
+)]
 #[derive(
     Clone,
     Debug,
@@ -15,11 +21,6 @@ type Predicate = String;
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
-)]
-#[cfg_attr(
-    feature = "native",
-    derive(schemars::JsonSchema),
-    schemars(rename = "Criterion")
 )]
 pub struct Criterion {
     pub dataset_id: DatasetId,

@@ -3,25 +3,26 @@ use filament_hub_stf::{runtime::Runtime, StfVerifier};
 use sov_kernels::basic::BasicKernel;
 use sov_mock_da::MockDaVerifier;
 pub use sov_mock_zkvm::{MockZkGuest, MockZkVerifier};
-use sov_modules_api::default_spec::ZkDefaultSpec;
+use sov_modules_api::{default_spec::DefaultSpec, execution_mode::Zk};
 use sov_modules_stf_blueprint::StfBlueprint;
 use sov_risc0_adapter::{guest::Risc0Guest, Risc0Verifier};
 use sov_state::ZkStorage;
 
 #[cfg(feature = "bench")]
-fn report_bench_metrics(start_cycles: usize, end_cycles: usize) {
+fn report_bench_metrics(start_cycles: u64, end_cycles: u64) {
     let cycles_per_block = (end_cycles - start_cycles) as u64;
     let tuple = ("Cycles per block".to_string(), cycles_per_block);
     let mut serialized = Vec::new();
     serialized.extend(tuple.0.as_bytes());
     serialized.push(0);
-    let size_bytes = tuple.1.to_ne_bytes();
+    let size_bytes = tuple.1.to_le_bytes();
     serialized.extend(&size_bytes);
 
     // calculate the syscall name.
     let cycle_string = String::from("cycle_metrics\0");
-    let metrics_syscall_name =
-        risc0_zkvm_platform::syscall::SyscallName::from_bytes_with_nul(cycle_string.as_ptr());
+    let metrics_syscall_name = unsafe {
+        risc0_zkvm_platform::syscall::SyscallName::from_bytes_with_nul(cycle_string.as_ptr())
+    };
 
     risc0_zkvm::guest::env::send_recv_slice::<u8, u8>(metrics_syscall_name, &serialized);
 }
@@ -35,7 +36,7 @@ pub fn main() {
     let start_cycles = risc0_zkvm_platform::syscall::sys_cycle_count();
 
     let stf: StfBlueprint<
-        ZkDefaultSpec<Risc0Verifier, MockZkVerifier>,
+        DefaultSpec<Risc0Verifier, MockZkVerifier, Zk>,
         _,
         Runtime<_, _>,
         BasicKernel<_, _>,

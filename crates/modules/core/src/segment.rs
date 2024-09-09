@@ -2,6 +2,12 @@ use sov_bank::Coins;
 
 use crate::crypto::Ed25519Signature;
 
+#[cfg_attr(
+    feature = "native",
+    derive(schemars::JsonSchema),
+    derive(sov_modules_api::macros::UniversalWallet),
+    schemars(rename = "Segment")
+)]
 #[derive(
     Clone,
     Debug,
@@ -17,6 +23,12 @@ pub struct Segment {
     pub retrieved_at: u128,
 }
 
+#[cfg_attr(
+    feature = "native",
+    derive(schemars::JsonSchema),
+    derive(sov_modules_api::macros::UniversalWallet),
+    schemars(rename = "SegmentData")
+)]
 #[derive(
     Clone,
     Debug,
@@ -32,6 +44,12 @@ pub enum SegmentData {
 
 type GithubId = u64;
 
+#[cfg_attr(
+    feature = "native",
+    derive(schemars::JsonSchema),
+    derive(sov_modules_api::macros::UniversalWallet),
+    schemars(rename = "GithubSegment")
+)]
 #[derive(
     Clone,
     Debug,
@@ -45,6 +63,12 @@ pub struct GithubSegment {
     pub entries: Vec<(GithubId, Coins)>,
 }
 
+#[cfg_attr(
+    feature = "native",
+    derive(schemars::JsonSchema),
+    derive(sov_modules_api::macros::UniversalWallet),
+    schemars(rename = "SegmentProof")
+)]
 #[derive(
     Clone,
     Debug,
