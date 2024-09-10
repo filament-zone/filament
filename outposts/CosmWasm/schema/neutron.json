@@ -115,6 +115,29 @@
       {
         "type": "object",
         "required": [
+          "set_status_indexing_msg"
+        ],
+        "properties": {
+          "set_status_indexing_msg": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "type": "integer",
+                "format": "uint64",
+                "minimum": 0.0
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
           "register_segment_msg"
         ],
         "properties": {
@@ -150,10 +173,16 @@
           "register_conversions_msg": {
             "type": "object",
             "required": [
+              "amount",
               "id",
               "who"
             ],
             "properties": {
+              "amount": {
+                "type": "integer",
+                "format": "uint128",
+                "minimum": 0.0
+              },
               "id": {
                 "type": "integer",
                 "format": "uint64",
@@ -171,10 +200,10 @@
       {
         "type": "object",
         "required": [
-          "abort_campaign_msg"
+          "finalize_campaign_msg"
         ],
         "properties": {
-          "abort_campaign_msg": {
+          "finalize_campaign_msg": {
             "type": "object",
             "required": [
               "id"
@@ -194,10 +223,33 @@
       {
         "type": "object",
         "required": [
-          "disperse_fees"
+          "claim_incentives_msg"
         ],
         "properties": {
-          "disperse_fees": {
+          "claim_incentives_msg": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "type": "integer",
+                "format": "uint64",
+                "minimum": 0.0
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "abort_campaign_msg"
+        ],
+        "properties": {
+          "abort_campaign_msg": {
             "type": "object",
             "required": [
               "id"
