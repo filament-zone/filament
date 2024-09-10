@@ -309,7 +309,7 @@ mod tests {
 
         let msg = QueryMsg::GetCampaign { id: 1 };
         let c: GetCampaignResponse = app.wrap().query_wasm_smart(addr.clone(), &msg).unwrap();
-        assert_eq!(c.campaign.status, CampaignStatus::Funded);
+        assert_eq!(c.campaign.status, CampaignStatus::Indexing);
     }
 
     #[test]

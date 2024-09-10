@@ -6315,6 +6315,8 @@ dependencies = [
 [[package]]
 name = "tendermint"
 version = "0.36.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8b50aae6ec24c3429149ad59b5b8d3374d7804d4c7d6125ceb97cb53907fb68d"
 dependencies = [
  "bytes",
  "digest 0.10.7",
@@ -6358,6 +6360,8 @@ dependencies = [
 [[package]]
 name = "tendermint-config"
 version = "0.36.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e07b383dc8780ebbec04cfb603f3fdaba6ea6663d8dd861425b1ffa7761fe90d"
 dependencies = [
  "flex-error",
  "serde",
@@ -6423,6 +6427,8 @@ dependencies = [
 [[package]]
 name = "tendermint-proto"
 version = "0.36.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "46f193d04afde6592c20fd70788a10b8cb3823091c07456db70d8a93f5fb99c1"
 dependencies = [
  "bytes",
  "flex-error",
@@ -6470,6 +6476,8 @@ dependencies = [
 [[package]]
 name = "tendermint-rpc"
 version = "0.36.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "21e3c231a3632cab53f92ad4161c730c468c08cfe4f0aa5a6735b53b390aecbd"
 dependencies = [
  "async-trait",
  "async-tungstenite",

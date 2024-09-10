@@ -128,7 +128,7 @@ jobs:
       - name: Run CosmWasm tests
         env:
           RUST_BACKTRACE: 1
-        run: cd outposts/CosmWasm &&  cargo --locked test --workspace --lib
+        run: cd outposts/CosmWasm && cargo --locked test --workspace --lib
 
       - name: Compile neutron contract
         env:
