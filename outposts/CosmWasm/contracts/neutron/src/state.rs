@@ -20,19 +20,19 @@ impl Config {
     }
 }
 
-pub const CONF: Item<Config> = Item::new("config");
+pub const CONF: Item<'_, Config> = Item::new("config");
 
-pub const CAMPAIGN_ID: Item<u64> = Item::new("campaign_id");
+pub const CAMPAIGN_ID: Item<'_, u64> = Item::new("campaign_id");
 
-pub const CREATED_CAMPAIGNS: Map<u64, Campaign> = Map::new("created_campaigns");
-pub const FUNDED_CAMPAIGNS: Map<u64, Campaign> = Map::new("funded_campaigns");
-pub const INDEXING_CAMPAIGNS: Map<u64, Campaign> = Map::new("indexing_campaigns");
-pub const ATTESTING_CAMPAIGNS: Map<u64, Campaign> = Map::new("attesting_campaigns");
-pub const FINISHED_CAMPAIGNS: Map<u64, Campaign> = Map::new("finished_campaigns");
-pub const CANCELED_CAMPAIGNS: Map<u64, Campaign> = Map::new("canceled_campaigns");
-pub const FAILED_CAMPAIGNS: Map<u64, Campaign> = Map::new("failed_campaigns");
+pub const CREATED_CAMPAIGNS: Map<'_, u64, Campaign> = Map::new("created_campaigns");
+pub const FUNDED_CAMPAIGNS: Map<'_, u64, Campaign> = Map::new("funded_campaigns");
+pub const INDEXING_CAMPAIGNS: Map<'_, u64, Campaign> = Map::new("indexing_campaigns");
+pub const ATTESTING_CAMPAIGNS: Map<'_, u64, Campaign> = Map::new("attesting_campaigns");
+pub const FINISHED_CAMPAIGNS: Map<'_, u64, Campaign> = Map::new("finished_campaigns");
+pub const CANCELED_CAMPAIGNS: Map<'_, u64, Campaign> = Map::new("canceled_campaigns");
+pub const FAILED_CAMPAIGNS: Map<'_, u64, Campaign> = Map::new("failed_campaigns");
 
-pub const CONVERSIONS: Map<(u64, Addr), (u128, bool)> = Map::new("campaign_conversions");
+pub const CONVERSIONS: Map<'_, (u64, Addr), (u128, bool)> = Map::new("campaign_conversions");
 
 #[cw_serde]
 pub enum CampaignStatus {
