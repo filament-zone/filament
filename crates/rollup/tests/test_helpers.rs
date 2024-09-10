@@ -1,9 +1,9 @@
 use std::{net::SocketAddr, path::Path, str::FromStr, sync::Arc};
 
-use demo_stf::genesis_config::GenesisPaths;
+use filament_hub_rollup::MockDemoRollup;
+use filament_hub_stf::genesis_config::GenesisPaths;
 use sha2::Sha256;
 use sov_cli::wallet_state::PrivateKeyAndAddress;
-use sov_demo_rollup::MockDemoRollup;
 use sov_kernels::basic::{BasicKernelGenesisConfig, BasicKernelGenesisPaths};
 use sov_mock_da::MockDaConfig;
 use sov_modules_api::{execution_mode::Native, Address, Spec};
@@ -25,7 +25,7 @@ const PROVER_ADDRESS: &str = "sov1pv9skzctpv9skzctpv9skzctpv9skzctpv9skzctpv9skz
 pub fn read_private_keys<S: Spec>(suffix: &str) -> PrivateKeyAndAddress<S> {
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
 
-    let private_keys_dir = Path::new(&manifest_dir).join("../test-data/keys");
+    let private_keys_dir = Path::new(&manifest_dir).join("../../test-data/keys");
 
     let data = std::fs::read_to_string(private_keys_dir.join(suffix))
         .expect("Unable to read file to string");

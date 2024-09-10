@@ -1,6 +1,6 @@
 use std::{collections::HashSet, ops::Range, time::Duration};
 
-use demo_stf::runtime;
+use filament_hub_stf::runtime;
 use futures::StreamExt;
 use rand::Rng;
 use sov_celestia_adapter::verifier::CelestiaSpec;

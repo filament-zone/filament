@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use demo_stf::{genesis_config::GenesisPaths, runtime::RuntimeCall};
+use filament_hub_stf::{genesis_config::GenesisPaths, runtime::RuntimeCall};
 use sov_bank::{event::Event as BankEvent, Coins, TokenId};
 use sov_kernels::basic::BasicKernelGenesisPaths;
 use sov_mock_da::{
@@ -85,9 +85,9 @@ impl TestRollup {
         let (rollup_task, da_service) = start_rollup_in_background(
             rpc_port_tx,
             rest_port_tx,
-            GenesisPaths::from_dir("../test-data/genesis/integration-tests"),
+            GenesisPaths::from_dir("../../test-data/genesis/integration-tests"),
             BasicKernelGenesisPaths {
-                chain_state: "../test-data/genesis/integration-tests/chain_state.json".into(),
+                chain_state: "../../test-data/genesis/integration-tests/chain_state.json".into(),
             },
             rollup_prover_config,
             mock_da_config,

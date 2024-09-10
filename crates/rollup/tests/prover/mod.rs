@@ -1,10 +1,10 @@
 use std::path::Path;
 
-use demo_stf::{
+use filament_hub_stf::{
     genesis_config::{create_genesis_config, GenesisPaths},
     runtime::Runtime,
 };
-use risc0::MOCK_DA_ELF;
+use filament_prover_risc0::MOCK_DA_ELF;
 use sov_db::{schema::SchemaBatch, storage_manager::NativeStorageManager};
 use sov_kernels::basic::{BasicKernel, BasicKernelGenesisConfig};
 use sov_mock_da::{MockAddress, MockBlock, MockDaService, MockDaSpec};

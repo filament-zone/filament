@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use demo_stf::runtime::RuntimeCall;
+use filament_hub_stf::runtime::RuntimeCall;
 use sov_bank::{CallMessage, Coins, TokenId};
 use sov_mock_da::MockDaSpec;
 use sov_mock_zkvm::MockZkVerifier;

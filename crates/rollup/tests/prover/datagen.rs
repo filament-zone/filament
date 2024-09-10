@@ -1,8 +1,8 @@
 use std::env;
 
-use demo_stf::authentication::ModAuth;
+use filament_hub_rollup::MockDemoRollup;
+use filament_hub_stf::authentication::ModAuth;
 use sov_cli::wallet_state::PrivateKeyAndAddress;
-use sov_demo_rollup::MockDemoRollup;
 use sov_mock_da::{MockAddress, MockBlock, MockDaService};
 use sov_modules_api::execution_mode::{Native, WitnessGeneration};
 use sov_rollup_interface::node::da::DaService;

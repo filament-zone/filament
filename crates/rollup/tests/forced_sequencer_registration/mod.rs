@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use anyhow::Context;
-use demo_stf::{genesis_config::GenesisPaths, runtime::RuntimeCall};
+use filament_hub_stf::{genesis_config::GenesisPaths, runtime::RuntimeCall};
 use futures::StreamExt;
 use sov_kernels::basic::BasicKernelGenesisPaths;
 use sov_mock_da::{MockAddress, MockDaConfig, MockDaSpec};
@@ -25,9 +25,9 @@ async fn test_forced_sequencer_registration() -> anyhow::Result<()> {
     let (rpc_port_tx, rpc_port_rx) = tokio::sync::oneshot::channel();
     let (rest_port_tx, rest_port_rx) = tokio::sync::oneshot::channel();
     let rollup = construct_rollup(
-        GenesisPaths::from_dir("../test-data/genesis/integration-tests"),
+        GenesisPaths::from_dir("../../test-data/genesis/integration-tests"),
         BasicKernelGenesisPaths {
-            chain_state: "../test-data/genesis/integration-tests/chain_state.json".into(),
+            chain_state: "../../test-data/genesis/integration-tests/chain_state.json".into(),
         },
         RollupProverConfig::Skip,
         MockDaConfig::instant_with_sender(UNREGISTERED_SENDER),

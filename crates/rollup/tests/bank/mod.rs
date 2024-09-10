@@ -4,7 +4,7 @@ mod helpers;
 use std::sync::Arc;
 
 use anyhow::Context;
-use demo_stf::authentication::ModAuth;
+use filament_hub_stf::authentication::ModAuth;
 use futures::StreamExt;
 use sov_mock_da::{storable::service::StorableMockDaService, MockDaSpec};
 use sov_modules_api::{capabilities::Authenticator, transaction::Transaction, Batch, RawTx};
