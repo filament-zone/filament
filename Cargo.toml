@@ -4,7 +4,6 @@ members   = [
   "crates/cli",
   "crates/config",
   "crates/modules/core",
-  "crates/oracle",
   "crates/provers/risc0",
   "crates/rollup",
   "crates/stf",
