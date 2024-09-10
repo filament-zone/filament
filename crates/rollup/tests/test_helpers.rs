@@ -1,7 +1,4 @@
-use std::net::SocketAddr;
-use std::path::Path;
-use std::str::FromStr;
-use std::sync::Arc;
+use std::{net::SocketAddr, path::Path, str::FromStr, sync::Arc};
 
 use demo_stf::genesis_config::GenesisPaths;
 use sha2::Sha256;
@@ -9,16 +6,19 @@ use sov_cli::wallet_state::PrivateKeyAndAddress;
 use sov_demo_rollup::MockDemoRollup;
 use sov_kernels::basic::{BasicKernelGenesisConfig, BasicKernelGenesisPaths};
 use sov_mock_da::MockDaConfig;
-use sov_modules_api::execution_mode::Native;
-use sov_modules_api::{Address, Spec};
+use sov_modules_api::{execution_mode::Native, Address, Spec};
 use sov_modules_rollup_blueprint::{FullNodeBlueprint, Rollup};
 use sov_sequencer::FairBatchBuilderConfig;
 use sov_stf_runner::{
-    HttpServerConfig, ProofManagerConfig, RollupConfig, RollupProverConfig, RunnerConfig,
-    SequencerConfig, StorageConfig,
+    HttpServerConfig,
+    ProofManagerConfig,
+    RollupConfig,
+    RollupProverConfig,
+    RunnerConfig,
+    SequencerConfig,
+    StorageConfig,
 };
-use tokio::sync::oneshot;
-use tokio::task::JoinHandle;
+use tokio::{sync::oneshot, task::JoinHandle};
 
 const PROVER_ADDRESS: &str = "sov1pv9skzctpv9skzctpv9skzctpv9skzctpv9skzctpv9skzctpv9stup8tx";
 

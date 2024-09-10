@@ -3,10 +3,11 @@ use futures::StreamExt;
 use sov_mock_da::BlockProducingConfig;
 use sov_test_utils::{ApiClient, TestSpec};
 
-use super::helpers::*;
-use super::TxSender;
-use crate::bank::{SequencerTxSender, TOKEN_NAME, TOKEN_SALT};
-use crate::test_helpers::get_appropriate_rollup_prover_config;
+use super::{helpers::*, TxSender};
+use crate::{
+    bank::{SequencerTxSender, TOKEN_NAME, TOKEN_SALT},
+    test_helpers::get_appropriate_rollup_prover_config,
+};
 
 #[tokio::test(flavor = "multi_thread")]
 async fn bank_tx_tests_periodic_da() -> anyhow::Result<()> {

@@ -6,11 +6,9 @@ use sov_demo_rollup::MockDemoRollup;
 use sov_mock_da::{MockAddress, MockBlock, MockDaService};
 use sov_modules_api::execution_mode::{Native, WitnessGeneration};
 use sov_rollup_interface::node::da::DaService;
-use sov_test_utils::generators::bank::BankMessageGenerator;
-use sov_test_utils::MessageGenerator;
+use sov_test_utils::{generators::bank::BankMessageGenerator, MessageGenerator};
 
-use crate::prover::MockDaSpec;
-use crate::test_helpers::read_private_keys;
+use crate::{prover::MockDaSpec, test_helpers::read_private_keys};
 type S = sov_modules_api::default_spec::DefaultSpec<
     sov_risc0_adapter::Risc0Verifier,
     sov_mock_zkvm::MockZkVerifier,
@@ -26,7 +24,7 @@ pub async fn get_blocks_from_da() -> anyhow::Result<Vec<MockBlock>> {
         Err(_) => {
             println!("TXNS_PER_BLOCK not set, using default");
             DEFAULT_TXNS_PER_BLOCK
-        }
+        },
     };
 
     let block_cnt = match env::var("BLOCKS") {
@@ -34,7 +32,7 @@ pub async fn get_blocks_from_da() -> anyhow::Result<Vec<MockBlock>> {
         Err(_) => {
             println!("BLOCKS not set, using default");
             DEFAULT_BLOCKS
-        }
+        },
     };
 
     let da_service = MockDaService::new(MockAddress::default());

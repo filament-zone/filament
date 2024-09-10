@@ -6,8 +6,10 @@ use sov_modules_macros::config_value;
 use sov_test_utils::{TestSpec, TEST_DEFAULT_MAX_FEE, TEST_DEFAULT_MAX_PRIORITY_FEE};
 
 use super::test_client::TestClient;
-use crate::evm::evm_test_helper::{self};
-use crate::test_helpers::{get_appropriate_rollup_prover_config, read_private_keys};
+use crate::{
+    evm::evm_test_helper::{self},
+    test_helpers::{get_appropriate_rollup_prover_config, read_private_keys},
+};
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_evm_account_abstraction() {
@@ -21,7 +23,8 @@ async fn test_evm_account_abstraction() {
         rpc_port,
         rest_port,
         chain_id,
-        // This will produce an evm key that doesn't exist in rollup accounts-genesis so we have to register the credentials in the rollup.
+        // This will produce an evm key that doesn't exist in rollup accounts-genesis so we have to
+        // register the credentials in the rollup.
         "0x90cb5be9e2c125d84af44f19a4e6e36af359bd47b41577aedbe8aa24313bbd40",
     )
     .await;

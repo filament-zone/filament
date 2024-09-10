@@ -3,12 +3,16 @@ use std::marker::PhantomData;
 
 use borsh::{BorshDeserialize, BorshSerialize};
 use serde::{Deserialize, Serialize};
-use sov_modules_api::capabilities::{
-    Authenticator, AuthorizationData, UnregisteredAuthenticationError,
-};
-use sov_modules_api::runtime::capabilities::{AuthenticationResult, RuntimeAuthenticator};
 use sov_modules_api::{
-    DaSpec, DispatchCall, GasMeter, PreExecWorkingSet, RawTx, Spec, UnlimitedGasMeter,
+    capabilities::{Authenticator, AuthorizationData, UnregisteredAuthenticationError},
+    runtime::capabilities::{AuthenticationResult, RuntimeAuthenticator},
+    DaSpec,
+    DispatchCall,
+    GasMeter,
+    PreExecWorkingSet,
+    RawTx,
+    Spec,
+    UnlimitedGasMeter,
 };
 use sov_sequencer_registry::SequencerStakeMeter;
 
@@ -18,13 +22,10 @@ impl<S: Spec, Da: DaSpec> RuntimeAuthenticator<S> for Runtime<S, Da>
 where
     EthereumToRollupAddressConverter: TryInto<S::Address>,
 {
-    type Decodable = <Self as DispatchCall>::Decodable;
-
-    type SequencerStakeMeter = SequencerStakeMeter<S::Gas>;
-
     type AuthorizationData = AuthorizationData<S>;
-
+    type Decodable = <Self as DispatchCall>::Decodable;
     type Input = Auth;
+    type SequencerStakeMeter = SequencerStakeMeter<S::Gas>;
 
     fn authenticate(
         &self,
@@ -85,9 +86,9 @@ pub struct ModAuth<S: Spec, Da: DaSpec> {
 }
 
 impl<S: Spec, Da: DaSpec> Authenticator for ModAuth<S, Da> {
-    type Spec = S;
-    type DispatchCall = Runtime<S, Da>;
     type AuthorizationData = AuthorizationData<S>;
+    type DispatchCall = Runtime<S, Da>;
+    type Spec = S;
 
     fn authenticate<Meter: GasMeter<S::Gas>>(
         tx: &[u8],
@@ -139,9 +140,9 @@ where
     EthereumToRollupAddressConverter: TryInto<Addr>,
     Addr: Send + Sync,
 {
-    type Spec = S;
-    type DispatchCall = Runtime<S, Da>;
     type AuthorizationData = AuthorizationData<S>;
+    type DispatchCall = Runtime<S, Da>;
+    type Spec = S;
 
     fn authenticate<Meter: GasMeter<S::Gas>>(
         tx: &[u8],

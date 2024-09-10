@@ -1,18 +1,15 @@
 use anyhow::Context;
 use futures::StreamExt;
-use sov_bank::event::Event as BankEvent;
-use sov_bank::utils::TokenHolder;
-use sov_bank::Coins;
-use sov_mock_da::storable::service::StorableMockDaService;
-use sov_mock_da::BlockProducingConfig;
-use sov_rollup_interface::node::da::DaServiceWithRetries;
-use sov_rollup_interface::node::ledger_api::FinalityStatus;
+use sov_bank::{event::Event as BankEvent, utils::TokenHolder, Coins};
+use sov_mock_da::{storable::service::StorableMockDaService, BlockProducingConfig};
+use sov_rollup_interface::node::{da::DaServiceWithRetries, ledger_api::FinalityStatus};
 use sov_test_utils::{ApiClient, TestSpec};
 
-use super::helpers::*;
-use super::TxSender;
-use crate::bank::{DaLayerTxSender, SequencerTxSender, TOKEN_NAME, TOKEN_SALT};
-use crate::test_helpers::get_appropriate_rollup_prover_config;
+use super::{helpers::*, TxSender};
+use crate::{
+    bank::{DaLayerTxSender, SequencerTxSender, TOKEN_NAME, TOKEN_SALT},
+    test_helpers::get_appropriate_rollup_prover_config,
+};
 
 const BLOCK_PRODUCING_CONFIG: BlockProducingConfig = BlockProducingConfig::OnSubmit;
 

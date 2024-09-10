@@ -6,8 +6,10 @@ use sov_mock_da::{MockAddress, MockBlob, MockDaSpec};
 use sov_modules_api::{Batch, DaSpec, RawTx, Spec};
 use sov_modules_stf_blueprint::{BatchReceipt, GenesisParams, StfBlueprint};
 
-use crate::genesis_config::{create_genesis_config, GenesisPaths};
-use crate::runtime::{GenesisConfig, Runtime};
+use crate::{
+    genesis_config::{create_genesis_config, GenesisPaths},
+    runtime::{GenesisConfig, Runtime},
+};
 
 mod da_simulation;
 mod stf_tests;

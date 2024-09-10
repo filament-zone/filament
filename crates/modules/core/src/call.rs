@@ -91,7 +91,7 @@ impl<S: Spec> Core<S> {
             bail!("campaign id already exists. This is a bug - the id should be correctly incremented")
         }
 
-        if criteria.len() == 0 {
+        if criteria.is_empty() {
             bail!("missing criteria");
         }
 
@@ -170,7 +170,7 @@ impl<S: Spec> Core<S> {
             bail!("invalid criteria proposal, campaign '{campaign_id}' is not in criteria phase");
         }
 
-        if !campaign.delegates.contains(&sender) {
+        if !campaign.delegates.contains(sender) {
             bail!("invalid proposer, '{sender}' is not a campaign delegate");
         }
 

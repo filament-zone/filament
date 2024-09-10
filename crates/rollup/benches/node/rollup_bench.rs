@@ -1,19 +1,20 @@
 #![allow(clippy::float_arithmetic)]
 
-use std::env;
-use std::path::Path;
-use std::sync::Arc;
-use std::time::Duration;
+use std::{env, path::Path, sync::Arc, time::Duration};
 
 use criterion::{criterion_group, criterion_main, Criterion};
-use demo_stf::genesis_config::{create_genesis_config, GenesisPaths};
-use demo_stf::runtime::Runtime;
+use demo_stf::{
+    genesis_config::{create_genesis_config, GenesisPaths},
+    runtime::Runtime,
+};
 use sov_kernels::basic::{BasicKernel, BasicKernelGenesisConfig};
 use sov_mock_da::{MockBlock, MockBlockHeader, MockDaSpec};
 use sov_modules_stf_blueprint::{GenesisParams, StfBlueprint};
 use sov_rng_da_service::RngDaService;
-use sov_rollup_interface::node::da::DaService;
-use sov_rollup_interface::stf::{ExecutionContext, StateTransitionFunction};
+use sov_rollup_interface::{
+    node::da::DaService,
+    stf::{ExecutionContext, StateTransitionFunction},
+};
 use sov_test_utils::storage::SimpleStorageManager;
 use tempfile::TempDir;
 

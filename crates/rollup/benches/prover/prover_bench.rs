@@ -4,30 +4,33 @@ mod datagen;
 #[macro_use]
 extern crate prettytable;
 
-use std::collections::HashMap;
-use std::env;
-use std::path::Path;
+use std::{collections::HashMap, env, path::Path};
 
-use demo_stf::genesis_config::{create_genesis_config, GenesisPaths};
-use demo_stf::runtime::{GenesisConfig, Runtime};
+use demo_stf::{
+    genesis_config::{create_genesis_config, GenesisPaths},
+    runtime::{GenesisConfig, Runtime},
+};
 use prettytable::Table;
 use sov_db::storage_manager::NativeChangeSet;
 use sov_kernels::basic::{BasicKernel, BasicKernelGenesisConfig};
 use sov_mock_da::{MockAddress, MockDaService, MockDaSpec};
-use sov_modules_api::default_spec::DefaultSpec;
-use sov_modules_api::execution_mode::WitnessGeneration;
-use sov_modules_api::{CryptoSpecExt, SlotData, Spec, Zkvm};
-use sov_modules_stf_blueprint::{GenesisParams, StfBlueprint};
-use sov_risc0_adapter::host::Risc0Host;
-use sov_risc0_adapter::Risc0Verifier;
-use sov_rollup_interface::da::BlockHeaderTrait;
-use sov_rollup_interface::node::da::DaService;
-use sov_rollup_interface::stf::{ExecutionContext, StateTransitionFunction};
-use sov_rollup_interface::zk::{
-    StateTransitionWitness, StateTransitionWitnessWithAddress, ZkvmHost,
+use sov_modules_api::{
+    default_spec::DefaultSpec,
+    execution_mode::WitnessGeneration,
+    CryptoSpecExt,
+    SlotData,
+    Spec,
+    Zkvm,
 };
-use sov_sp1_adapter::host::SP1Host;
-use sov_sp1_adapter::SP1Verifier;
+use sov_modules_stf_blueprint::{GenesisParams, StfBlueprint};
+use sov_risc0_adapter::{host::Risc0Host, Risc0Verifier};
+use sov_rollup_interface::{
+    da::BlockHeaderTrait,
+    node::da::DaService,
+    stf::{ExecutionContext, StateTransitionFunction},
+    zk::{StateTransitionWitness, StateTransitionWitnessWithAddress, ZkvmHost},
+};
+use sov_sp1_adapter::{host::SP1Host, SP1Verifier};
 use sov_state::Storage;
 use sov_test_utils::storage::SimpleStorageManager;
 use tempfile::TempDir;
@@ -164,6 +167,7 @@ async fn main() -> anyhow::Result<()> {
 
 impl BenchZkvm for Risc0Verifier {
     type Host<'a> = Risc0Host<'a>;
+
     fn from_elf(da_elf: &[u8]) -> Self::Host<'_> {
         Risc0Host::new(da_elf)
     }
@@ -171,6 +175,7 @@ impl BenchZkvm for Risc0Verifier {
 
 impl BenchZkvm for SP1Verifier {
     type Host<'a> = SP1Host<'a>;
+
     fn from_elf(da_elf: &[u8]) -> Self::Host<'_> {
         SP1Host::new(da_elf)
     }

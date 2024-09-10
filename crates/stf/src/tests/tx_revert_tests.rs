@@ -1,25 +1,42 @@
 use std::convert::Infallible;
 
 use sov_mock_da::{MockAddress, MockBlock, MockDaSpec, MOCK_SEQUENCER_DA_ADDRESS};
-use sov_modules_api::runtime::capabilities::FatalError;
-use sov_modules_api::transaction::SequencerReward;
 use sov_modules_api::{
-    ApiStateAccessor, Batch, BatchSequencerOutcome, ExecutionContext, PrivateKey, PublicKey, Spec,
+    runtime::capabilities::FatalError,
+    transaction::SequencerReward,
+    ApiStateAccessor,
+    Batch,
+    BatchSequencerOutcome,
+    ExecutionContext,
+    PrivateKey,
+    PublicKey,
+    Spec,
 };
 use sov_modules_stf_blueprint::{SkippedReason, StfBlueprint, TxEffect};
-use sov_rollup_interface::da::RelevantBlobs;
-use sov_rollup_interface::stf::StateTransitionFunction;
-use sov_test_utils::generators::bank::get_default_token_id;
-use sov_test_utils::storage::SimpleStorageManager;
-use sov_test_utils::{TestHasher, TestSpec, TestStorageSpec};
+use sov_rollup_interface::{da::RelevantBlobs, stf::StateTransitionFunction};
+use sov_test_utils::{
+    generators::bank::get_default_token_id,
+    storage::SimpleStorageManager,
+    TestHasher,
+    TestSpec,
+    TestStorageSpec,
+};
 
 use super::{create_genesis_config_for_tests, read_private_keys, RuntimeTest};
-use crate::runtime::Runtime;
-use crate::tests::da_simulation::{
-    simulate_da_with_bad_nonce, simulate_da_with_bad_serialization, simulate_da_with_bad_sig,
-    simulate_da_with_revert_msg,
+use crate::{
+    runtime::Runtime,
+    tests::{
+        da_simulation::{
+            simulate_da_with_bad_nonce,
+            simulate_da_with_bad_serialization,
+            simulate_da_with_bad_sig,
+            simulate_da_with_revert_msg,
+        },
+        has_tx_events,
+        new_test_blob_from_batch,
+        StfBlueprintTest,
+    },
 };
-use crate::tests::{has_tx_events, new_test_blob_from_batch, StfBlueprintTest};
 
 // Assume there was a proper address and we converted it to bytes already.
 const SEQUENCER_DA_ADDRESS: [u8; 32] = [1; 32];
@@ -218,7 +235,8 @@ fn get_attester_stake_for_block(
         .expect("The sequencer should be registered"))
 }
 
-/// This test ensures that the sequencer gets penalized for submitting a proof that has a wrong nonce.
+/// This test ensures that the sequencer gets penalized for submitting a proof that has a wrong
+/// nonce.
 #[test]
 fn test_tx_bad_nonce() {
     let tempdir = tempfile::tempdir().unwrap();

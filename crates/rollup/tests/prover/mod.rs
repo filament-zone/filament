@@ -1,24 +1,23 @@
 use std::path::Path;
 
-use demo_stf::genesis_config::{create_genesis_config, GenesisPaths};
-use demo_stf::runtime::Runtime;
+use demo_stf::{
+    genesis_config::{create_genesis_config, GenesisPaths},
+    runtime::Runtime,
+};
 use risc0::MOCK_DA_ELF;
-use sov_db::schema::SchemaBatch;
-use sov_db::storage_manager::NativeStorageManager;
+use sov_db::{schema::SchemaBatch, storage_manager::NativeStorageManager};
 use sov_kernels::basic::{BasicKernel, BasicKernelGenesisConfig};
 use sov_mock_da::{MockAddress, MockBlock, MockDaService, MockDaSpec};
 use sov_mock_zkvm::MockZkVerifier;
-use sov_modules_api::execution_mode::WitnessGeneration;
-use sov_modules_api::SlotData;
+use sov_modules_api::{execution_mode::WitnessGeneration, SlotData};
 use sov_modules_stf_blueprint::{GenesisParams, StfBlueprint};
-use sov_risc0_adapter::host::Risc0Host;
-use sov_risc0_adapter::Risc0Verifier;
-use sov_rollup_interface::da::BlockHeaderTrait;
-use sov_rollup_interface::node::da::DaService;
-use sov_rollup_interface::stf::{ExecutionContext, StateTransitionFunction};
-use sov_rollup_interface::storage::HierarchicalStorageManager;
-use sov_rollup_interface::zk::{
-    StateTransitionWitness, StateTransitionWitnessWithAddress, ZkvmHost,
+use sov_risc0_adapter::{host::Risc0Host, Risc0Verifier};
+use sov_rollup_interface::{
+    da::BlockHeaderTrait,
+    node::da::DaService,
+    stf::{ExecutionContext, StateTransitionFunction},
+    storage::HierarchicalStorageManager,
+    zk::{StateTransitionWitness, StateTransitionWitnessWithAddress, ZkvmHost},
 };
 use sov_state::ProverStorage;
 use sov_test_utils::TestStorageSpec;

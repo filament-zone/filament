@@ -1,18 +1,21 @@
-use std::env;
-use std::fs::File;
-use std::io::BufWriter;
-use std::path::Path;
+use std::{env, fs::File, io::BufWriter, path::Path};
 
-use demo_stf::authentication::ModAuth;
-use demo_stf::genesis_config::{AccountConfig, AccountData};
+use demo_stf::{
+    authentication::ModAuth,
+    genesis_config::{AccountConfig, AccountData},
+};
 use sov_cli::wallet_state::PrivateKeyAndAddress;
 use sov_demo_rollup::MockDemoRollup;
 use sov_mock_da::{MockAddress, MockBlock, MockDaService, MockDaSpec};
-use sov_modules_api::execution_mode::Native;
-use sov_modules_api::{CredentialId, PrivateKey, PublicKey, Spec};
+use sov_modules_api::{execution_mode::Native, CredentialId, PrivateKey, PublicKey, Spec};
 use sov_rollup_interface::node::da::DaService;
-use sov_test_utils::generators::bank::BankMessageGenerator;
-use sov_test_utils::{MessageGenerator, TestHasher, TestPrivateKey, TestSpec};
+use sov_test_utils::{
+    generators::bank::BankMessageGenerator,
+    MessageGenerator,
+    TestHasher,
+    TestPrivateKey,
+    TestSpec,
+};
 
 type S = <MockDemoRollup<Native> as sov_modules_rollup_blueprint::RollupBlueprint<Native>>::Spec;
 
@@ -26,7 +29,7 @@ pub fn generate_genesis_config(config_dir: &str) -> anyhow::Result<()> {
         Err(_) => {
             println!("NUM_PUB_KEYS not set, using default");
             DEFAULT_NUM_PUB_KEYS
-        }
+        },
     };
 
     let mut accs = vec![];
@@ -74,7 +77,7 @@ pub async fn get_bench_blocks() -> anyhow::Result<Vec<MockBlock>> {
         Err(_) => {
             println!("TXNS_PER_BLOCK not set, using default");
             DEFAULT_TXNS_PER_BLOCK
-        }
+        },
     };
 
     let block_cnt = match env::var("BLOCKS") {
@@ -82,7 +85,7 @@ pub async fn get_bench_blocks() -> anyhow::Result<Vec<MockBlock>> {
         Err(_) => {
             println!("BLOCKS not set, using default");
             DEFAULT_BLOCKS
-        }
+        },
     };
 
     let da_service = MockDaService::new(MockAddress::default());

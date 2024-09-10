@@ -1,26 +1,42 @@
-use std::convert::Infallible;
-use std::vec;
+use std::{convert::Infallible, vec};
 
 use sov_mock_da::{MockAddress, MockBlock, MockDaSpec, MOCK_SEQUENCER_DA_ADDRESS};
-use sov_modules_api::transaction::SequencerReward;
-use sov_modules_api::{ApiStateAccessor, Batch, BatchSequencerOutcome, ExecutionContext, Spec};
+use sov_modules_api::{
+    transaction::SequencerReward,
+    ApiStateAccessor,
+    Batch,
+    BatchSequencerOutcome,
+    ExecutionContext,
+    Spec,
+};
 use sov_modules_stf_blueprint::{StfBlueprint, TxEffect};
-use sov_rollup_interface::da::RelevantBlobs;
-use sov_rollup_interface::node::da::SlotData;
-use sov_rollup_interface::stf::StateTransitionFunction;
-use sov_rollup_interface::storage::HierarchicalStorageManager;
-use sov_test_utils::generators::bank::get_default_token_id;
-use sov_test_utils::storage::{NativeStorageManager, SimpleStorageManager};
-use sov_test_utils::{SchemaBatch, TestSpec, TestStorageManager};
+use sov_rollup_interface::{
+    da::RelevantBlobs,
+    node::da::SlotData,
+    stf::StateTransitionFunction,
+    storage::HierarchicalStorageManager,
+};
+use sov_test_utils::{
+    generators::bank::get_default_token_id,
+    storage::{NativeStorageManager, SimpleStorageManager},
+    SchemaBatch,
+    TestSpec,
+    TestStorageManager,
+};
 
 use super::da_simulation::simulate_da_with_multiple_direct_registration_msg;
-use crate::runtime::Runtime;
-use crate::tests::da_simulation::{
-    simulate_da, simulate_da_with_incorrect_direct_registration_msg,
-};
-use crate::tests::{
-    create_genesis_config_for_tests, has_tx_events, new_test_blob_for_direct_registration,
-    new_test_blob_from_batch, read_private_keys, StfBlueprintTest, S,
+use crate::{
+    runtime::Runtime,
+    tests::{
+        create_genesis_config_for_tests,
+        da_simulation::{simulate_da, simulate_da_with_incorrect_direct_registration_msg},
+        has_tx_events,
+        new_test_blob_for_direct_registration,
+        new_test_blob_from_batch,
+        read_private_keys,
+        StfBlueprintTest,
+        S,
+    },
 };
 
 #[test]

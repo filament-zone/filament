@@ -1,6 +1,10 @@
-use sov_modules_api::hooks::{ApplyBatchHooks, FinalizeHook, SlotHooks, TxHooks};
 use sov_modules_api::{
-    AccessoryStateReaderAndWriter, BatchSequencerReceipt, Spec, StateCheckpoint, WorkingSet,
+    hooks::{ApplyBatchHooks, FinalizeHook, SlotHooks, TxHooks},
+    AccessoryStateReaderAndWriter,
+    BatchSequencerReceipt,
+    Spec,
+    StateCheckpoint,
+    WorkingSet,
 };
 use sov_rollup_interface::da::DaSpec;
 
@@ -12,8 +16,8 @@ impl<S: Spec, Da: DaSpec> TxHooks for Runtime<S, Da> {
 }
 
 impl<S: Spec, Da: DaSpec> ApplyBatchHooks<Da> for Runtime<S, Da> {
-    type Spec = S;
     type BatchResult = BatchSequencerReceipt<Da>;
+    type Spec = S;
 
     fn begin_batch_hook(
         &self,
@@ -32,7 +36,10 @@ impl<S: Spec, Da: DaSpec> SlotHooks for Runtime<S, Da> {
     fn begin_slot_hook(
         &self,
         pre_state_root: <S as Spec>::VisibleHash,
-        versioned_working_set: &mut sov_modules_api::VersionedStateReadWriter<StateCheckpoint<S>>,
+        versioned_working_set: &mut sov_modules_api::VersionedStateReadWriter<
+            '_,
+            StateCheckpoint<S>,
+        >,
     ) {
         self.evm
             .begin_slot_hook(pre_state_root, versioned_working_set);

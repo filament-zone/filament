@@ -1,16 +1,16 @@
-use std::collections::HashSet;
-use std::ops::Range;
-use std::time::Duration;
+use std::{collections::HashSet, ops::Range, time::Duration};
 
 use demo_stf::runtime;
 use futures::StreamExt;
 use rand::Rng;
 use sov_celestia_adapter::verifier::CelestiaSpec;
 use sov_cli::wallet_state::PrivateKeyAndAddress;
-use sov_modules_api::default_spec::DefaultSpec;
-use sov_modules_api::execution_mode::Native;
-use sov_modules_api::transaction::{Transaction, UnsignedTransaction};
-use sov_modules_api::Spec;
+use sov_modules_api::{
+    default_spec::DefaultSpec,
+    execution_mode::Native,
+    transaction::{Transaction, UnsignedTransaction},
+    Spec,
+};
 use sov_modules_macros::config_value;
 use sov_risc0_adapter::Risc0Verifier;
 use sov_rollup_interface::da::DaSpec;
@@ -115,6 +115,7 @@ async fn submit_blobs_increasing_size<Da: DaSpec>() -> anyhow::Result<()> {
 #[tokio::test]
 #[ignore = "Run manually"]
 async fn test_celestia_increasing_blob_sizes() -> anyhow::Result<()> {
-    // cargo test -p sov-demo-rollup --test all_tests celestia::test_celestia_increasing_blob_sizes -- --nocapture --ignored
+    // cargo test -p sov-demo-rollup --test all_tests celestia::test_celestia_increasing_blob_sizes
+    // -- --nocapture --ignored
     submit_blobs_increasing_size::<CelestiaSpec>().await
 }

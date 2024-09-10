@@ -1,16 +1,21 @@
 use ethereum_types::H160;
-use ethers_core::abi::Address;
-use ethers_core::k256::ecdsa::SigningKey;
-use ethers_core::types::transaction::eip2718::TypedTransaction;
-use ethers_core::types::{
-    Block, Eip1559TransactionRequest, Transaction, TransactionRequest, TxHash,
+use ethers_core::{
+    abi::Address,
+    k256::ecdsa::SigningKey,
+    types::{
+        transaction::eip2718::TypedTransaction,
+        Block,
+        Eip1559TransactionRequest,
+        Transaction,
+        TransactionRequest,
+        TxHash,
+    },
 };
 use ethers_middleware::SignerMiddleware;
 use ethers_providers::{Http, Middleware, PendingTransaction, Provider};
 use ethers_signers::Wallet;
 use futures::StreamExt;
-use jsonrpsee::core::client::ClientT;
-use jsonrpsee::rpc_params;
+use jsonrpsee::{core::client::ClientT, rpc_params};
 use reth_primitives::Bytes;
 use sov_ledger_json_client::WsSubscription;
 use sov_test_utils::{ApiClient, SimpleStorageContract, TestSpec, TEST_DEFAULT_MAX_FEE};

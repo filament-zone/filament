@@ -66,7 +66,7 @@ impl Hub {
 
     pub async fn create_campaign(&self, call: CallMessage<FilaSpec>) -> Result<()> {
         let hws = rpc_client(self.endpoint.clone()).await;
- 
+
         debug!("call: {:?}", borsh::to_vec(&call)?);
         // let tx = self.sign_tx(serde_json::to_vec(&call)?).await?;
         let tx = self.sign_tx(borsh::to_vec(&call)?).await?;

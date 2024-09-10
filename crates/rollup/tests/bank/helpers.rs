@@ -1,23 +1,34 @@
 use std::sync::Arc;
 
-use demo_stf::genesis_config::GenesisPaths;
-use demo_stf::runtime::RuntimeCall;
-use sov_bank::event::Event as BankEvent;
-use sov_bank::{Coins, TokenId};
+use demo_stf::{genesis_config::GenesisPaths, runtime::RuntimeCall};
+use sov_bank::{event::Event as BankEvent, Coins, TokenId};
 use sov_kernels::basic::BasicKernelGenesisPaths;
-use sov_mock_da::storable::service::StorableMockDaService;
-use sov_mock_da::{BlockProducingConfig, MockAddress, MockDaConfig, MockDaSpec};
+use sov_mock_da::{
+    storable::service::StorableMockDaService,
+    BlockProducingConfig,
+    MockAddress,
+    MockDaConfig,
+    MockDaSpec,
+};
 use sov_mock_zkvm::{MockCodeCommitment, MockZkVerifier};
-use sov_modules_api::rest::utils::{ErrorObject, ResponseObject};
-use sov_modules_api::transaction::{Transaction, UnsignedTransaction};
-use sov_modules_api::{PrivateKey, Spec};
+use sov_modules_api::{
+    rest::utils::{ErrorObject, ResponseObject},
+    transaction::{Transaction, UnsignedTransaction},
+    PrivateKey,
+    Spec,
+};
 use sov_modules_macros::config_value;
-use sov_rollup_interface::node::da::DaServiceWithRetries;
-use sov_rollup_interface::node::ledger_api::FinalityStatus;
-use sov_rollup_interface::zk::aggregated_proof::AggregateProofVerifier;
+use sov_rollup_interface::{
+    node::{da::DaServiceWithRetries, ledger_api::FinalityStatus},
+    zk::aggregated_proof::AggregateProofVerifier,
+};
 use sov_stf_runner::RollupProverConfig;
 use sov_test_utils::{
-    ApiClient, TestPrivateKey, TestSpec, TEST_DEFAULT_MAX_FEE, TEST_DEFAULT_MAX_PRIORITY_FEE,
+    ApiClient,
+    TestPrivateKey,
+    TestSpec,
+    TEST_DEFAULT_MAX_FEE,
+    TEST_DEFAULT_MAX_PRIORITY_FEE,
 };
 use tokio::task::JoinHandle;
 
@@ -57,8 +68,8 @@ impl TestRollup {
         let (rpc_port_tx, rpc_port_rx) = tokio::sync::oneshot::channel();
         let (rest_port_tx, rest_port_rx) = tokio::sync::oneshot::channel();
 
-        // This value is important and should match ../test-data/genesis/integration-tests /sequencer_registry.json
-        // Otherwise batches are going to be rejected
+        // This value is important and should match ../test-data/genesis/integration-tests
+        // /sequencer_registry.json Otherwise batches are going to be rejected
         let sequencer_address = MockAddress::new([0; 32]);
         let block_time_ms = 10_000;
         let storable_mock_da_connection_string = "sqlite::memory:".to_string();

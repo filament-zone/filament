@@ -3,31 +3,45 @@
 #[macro_use]
 extern crate prettytable;
 
-use std::default::Default;
-use std::env;
-use std::path::Path;
-use std::time::{Duration, Instant};
+use std::{
+    default::Default,
+    env,
+    path::Path,
+    time::{Duration, Instant},
+};
 
-use demo_stf::authentication::ModAuth;
-use demo_stf::genesis_config::{create_genesis_config, GenesisPaths};
-use demo_stf::runtime::Runtime;
+use demo_stf::{
+    authentication::ModAuth,
+    genesis_config::{create_genesis_config, GenesisPaths},
+    runtime::Runtime,
+};
 use humantime::format_duration;
 use prettytable::Table;
 use sov_bank::{Bank, Coins};
-use sov_db::ledger_db::{LedgerDb, SlotCommit};
-use sov_db::storage_manager::NativeStorageManager;
+use sov_db::{
+    ledger_db::{LedgerDb, SlotCommit},
+    storage_manager::NativeStorageManager,
+};
 use sov_kernels::basic::{BasicKernel, BasicKernelGenesisConfig};
 use sov_mock_da::{MockAddress, MockBlob, MockBlock, MockBlockHeader, MockDaSpec};
-use sov_modules_api::capabilities::Authenticator;
-use sov_modules_api::transaction::{Transaction, UnsignedTransaction};
-use sov_modules_api::{Batch, BatchSequencerOutcome, EncodeCall, RawTx, Spec};
+use sov_modules_api::{
+    capabilities::Authenticator,
+    transaction::{Transaction, UnsignedTransaction},
+    Batch,
+    BatchSequencerOutcome,
+    EncodeCall,
+    RawTx,
+    Spec,
+};
 use sov_modules_stf_blueprint::{GenesisParams, StfBlueprint};
-use sov_rollup_interface::crypto::{PrivateKey, PublicKey};
-use sov_rollup_interface::da::{BlockHeaderTrait, RelevantBlobs};
-use sov_rollup_interface::node::da::SlotData;
-use sov_rollup_interface::stf::{ExecutionContext, StateTransitionFunction};
-use sov_rollup_interface::storage::HierarchicalStorageManager;
-use sov_rollup_interface::zk::CryptoSpec;
+use sov_rollup_interface::{
+    crypto::{PrivateKey, PublicKey},
+    da::{BlockHeaderTrait, RelevantBlobs},
+    node::da::SlotData,
+    stf::{ExecutionContext, StateTransitionFunction},
+    storage::HierarchicalStorageManager,
+    zk::CryptoSpec,
+};
 use sov_state::StorageRoot;
 use sov_test_utils::{TestPrivateKey, TestSpec, TestStorageManager, TestStorageSpec};
 use tempfile::TempDir;
@@ -110,14 +124,14 @@ impl BenchParams {
             match val.as_str() {
                 "true" | "1" | "yes" => {
                     timer_output = true;
-                }
+                },
                 "false" | "0" | "no" => (),
                 val => {
                     panic!(
                         "Unknown value '{}' for TIMER_OUTPUT. expected true/false/0/1/yes/no",
                         val
                     );
-                }
+                },
             }
         }
 
@@ -440,7 +454,7 @@ async fn main() -> anyhow::Result<()> {
                 } else {
                     None
                 }
-            }
+            },
         };
         storage_manager
             .save_change_set(

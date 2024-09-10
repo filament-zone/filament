@@ -1,8 +1,7 @@
 use sov_modules_macros::config_value;
 use sov_stf_runner::RollupProverConfig;
 
-use super::evm_test_helper;
-use super::test_client::TestClient;
+use super::{evm_test_helper, test_client::TestClient};
 use crate::test_helpers::get_appropriate_rollup_prover_config;
 
 #[tokio::test(flavor = "multi_thread")]

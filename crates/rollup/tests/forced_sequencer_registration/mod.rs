@@ -1,13 +1,14 @@
 use std::sync::Arc;
 
 use anyhow::Context;
-use demo_stf::genesis_config::GenesisPaths;
-use demo_stf::runtime::RuntimeCall;
+use demo_stf::{genesis_config::GenesisPaths, runtime::RuntimeCall};
 use futures::StreamExt;
 use sov_kernels::basic::BasicKernelGenesisPaths;
 use sov_mock_da::{MockAddress, MockDaConfig, MockDaSpec};
-use sov_modules_api::transaction::{PriorityFeeBips, Transaction, UnsignedTransaction};
-use sov_modules_api::RawTx;
+use sov_modules_api::{
+    transaction::{PriorityFeeBips, Transaction, UnsignedTransaction},
+    RawTx,
+};
 use sov_modules_macros::config_value;
 use sov_rollup_interface::node::da::DaService;
 use sov_stf_runner::RollupProverConfig;

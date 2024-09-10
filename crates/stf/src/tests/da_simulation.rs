@@ -2,16 +2,24 @@ use std::rc::Rc;
 
 use sov_bank::Bank;
 use sov_mock_da::MockDaSpec;
-use sov_modules_api::runtime::capabilities::Authenticator;
-use sov_modules_api::transaction::{Transaction, UnsignedTransaction};
-use sov_modules_api::{EncodeCall, PrivateKey, RawTx};
-use sov_test_utils::generators::bank::BankMessageGenerator;
-use sov_test_utils::generators::sequencer_registry::SequencerRegistryMessageGenerator;
-use sov_test_utils::generators::value_setter::{ValueSetterMessage, ValueSetterMessages};
-use sov_test_utils::{MessageGenerator, TestPrivateKey};
+use sov_modules_api::{
+    runtime::capabilities::Authenticator,
+    transaction::{Transaction, UnsignedTransaction},
+    EncodeCall,
+    PrivateKey,
+    RawTx,
+};
+use sov_test_utils::{
+    generators::{
+        bank::BankMessageGenerator,
+        sequencer_registry::SequencerRegistryMessageGenerator,
+        value_setter::{ValueSetterMessage, ValueSetterMessages},
+    },
+    MessageGenerator,
+    TestPrivateKey,
+};
 
-use crate::authentication::ModAuth;
-use crate::runtime::Runtime;
+use crate::{authentication::ModAuth, runtime::Runtime};
 
 pub(crate) type S = sov_test_utils::TestSpec;
 type Da = MockDaSpec;

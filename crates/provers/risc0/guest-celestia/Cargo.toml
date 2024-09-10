@@ -44,3 +44,7 @@ opt-level = 3
 [features]
 bench = ["sov-celestia-adapter/bench", "sov-risc0-adapter/bench"]
 bincode = ["sov-risc0-adapter/bincode"]
+
+[patch."ssh://git@github.com/Sovereign-Labs/sov-wallet-format.git"]
+sov-wallet-format               = { git = "ssh://git@github.com/filament-zone/sov-wallet-format.git", rev = "44e23f9" }
+sov-wallet-format-macro-helpers = { git = "ssh://git@github.com/filament-zone/sov-wallet-format.git", rev = "44e23f9" }

@@ -4,10 +4,12 @@ use demo_stf::runtime::RuntimeCall;
 use sov_bank::{CallMessage, Coins, TokenId};
 use sov_mock_da::MockDaSpec;
 use sov_mock_zkvm::MockZkVerifier;
-use sov_modules_api::default_spec::DefaultSpec;
-use sov_modules_api::execution_mode::Native;
-use sov_modules_api::sov_wallet_format::compiled_schema::CompiledSchema;
-use sov_modules_api::Spec;
+use sov_modules_api::{
+    default_spec::DefaultSpec,
+    execution_mode::Native,
+    sov_wallet_format::compiled_schema::CompiledSchema,
+    Spec,
+};
 
 type Da = MockDaSpec;
 type S = DefaultSpec<MockZkVerifier, MockZkVerifier, Native>;
