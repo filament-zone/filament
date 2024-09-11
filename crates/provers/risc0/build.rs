@@ -33,7 +33,7 @@ fn get_guest_options() -> HashMap<&'static str, risc0_build::GuestOptions> {
         features.push("bincode".to_string());
     }
     guest_pkg_to_options.insert(
-        "filament-prover-guest-mock-risc0",
+        "filament-prover-risc0-guest-mock",
         risc0_build::GuestOptions {
             features,
             ..Default::default()

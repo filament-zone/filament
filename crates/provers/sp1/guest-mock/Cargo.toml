@@ -1,5 +1,5 @@
 [package]
-name = "sov-demo-prover-guest-mock-sp1"
+name = "sov-demo-prover-sp1-guest-mock"
 version = "0.3.0"
 edition = "2021"
 resolver = "2"

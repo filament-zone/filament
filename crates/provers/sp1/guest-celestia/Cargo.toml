@@ -1,5 +1,5 @@
 [package]
-name      = "filament-prover-guest-celestia"
+name      = "filament-prover-sp1-guest-celestia"
 version   = "0.3.0"
 edition   = "2021"
 resolver  = "2"
