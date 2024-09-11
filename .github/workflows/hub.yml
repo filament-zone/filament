@@ -64,12 +64,6 @@ jobs:
               ${{ secrets.SSH_DEPLOY_KEY }}
               ${{ secrets.SSH_FORMAT_DEPLOY_KEY }}
 
-      # - name: Set up Git credentials for private repo
-      #   run: |
-      #     git config --global --replace-all \
-      #     "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" \
-      #     ssh://git@github.com
-
       - name: Install Protoc
         uses: arduino/setup-protoc@v3
         with:
@@ -105,7 +99,13 @@ jobs:
           key: ${{ matrix.os }}-${{ matrix.toolchain }}
 
       - name: Build Rollup
-        run: cargo build -p filament-hub-rollup
+        run: cargo build --release -p filament-hub-rollup
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: filament-hub-rollup
+          path: target/release/filament-hub-rollup
 
   clippy:
     strategy:
@@ -125,12 +125,6 @@ jobs:
             ssh-private-key: |
               ${{ secrets.SSH_DEPLOY_KEY }}
               ${{ secrets.SSH_FORMAT_DEPLOY_KEY }}
-
-      # - name: Set up Git credentials for private repo
-      #   run: |
-      #     git config --global --replace-all \
-      #     "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" \
-      #     ssh://git@github.com
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v3
@@ -224,12 +218,6 @@ jobs:
             ssh-private-key: |
               ${{ secrets.SSH_DEPLOY_KEY }}
               ${{ secrets.SSH_FORMAT_DEPLOY_KEY }}
-
-      # - name: Set up Git credentials for private repo
-      #   run: |
-      #     git config --global --replace-all \
-      #     "url.https://${{ secrets.AUTH_TOKEN }}@github.com.insteadOf" \
-      #     ssh://git@github.com
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v3

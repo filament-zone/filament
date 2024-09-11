@@ -155,7 +155,7 @@ name = "sov-nft-script"
 path = "src/bin/sov_nft_script.rs"
 
 [[bin]]
-name = "sov-demo-rollup"
+name = "filament-hub-rollup"
 path = "src/main.rs"
 
 [[bin]]
