@@ -9,13 +9,13 @@ resolver = "2"
 [dependencies]
 filament-hub-stf    = { path = "../../../stf" }
 
-sov-kernels               = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "f4318b3" }
-sov-mock-da               = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "f4318b3" }
-sov-mock-zkvm             = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "f4318b3" }
-sov-modules-api           = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "f4318b3" }
-sov-modules-stf-blueprint = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "f4318b3" }
-sov-sp1-adapter           = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "f4318b3" }
-sov-state                 = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "f4318b3" }
+sov-kernels               = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "3aafafb" }
+sov-mock-da               = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "3aafafb" }
+sov-mock-zkvm             = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "3aafafb" }
+sov-modules-api           = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "3aafafb" }
+sov-modules-stf-blueprint = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "3aafafb" }
+sov-sp1-adapter           = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "3aafafb" }
+sov-state                 = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "3aafafb" }
 
 sov-cycle-utils = { git = "https://github.com/Sovereign-Labs/risc0-cycle-macros.git", rev = "99cfee6d5fdf179062aa983a20f427c59e34cba3", optional = true, features = ["sp1"] }
 

@@ -1,9 +1,6 @@
 use async_trait::async_trait;
 use backon::ExponentialBuilder;
-use filament_hub_stf::{
-    authentication::ModAuth,
-    runtime::{EthereumToRollupAddressConverter, Runtime},
-};
+use filament_hub_stf::runtime::{EthereumToRollupAddressConverter, Runtime};
 use sov_celestia_adapter::{
     verifier::{CelestiaSpec, CelestiaVerifier, RollupParams},
     CelestiaService,
@@ -14,7 +11,9 @@ use sov_mock_zkvm::{MockCodeCommitment, MockZkVerifier, MockZkvm};
 use sov_modules_api::{
     default_spec::DefaultSpec,
     execution_mode::{ExecutionMode, Native, Zk},
+    runtime::capabilities::Kernel,
     CryptoSpec,
+    OperatingMode,
     SovApiProofSerializer,
     Spec,
 };
@@ -80,6 +79,12 @@ impl FullNodeBlueprint<Native> for CelestiaDemoRollup<Native> {
         ProverStorage<DefaultStorageSpec<<<Self::Spec as Spec>::CryptoSpec as CryptoSpec>::Hasher>>,
     >;
 
+    fn get_operating_mode(
+        genesis: &<Self::Kernel as Kernel<<Self::Spec as Spec>::Storage>>::GenesisConfig,
+    ) -> OperatingMode {
+        genesis.chain_state.operating_mode
+    }
+
     fn create_outer_code_commitment(
         &self,
     ) -> <<Self::ProverService as ProverService>::Verifier as Zkvm>::CodeCommitment {
@@ -98,11 +103,7 @@ impl FullNodeBlueprint<Native> for CelestiaDemoRollup<Native> {
             FairBatchBuilderConfig<Self::DaSpec>,
         >,
     ) -> anyhow::Result<RuntimeEndpoints> {
-        let mut endpoints = sov_modules_rollup_blueprint::register_endpoints::<
-            Self,
-            _,
-            ModAuth<Self::Spec, Self::DaSpec>,
-        >(
+        let mut endpoints = sov_modules_rollup_blueprint::register_endpoints::<Self, _>(
             storage.clone(),
             ledger_db,
             sequencer_db,
@@ -112,7 +113,7 @@ impl FullNodeBlueprint<Native> for CelestiaDemoRollup<Native> {
 
         // TODO: Add issue for Sequencer level RPC injection:
         //   https://github.com/Sovereign-Labs/sovereign-sdk-wip/issues/366
-        crate::eth::register_ethereum::<Self::Spec, Self::DaService>(
+        crate::eth::register_ethereum::<Self::Spec, Self::DaService, Self::Runtime>(
             da_service.clone(),
             storage.clone(),
             &mut endpoints.jsonrpsee_module,

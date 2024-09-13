@@ -4,6 +4,7 @@ use sov_modules_api::{
     prelude::{
         axum::{routing::get, Router},
         serde_yaml,
+        utoipa::openapi::OpenApi,
         UnwrapInfallible as _,
     },
     rest::{
@@ -89,7 +90,7 @@ impl<S: Spec> HasCustomRestApi for Core<S> {
             .with_state(state)
     }
 
-    fn custom_openapi_spec(&self) -> Option<sov_modules_api::rest::OpenApi> {
+    fn custom_openapi_spec(&self) -> Option<OpenApi> {
         let open_api =
             serde_yaml::from_str(include_str!("../openapi-v3.yaml")).expect("Invalid OpenAPI spec");
         Some(open_api)

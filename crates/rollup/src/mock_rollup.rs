@@ -1,8 +1,5 @@
 use async_trait::async_trait;
-use filament_hub_stf::{
-    authentication::ModAuth,
-    runtime::{EthereumToRollupAddressConverter, Runtime},
-};
+use filament_hub_stf::runtime::{EthereumToRollupAddressConverter, Runtime};
 use sov_db::{ledger_db::LedgerDb, storage_manager::NativeStorageManager};
 use sov_kernels::basic::BasicKernel;
 use sov_mock_da::{storable::service::StorableMockDaService, MockDaSpec};
@@ -11,7 +8,9 @@ use sov_modules_api::{
     default_spec::DefaultSpec,
     execution_mode::{ExecutionMode, Native, Zk},
     higher_kinded_types::Generic,
+    runtime::capabilities::Kernel,
     CryptoSpec,
+    OperatingMode,
     SovApiProofSerializer,
     Spec,
     Zkvm,
@@ -75,6 +74,12 @@ impl FullNodeBlueprint<Native> for MockDemoRollup<Native> {
         ProverStorage<DefaultStorageSpec<<<Self::Spec as Spec>::CryptoSpec as CryptoSpec>::Hasher>>,
     >;
 
+    fn get_operating_mode(
+        genesis: &<Self::Kernel as Kernel<<Self::Spec as Spec>::Storage>>::GenesisConfig,
+    ) -> OperatingMode {
+        genesis.chain_state.operating_mode
+    }
+
     fn create_outer_code_commitment(
         &self,
     ) -> <<Self::ProverService as ProverService>::Verifier as Zkvm>::CodeCommitment {
@@ -93,11 +98,7 @@ impl FullNodeBlueprint<Native> for MockDemoRollup<Native> {
             FairBatchBuilderConfig<Self::DaSpec>,
         >,
     ) -> anyhow::Result<RuntimeEndpoints> {
-        let mut endpoints = sov_modules_rollup_blueprint::register_endpoints::<
-            Self,
-            Native,
-            ModAuth<Self::Spec, Self::DaSpec>,
-        >(
+        let mut endpoints = sov_modules_rollup_blueprint::register_endpoints::<Self, Native>(
             storage.clone(),
             ledger_db,
             sequencer_db,
@@ -107,7 +108,7 @@ impl FullNodeBlueprint<Native> for MockDemoRollup<Native> {
 
         // TODO: Add issue for Sequencer level RPC injection:
         //   https://github.com/Sovereign-Labs/sovereign-sdk-wip/issues/366
-        crate::eth::register_ethereum::<Self::Spec, Self::DaService>(
+        crate::eth::register_ethereum::<Self::Spec, Self::DaService, Self::Runtime>(
             da_service.clone(),
             storage,
             &mut endpoints.jsonrpsee_module,

@@ -29,7 +29,7 @@ struct Args {
     rollup_config_path: String,
 
     /// The path to the genesis configs.
-    #[arg(long, default_value = "../../test-data/genesis/demo/mock")]
+    #[arg(long, default_value = "../test-data/genesis/demo/mock")]
     genesis_config_dir: PathBuf,
 
     /// Listen address for Prometheus exporter.

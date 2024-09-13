@@ -11,7 +11,10 @@ use crate::{campaign::Payment, delegate::Eviction};
     serde::Serialize,
     serde::Deserialize,
 )]
-#[serde(bound = "S::Address: serde::Serialize + serde::de::DeserializeOwned")]
+#[serde(
+    bound = "S::Address: serde::Serialize + serde::de::DeserializeOwned",
+    rename_all = "snake_case"
+)]
 pub enum Event<S: Spec> {
     CampaignInitialized {
         campaign_id: u64,

@@ -1,25 +1,22 @@
 [package]
-name          = "filament-hub-rollup"
-version       = { workspace = true }
-authors       = { workspace = true }
-edition       = { workspace = true }
-license       = { workspace = true }
-homepage      = { workspace = true }
-repository    = { workspace = true }
-rust-version  = { workspace = true }
-publish       = { workspace = true }
+name = "filament-hub-rollup"
+version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+homepage = { workspace = true }
+publish = false
+resolver = "2"
+default-run = "filament-hub-rollup"
 
 [lints]
 workspace = true
 
 [dependencies]
-filament-hub-config    = { workspace = true }
-filament-hub-stf       = { workspace = true, features = [ "native" ] }
-filament-prover-risc0  = { workspace = true }
-
 # non-optional dependencies
 sov-celestia-adapter = { workspace = true, features = ["native"] }
 sov-mock-da = { workspace = true, features = ["native"] }
+filament-hub-config = { workspace = true }
 sov-stf-runner = { workspace = true }
 sov-rollup-interface = { workspace = true, features = ["native"] }
 
@@ -29,7 +26,9 @@ sov-modules-stf-blueprint = { workspace = true, features = ["native"] }
 sov-modules-api = { workspace = true, features = ["native"] }
 sov-bank = { workspace = true }
 sov-nft = { workspace = true }
+filament-hub-stf = { workspace = true, features = ["native"] }
 sov-ledger-apis = { workspace = true }
+filament-prover-risc0 = { workspace = true }
 borsh = { workspace = true, features = ["bytes"] }
 async-trait = { workspace = true }
 anyhow = { workspace = true }
@@ -63,10 +62,7 @@ sov-mock-zkvm = { workspace = true, features = ["native"] }
 sov-state = { workspace = true, features = ["native"] }
 sov-cli = { workspace = true }
 clap = { workspace = true }
-secp256k1 = { workspace = true, features = [
-    "global-context",
-    "recovery",
-]}
+secp256k1 = { workspace = true }
 sha2 = { workspace = true }
 sov-cycle-utils = { workspace = true, optional = true }
 sov-test-harness = { workspace = true }
@@ -74,7 +70,6 @@ sov-test-harness = { workspace = true }
 sov-sequencer-json-client = { workspace = true }
 
 [dev-dependencies]
-sov-rng-da-service = { workspace = true }
 sov-rollup-interface = { workspace = true, features = ["arbitrary"] }
 sov-mock-da = { workspace = true }
 sov-bank = { workspace = true, features = ["native"] }
@@ -84,6 +79,7 @@ sov-nft = { workspace = true, features = ["native"] }
 sov-ledger-json-client = { workspace = true }
 sov-modules-macros = { workspace = true }
 sov-test-utils = { workspace = true }
+sov-chain-state = { workspace = true }
 sov-value-setter = { workspace = true, features = ["native"] }
 humantime = "2.1"
 reth-primitives = { workspace = true }
@@ -113,38 +109,7 @@ criterion = "0.5.1"
 [features]
 default = []
 bincode = ["filament-prover-risc0/bincode", "sov-risc0-adapter/bincode"]
-
-bench = [
-    "hex",
-    "filament-prover-risc0/bench",
-    "sov-celestia-adapter/bench",
-    "sov-modules-api/bench",
-    "sov-modules-stf-blueprint/bench",
-    "sov-risc0-adapter/bench",
-    "sov-state/bench",
-    "sov-sequencer-registry/bench",
-    "sov-sp1-adapter/bench",
-    "sov-cycle-utils",
-]
 offchain = ["filament-hub-stf/offchain", "sov-nft/offchain"]
-
-[[bench]]
-name = "rollup_bench"
-path = "benches/node/rollup_bench.rs"
-harness = false
-required-features = ["bench"]
-
-[[bench]]
-name = "rollup_coarse_measure"
-path = "benches/node/rollup_coarse_measure.rs"
-harness = false
-required-features = ["bench"]
-
-[[bench]]
-name = "prover_bench"
-path = "benches/prover/prover_bench.rs"
-harness = false
-required-features = ["bench"]
 
 [[bin]]
 name = "sov-cli"
