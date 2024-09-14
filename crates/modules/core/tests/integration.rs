@@ -330,6 +330,7 @@ fn indexer_registration() {
     let (TestRoles { admin, indexer, .. }, mut runner) = setup();
 
     {
+        let admin = admin.clone();
         let indexer = indexer.clone();
         runner.execute_transaction(TransactionTestCase {
             input: admin.create_plain_message::<Core<S>>(CallMessage::RegisterIndexer(
@@ -343,7 +344,8 @@ fn indexer_registration() {
                     result.events[0],
                     TestCoreRuntimeEvent::Core(Event::IndexerRegistered {
                         addr: indexer.address(),
-                        alias: "numia".to_string()
+                        alias: "numia".to_string(),
+                        sender: admin.address(),
                     })
                 );
 
@@ -369,7 +371,8 @@ fn indexer_registration() {
             assert_eq!(
                 result.events[0],
                 TestCoreRuntimeEvent::Core(Event::IndexerUnregistered {
-                    addr: indexer.address()
+                    addr: indexer.address(),
+                    sender: admin.address(),
                 })
             );
 
@@ -411,7 +414,10 @@ fn register_relayer() {
             assert_eq!(result.events.len(), 1);
             assert_eq!(
                 result.events[0],
-                TestCoreRuntimeEvent::Core(Event::RelayerRegistered { addr: relayer })
+                TestCoreRuntimeEvent::Core(Event::RelayerRegistered {
+                    addr: relayer,
+                    sender: admin.address()
+                })
             );
 
             assert_eq!(
@@ -436,7 +442,7 @@ fn unregister_relayer() {
         mut runner,
     ) = setup();
 
-    // Confirm that only the module admin can unregister a relayer..
+    // Confirm that only the module admin can unregister a relayer.
     {
         runner.execute_transaction(TransactionTestCase {
             input: staker
@@ -462,7 +468,8 @@ fn unregister_relayer() {
             assert_eq!(
                 result.events[0],
                 TestCoreRuntimeEvent::Core(Event::RelayerUnregistered {
-                    addr: relayer.address()
+                    addr: relayer.address(),
+                    sender: admin.address(),
                 })
             );
 
@@ -474,6 +481,105 @@ fn unregister_relayer() {
             );
         }),
     });
+}
+
+#[test]
+fn update_voting_power() {
+    let (
+        TestRoles {
+            delegates,
+            relayer,
+            staker,
+            ..
+        },
+        mut runner,
+    ) = setup();
+
+    // Confirm that only a registered relayer can update voting powers.
+    {
+        runner.execute_transaction(TransactionTestCase {
+            input: staker.create_plain_message::<Core<S>>(CallMessage::UpdateVotingPower(
+                delegates[0].address(),
+                1000,
+            )),
+            assert: Box::new(move |result, _state| {
+                assert_eq!(
+                    result.tx_receipt,
+                    TxEffect::Reverted(Error::ModuleError(anyhow!(
+                        "sender '{}' is not a registered relayer",
+                        staker.address(),
+                    )))
+                );
+            }),
+        });
+    }
+
+    {
+        let delegate = delegates[0].address();
+        let relayer = relayer.clone();
+
+        runner.execute_transaction(TransactionTestCase {
+            input: relayer
+                .create_plain_message::<Core<S>>(CallMessage::UpdateVotingPower(delegate, 1000)),
+            assert: Box::new(move |result, state| {
+                assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+                assert_eq!(result.events.len(), 1);
+                assert_eq!(
+                    result.events[0],
+                    TestCoreRuntimeEvent::Core(Event::VotingPowerUpdated {
+                        addr: delegate,
+                        power: 1000,
+                        relayer: relayer.address()
+                    })
+                );
+
+                assert_eq!(
+                    Core::<S>::default()
+                        .get_voting_power(delegate, state)
+                        .unwrap_infallible(),
+                    1000
+                );
+            }),
+        });
+    }
+
+    // Update voting power of remaining delegates.
+    {
+        let delegate = delegates[1].address();
+        let relayer = relayer.clone();
+
+        runner.execute_transaction(TransactionTestCase {
+            input: relayer
+                .create_plain_message::<Core<S>>(CallMessage::UpdateVotingPower(delegate, 10000)),
+            assert: Box::new(move |result, _| {
+                assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+            }),
+        });
+    }
+
+    // Ensure voting power is ordered from highest to lowest.
+    {
+        let delegate = delegates[2].address();
+
+        runner.execute_transaction(TransactionTestCase {
+            input: relayer
+                .create_plain_message::<Core<S>>(CallMessage::UpdateVotingPower(delegate, 8000)),
+            assert: Box::new(move |result, state| {
+                assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+
+                assert_eq!(
+                    Core::<S>::default()
+                        .get_voting_powers(state)
+                        .unwrap_infallible(),
+                    vec![
+                        (delegates[1].address(), 10000),
+                        (delegates[2].address(), 8000),
+                        (delegates[0].address(), 1000),
+                    ],
+                );
+            }),
+        });
+    }
 }
 
 fn setup() -> (TestRoles<S>, TestRunner<TestCoreRuntime<S, MockDaSpec>, S>) {
@@ -506,6 +612,7 @@ fn setup() -> (TestRoles<S>, TestRunner<TestCoreRuntime<S, MockDaSpec>, S>) {
             campaigns: vec![campaign.clone()],
             delegates: delegate_addrs,
             indexers: vec![],
+            powers: Default::default(),
             relayers: vec![relayer.address()],
         },
     );

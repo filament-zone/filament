@@ -1,7 +1,9 @@
+use std::collections::HashMap;
+
 use anyhow::Result;
 use sov_modules_api::{GenesisState, Spec};
 
-use crate::{Campaign, Core, Indexer, Relayer};
+use crate::{Campaign, Core, Indexer, Power, Relayer};
 
 #[cfg_attr(
     feature = "native",
@@ -16,6 +18,7 @@ pub struct CoreConfig<S: Spec> {
     pub campaigns: Vec<Campaign<S>>,
     pub delegates: Vec<S::Address>,
     pub indexers: Vec<Indexer<S>>,
+    pub powers: HashMap<S::Address, Power>,
     pub relayers: Vec<Relayer<S>>,
 }
 
@@ -29,16 +32,16 @@ impl<S: Spec> Core<S> {
 
         self.admin.set(&config.admin, state)?;
 
-        for delegate in config.delegates.iter() {
-            self.delegates.push(delegate, state)?;
-        }
-
         let mut id = 0;
         for campaign in config.campaigns.iter() {
             self.campaigns.set(&id, campaign, state)?;
             id += 1;
         }
         self.next_campaign_id.set(&id, state)?;
+
+        for delegate in config.delegates.iter() {
+            self.delegates.push(delegate, state)?;
+        }
 
         for Indexer { addr, alias } in config.indexers.iter() {
             self.indexers.push(addr, state)?;
@@ -48,6 +51,17 @@ impl<S: Spec> Core<S> {
         for relayer in config.relayers.iter() {
             self.relayers.push(relayer, state)?;
         }
+
+        let mut index = config
+            .powers
+            .iter()
+            .map(|(addr, power)| (addr.clone(), *power))
+            .collect::<Vec<_>>();
+        index.sort_unstable_by(|a, b| b.1.cmp(&a.1));
+        for (addr, power) in &index {
+            self.powers.set(addr, power, state)?;
+        }
+        self.powers_index.set_all(index, state)?;
 
         tracing::info!("completed core genesis");
 

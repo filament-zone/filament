@@ -14,10 +14,118 @@ use sov_modules_api::{
     },
     ApiStateAccessor,
     Spec,
+    StateAccessor,
+    StateReader,
 };
+use sov_state::User;
 
-use crate::{criteria::CriteriaProposal, Campaign, Core, Indexer, Segment};
+use crate::{criteria::CriteriaProposal, Campaign, Core, Indexer, Power, Relayer, Segment};
 
+// Campaign queries.
+impl<S: Spec> Core<S> {
+    pub fn get_campaign<Accessor: StateAccessor>(
+        &self,
+        campaign_id: u64,
+        state: &mut Accessor,
+    ) -> Result<Option<Campaign<S>>, <Accessor as StateReader<User>>::Error> {
+        self.campaigns.get(&campaign_id, state)
+    }
+
+    pub fn get_criteria_proposal<Accessor: StateAccessor>(
+        &self,
+        campaign_id: u64,
+        proposal_id: u64,
+        state: &mut Accessor,
+    ) -> Result<Option<CriteriaProposal<S>>, <Accessor as StateReader<User>>::Error> {
+        let proposals = self.criteria_proposals.get(&campaign_id, state)?;
+        if proposals.is_none() {
+            return Ok(None);
+        }
+
+        Ok(proposals.unwrap().get((proposal_id) as usize).cloned())
+    }
+
+    pub fn get_segment<Accessor: StateAccessor>(
+        &self,
+        campaign_id: u64,
+        state: &mut Accessor,
+    ) -> Result<Option<Segment>, <Accessor as StateReader<User>>::Error> {
+        self.segments.get(&campaign_id, state)
+    }
+}
+
+// Indexer queries.
+impl<S: Spec> Core<S> {
+    pub fn get_indexer<Accessor: StateAccessor>(
+        &self,
+        addr: S::Address,
+        state: &mut Accessor,
+    ) -> Result<Option<Indexer<S>>, <Accessor as StateReader<User>>::Error> {
+        Ok(self
+            .indexer_aliases
+            .get(&addr, state)?
+            .map(|alias| Indexer { addr, alias }))
+    }
+
+    pub fn get_indexers<Accessor: StateAccessor>(
+        &self,
+        state: &mut Accessor,
+    ) -> Result<Vec<Indexer<S>>, <Accessor as StateReader<User>>::Error> {
+        let mut indexers = vec![];
+
+        for addr in self
+            .indexers
+            .iter(state)?
+            .collect::<Result<Vec<_>, <Accessor as StateReader<User>>::Error>>()?
+        {
+            indexers.push(Indexer {
+                addr: addr.clone(),
+                alias: self.indexer_aliases.get(&addr, state)?.unwrap_or_default(),
+            });
+        }
+
+        Ok(indexers)
+    }
+}
+
+// Relayer queries.
+impl<S: Spec> Core<S> {
+    pub fn get_relayer<Accessor: StateAccessor>(
+        &self,
+        addr: S::Address,
+        state: &mut Accessor,
+    ) -> Result<Option<Relayer<S>>, <Accessor as StateReader<User>>::Error> {
+        Ok(self
+            .relayers
+            .iter(state)?
+            .collect::<Result<Vec<_>, <Accessor as StateReader<User>>::Error>>()?
+            .into_iter()
+            .find(|relayer| addr == *relayer))
+    }
+}
+
+// Voting queries.
+impl<S: Spec> Core<S> {
+    pub fn get_voting_power<Accessor: StateAccessor>(
+        &self,
+        addr: S::Address,
+        state: &mut Accessor,
+    ) -> Result<Power, <Accessor as StateReader<User>>::Error> {
+        Ok(self.powers.get(&addr, state)?.unwrap_or_default())
+    }
+
+    pub fn get_voting_powers<Accessor: StateAccessor>(
+        &self,
+        state: &mut Accessor,
+    ) -> Result<Vec<(S::Address, Power)>, <Accessor as StateReader<User>>::Error> {
+        Ok(self
+            .powers_index
+            .iter(state)?
+            .collect::<Result<Vec<_>, <Accessor as StateReader<User>>::Error>>()?)
+    }
+}
+
+// RPC
 #[rpc_gen(client, server, namespace = "core")]
 impl<S: Spec> Core<S> {
     #[rpc_method(name = "getCampaign")]

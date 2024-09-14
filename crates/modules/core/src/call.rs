@@ -1,13 +1,5 @@
 use anyhow::{anyhow, bail, Result};
-use sov_modules_api::{
-    EventEmitter as _,
-    Spec,
-    StateAccessor,
-    StateAccessorError,
-    StateReader,
-    TxState,
-};
-use sov_state::User;
+use sov_modules_api::{EventEmitter as _, Spec, StateAccessorError, TxState};
 
 use crate::{
     campaign::{Campaign, Payment, Phase},
@@ -17,8 +9,7 @@ use crate::{
     segment::Segment,
     Core,
     Event,
-    Indexer,
-    Relayer,
+    Power,
 };
 
 /// This enumeration represents the available call messages for interacting with
@@ -40,6 +31,7 @@ use crate::{
 )]
 #[serde(rename_all = "snake_case")]
 pub enum CallMessage<S: Spec> {
+    // campaign
     Init {
         criteria: Criteria,
         budget: Budget,
@@ -64,11 +56,17 @@ pub enum CallMessage<S: Spec> {
         campaign_id: u64,
         segment: Segment,
     },
+
+    // Indexer
     RegisterIndexer(S::Address, String),
     UnregisterIndexer(S::Address),
 
+    // Relayer
     RegisterRelayer(S::Address),
     UnregisterRelayer(S::Address),
+
+    // Voting
+    UpdateVotingPower(S::Address, Power),
 }
 
 impl<S: Spec> Core<S> {
@@ -363,7 +361,7 @@ impl<S: Spec> Core<S> {
         sender: S::Address,
         state: &mut impl TxState<S>,
     ) -> Result<()> {
-        tracing::info!(%indexer, ?alias, "Register indexer request");
+        tracing::info!(%indexer, ?alias, %sender, "Register indexer request");
 
         // Only allow admin to update registry for now.
         let admin = self
@@ -390,9 +388,10 @@ impl<S: Spec> Core<S> {
             Event::<S>::IndexerRegistered {
                 addr: indexer.clone(),
                 alias: alias.clone(),
+                sender: sender.clone(),
             },
         );
-        tracing::info!(%indexer, ?alias, "Indexer registered");
+        tracing::info!(%indexer, ?alias, %sender, "Indexer registered");
 
         Ok(())
     }
@@ -403,7 +402,7 @@ impl<S: Spec> Core<S> {
         sender: S::Address,
         state: &mut impl TxState<S>,
     ) -> Result<()> {
-        tracing::info!(%indexer, "Unregister indexer request");
+        tracing::info!(%indexer, %sender, "Unregister indexer request");
 
         let admin = self
             .admin
@@ -427,9 +426,10 @@ impl<S: Spec> Core<S> {
             state,
             Event::IndexerUnregistered {
                 addr: indexer.clone(),
+                sender: sender.clone(),
             },
         );
-        tracing::info!(%indexer, "Indexer unregistered");
+        tracing::info!(%indexer, %sender, "Indexer unregistered");
 
         Ok(())
     }
@@ -443,7 +443,7 @@ impl<S: Spec> Core<S> {
         sender: S::Address,
         state: &mut impl TxState<S>,
     ) -> Result<()> {
-        tracing::info!(%relayer, "Register relayer request");
+        tracing::info!(%relayer, %sender, "Register relayer request");
 
         // Only allow admin to update registry for now.
         let admin = self
@@ -467,9 +467,10 @@ impl<S: Spec> Core<S> {
             state,
             Event::<S>::RelayerRegistered {
                 addr: relayer.clone(),
+                sender: sender.clone(),
             },
         );
-        tracing::info!(%relayer, "Relayer registered");
+        tracing::info!(%relayer, %sender, "Relayer registered");
 
         Ok(())
     }
@@ -480,7 +481,7 @@ impl<S: Spec> Core<S> {
         sender: S::Address,
         state: &mut impl TxState<S>,
     ) -> Result<()> {
-        tracing::info!(%relayer, "Unregister Relayer request");
+        tracing::info!(%relayer, %sender, "Unregister Relayer request");
 
         let admin = self
             .admin
@@ -503,87 +504,60 @@ impl<S: Spec> Core<S> {
             state,
             Event::RelayerUnregistered {
                 addr: relayer.clone(),
+                sender: sender.clone(),
             },
         );
-        tracing::info!(%relayer, "Relayer unregistered");
+        tracing::info!(%relayer, %sender, "Relayer unregistered");
 
         Ok(())
     }
 }
 
-// Queries.
+// Voting
 impl<S: Spec> Core<S> {
-    pub fn get_campaign<Accessor: StateAccessor>(
-        &self,
-        campaign_id: u64,
-        state: &mut Accessor,
-    ) -> Result<Option<Campaign<S>>, <Accessor as StateReader<User>>::Error> {
-        self.campaigns.get(&campaign_id, state)
-    }
-
-    pub fn get_criteria_proposal<Accessor: StateAccessor>(
-        &self,
-        campaign_id: u64,
-        proposal_id: u64,
-        state: &mut Accessor,
-    ) -> Result<Option<CriteriaProposal<S>>, <Accessor as StateReader<User>>::Error> {
-        let proposals = self.criteria_proposals.get(&campaign_id, state)?;
-        if proposals.is_none() {
-            return Ok(None);
-        }
-
-        Ok(proposals.unwrap().get((proposal_id) as usize).cloned())
-    }
-
-    pub fn get_indexer<Accessor: StateAccessor>(
+    pub(crate) fn update_voting_power(
         &self,
         addr: S::Address,
-        state: &mut Accessor,
-    ) -> Result<Option<Indexer<S>>, <Accessor as StateReader<User>>::Error> {
-        Ok(self
-            .indexer_aliases
-            .get(&addr, state)?
-            .map(|alias| Indexer { addr, alias }))
-    }
+        power: u64,
+        sender: S::Address,
+        state: &mut impl TxState<S>,
+    ) -> Result<()> {
+        tracing::info!(%addr, %power, %sender, "Update voting power request");
 
-    pub fn get_indexers<Accessor: StateAccessor>(
-        &self,
-        state: &mut Accessor,
-    ) -> Result<Vec<Indexer<S>>, <Accessor as StateReader<User>>::Error> {
-        let mut indexers = vec![];
-
-        for addr in self
-            .indexers
+        // Only registered relayers are allowed to update voting power.
+        self.relayers
             .iter(state)?
-            .collect::<Result<Vec<_>, <Accessor as StateReader<User>>::Error>>()?
-        {
-            indexers.push(Indexer {
-                addr: addr.clone(),
-                alias: self.indexer_aliases.get(&addr, state)?.unwrap_or_default(),
-            });
-        }
-
-        Ok(indexers)
-    }
-
-    pub fn get_segment<Accessor: StateAccessor>(
-        &self,
-        campaign_id: u64,
-        state: &mut Accessor,
-    ) -> Result<Option<Segment>, <Accessor as StateReader<User>>::Error> {
-        self.segments.get(&campaign_id, state)
-    }
-
-    pub fn get_relayer<Accessor: StateAccessor>(
-        &self,
-        addr: S::Address,
-        state: &mut Accessor,
-    ) -> Result<Option<Relayer<S>>, <Accessor as StateReader<User>>::Error> {
-        Ok(self
-            .relayers
-            .iter(state)?
-            .collect::<Result<Vec<_>, <Accessor as StateReader<User>>::Error>>()?
+            .collect::<Result<Vec<_>, StateAccessorError<<S as Spec>::Gas>>>()?
             .into_iter()
-            .find(|relayer| addr == *relayer))
+            .find(|each| *each == sender)
+            .ok_or(anyhow!("sender '{}' is not a registered relayer", sender))?;
+
+        self.powers.set(&addr, &power, state)?;
+        let mut index = self
+            .powers_index
+            .iter(state)?
+            .collect::<Result<Vec<_>, StateAccessorError<<S as Spec>::Gas>>>()?;
+
+        if let Some((_, stored)) = index.iter_mut().find(|(stored, _)| *stored == addr) {
+            *stored = power;
+        } else {
+            index.push((addr.clone(), power));
+        }
+
+        index.sort_unstable_by(|a, b| b.1.cmp(&a.1));
+
+        self.powers_index.set_all(index, state)?;
+
+        self.emit_event(
+            state,
+            Event::<S>::VotingPowerUpdated {
+                addr: addr.clone(),
+                power,
+                relayer: sender.clone(),
+            },
+        );
+        tracing::info!(%addr, %power, %sender, "Voting power updated");
+
+        Ok(())
     }
 }

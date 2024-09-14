@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use sov_modules_api::{
     macros::ModuleRestApi,
     CallResponse,
@@ -39,16 +41,19 @@ pub use indexer::{Alias, Indexer};
 pub mod playbook;
 pub use playbook::{Budget, Playbook};
 
+#[cfg(feature = "native")]
+pub mod query;
+#[cfg(feature = "native")]
+pub use query::*;
+
 pub mod relayer;
 pub use relayer::Relayer;
 
 pub mod segment;
 pub use segment::Segment;
 
-#[cfg(feature = "native")]
-pub mod query;
-#[cfg(feature = "native")]
-pub use query::*;
+pub mod voting;
+pub use voting::Power;
 
 #[derive(Clone, ModuleInfo, ModuleRestApi)]
 pub struct Core<S: Spec> {
@@ -58,12 +63,7 @@ pub struct Core<S: Spec> {
     #[state]
     pub(crate) admin: StateValue<S::Address>,
 
-    #[state]
-    pub(crate) relayers: StateVec<Relayer<S>>,
-
-    #[state]
-    pub(crate) delegates: StateVec<S::Address>,
-
+    // Campaign
     #[state]
     pub(crate) next_campaign_id: StateValue<u64>,
 
@@ -74,13 +74,32 @@ pub struct Core<S: Spec> {
     pub(crate) criteria_proposals: StateMap<u64, Vec<CriteriaProposal<S>>>,
 
     #[state]
+    pub(crate) segments: StateMap<u64, Segment>,
+
+    // Delegate
+    #[state]
+    pub(crate) delegates: StateVec<S::Address>,
+
+    // Indexer
+    #[state]
     pub(crate) indexers: StateVec<S::Address>,
 
     #[state]
     pub(crate) indexer_aliases: StateMap<S::Address, String>,
 
+    // Relayer
     #[state]
-    pub(crate) segments: StateMap<u64, Segment>,
+    pub(crate) relayers: StateVec<Relayer<S>>,
+
+    // Voting
+    #[state]
+    pub(crate) totol_voting_power: StateValue<Power>,
+
+    #[state]
+    pub(crate) powers: StateMap<S::Address, Power>,
+
+    #[state]
+    pub(crate) powers_index: StateVec<(S::Address, Power)>,
 }
 
 impl<S: Spec> Module for Core<S> {
@@ -104,6 +123,7 @@ impl<S: Spec> Module for Core<S> {
         state: &mut impl TxState<S>,
     ) -> Result<CallResponse, Error> {
         match msg {
+            // Campaign
             call::CallMessage::Init {
                 criteria,
                 budget,
@@ -150,6 +170,7 @@ impl<S: Spec> Module for Core<S> {
                 Ok(CallResponse::default())
             },
 
+            // Indexer
             call::CallMessage::RegisterIndexer(addr, alias) => {
                 self.register_indexer(addr, alias, context.sender().clone(), state)?;
                 Ok(CallResponse::default())
@@ -159,12 +180,19 @@ impl<S: Spec> Module for Core<S> {
                 Ok(CallResponse::default())
             },
 
+            // Relayer
             call::CallMessage::RegisterRelayer(addr) => {
                 self.register_relayer(addr, context.sender().clone(), state)?;
                 Ok(CallResponse::default())
             },
             call::CallMessage::UnregisterRelayer(addr) => {
                 self.unregister_relayer(addr, context.sender().clone(), state)?;
+                Ok(CallResponse::default())
+            },
+
+            // Voting
+            call::CallMessage::UpdateVotingPower(addr, power) => {
+                self.update_voting_power(addr, power, context.sender().clone(), state)?;
                 Ok(CallResponse::default())
             },
         }
