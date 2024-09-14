@@ -39,6 +39,9 @@ pub use indexer::{Alias, Indexer};
 pub mod playbook;
 pub use playbook::{Budget, Playbook};
 
+pub mod relayer;
+pub use relayer::Relayer;
+
 pub mod segment;
 pub use segment::Segment;
 
@@ -54,6 +57,9 @@ pub struct Core<S: Spec> {
 
     #[state]
     pub(crate) admin: StateValue<S::Address>,
+
+    #[state]
+    pub(crate) relayers: StateVec<Relayer<S>>,
 
     #[state]
     pub(crate) delegates: StateVec<S::Address>,
@@ -150,6 +156,15 @@ impl<S: Spec> Module for Core<S> {
             },
             call::CallMessage::UnregisterIndexer(addr) => {
                 self.unregister_indexer(addr, context.sender().clone(), state)?;
+                Ok(CallResponse::default())
+            },
+
+            call::CallMessage::RegisterRelayer(addr) => {
+                self.register_relayer(addr, context.sender().clone(), state)?;
+                Ok(CallResponse::default())
+            },
+            call::CallMessage::UnregisterRelayer(addr) => {
+                self.unregister_relayer(addr, context.sender().clone(), state)?;
                 Ok(CallResponse::default())
             },
         }

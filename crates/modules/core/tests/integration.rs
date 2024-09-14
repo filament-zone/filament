@@ -51,9 +51,9 @@ struct TestRoles<S: Spec> {
     admin: TestUser<S>,
     campaign: Campaign<S>,
     campaigner: TestUser<S>,
-    delegates: Vec<S::Address>,
-    delegate0: TestUser<S>,
+    delegates: Vec<TestUser<S>>,
     indexer: TestUser<S>,
+    relayer: TestUser<S>,
     staker: TestUser<S>,
 }
 
@@ -108,6 +108,7 @@ fn init_campaign() {
             );
 
             let expected = {
+                let delegates = delegates.iter().map(|u| u.address()).collect::<Vec<_>>();
                 let mut campaign = generate_test_campaign(campaigner.address());
                 campaign.proposed_delegates = delegates.clone();
                 campaign.delegates = delegates;
@@ -128,7 +129,7 @@ fn propose_criteria() {
     let (
         TestRoles {
             campaigner,
-            delegate0,
+            delegates,
             ..
         },
         mut runner,
@@ -157,7 +158,7 @@ fn propose_criteria() {
     }
 
     runner.execute_transaction(TransactionTestCase {
-        input: delegate0.create_plain_message::<Core<S>>(CallMessage::ProposeCriteria {
+        input: delegates[0].create_plain_message::<Core<S>>(CallMessage::ProposeCriteria {
             campaign_id: 0,
             criteria: generate_test_criteria(),
         }),
@@ -168,7 +169,7 @@ fn propose_criteria() {
                 result.events[0],
                 TestCoreRuntimeEvent::Core(Event::CriteriaProposed {
                     campaign_id: 0,
-                    proposer: delegate0.address(),
+                    proposer: delegates[0].address(),
                     proposal_id: 0
                 })
             );
@@ -179,7 +180,7 @@ fn propose_criteria() {
                     .unwrap_infallible(),
                 Some(CriteriaProposal {
                     campaign_id: 0,
-                    proposer: delegate0.address(),
+                    proposer: delegates[0].address(),
                     criteria: generate_test_criteria(),
                 })
             );
@@ -382,26 +383,118 @@ fn indexer_registration() {
     });
 }
 
+#[test]
+fn register_relayer() {
+    let (TestRoles { admin, staker, .. }, mut runner) = setup();
+    let relayer = generate_address::<S>("another-relayer");
+
+    // Confirm that only the module admin can unregister a relayer..
+    {
+        runner.execute_transaction(TransactionTestCase {
+            input: staker.create_plain_message::<Core<S>>(CallMessage::RegisterRelayer(relayer)),
+            assert: Box::new(move |result, _state| {
+                assert_eq!(
+                    result.tx_receipt,
+                    TxEffect::Reverted(Error::ModuleError(anyhow!(
+                        "sender '{}' is not an admin",
+                        staker.address(),
+                    )))
+                );
+            }),
+        });
+    }
+
+    runner.execute_transaction(TransactionTestCase {
+        input: admin.create_plain_message::<Core<S>>(CallMessage::RegisterRelayer(relayer)),
+        assert: Box::new(move |result, state| {
+            assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+            assert_eq!(result.events.len(), 1);
+            assert_eq!(
+                result.events[0],
+                TestCoreRuntimeEvent::Core(Event::RelayerRegistered { addr: relayer })
+            );
+
+            assert_eq!(
+                Core::<S>::default()
+                    .get_relayer(relayer, state)
+                    .unwrap_infallible(),
+                Some(relayer),
+            );
+        }),
+    });
+}
+
+#[test]
+fn unregister_relayer() {
+    let (
+        TestRoles {
+            admin,
+            relayer,
+            staker,
+            ..
+        },
+        mut runner,
+    ) = setup();
+
+    // Confirm that only the module admin can unregister a relayer..
+    {
+        runner.execute_transaction(TransactionTestCase {
+            input: staker
+                .create_plain_message::<Core<S>>(CallMessage::UnregisterIndexer(relayer.address())),
+            assert: Box::new(move |result, _state| {
+                assert_eq!(
+                    result.tx_receipt,
+                    TxEffect::Reverted(Error::ModuleError(anyhow!(
+                        "sender '{}' is not an admin",
+                        staker.address(),
+                    )))
+                );
+            }),
+        });
+    }
+
+    runner.execute_transaction(TransactionTestCase {
+        input: admin
+            .create_plain_message::<Core<S>>(CallMessage::UnregisterRelayer(relayer.address())),
+        assert: Box::new(move |result, state| {
+            assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+            assert_eq!(result.events.len(), 1);
+            assert_eq!(
+                result.events[0],
+                TestCoreRuntimeEvent::Core(Event::RelayerUnregistered {
+                    addr: relayer.address()
+                })
+            );
+
+            assert_eq!(
+                Core::<S>::default()
+                    .get_relayer(relayer.address(), state)
+                    .unwrap_infallible(),
+                None
+            );
+        }),
+    });
+}
+
 fn setup() -> (TestRoles<S>, TestRunner<TestCoreRuntime<S, MockDaSpec>, S>) {
     let genesis_config =
-        HighLevelOptimisticGenesisConfig::generate().add_accounts_with_default_balance(7);
+        HighLevelOptimisticGenesisConfig::generate().add_accounts_with_default_balance(8);
 
     let admin = genesis_config.additional_accounts.first().unwrap().clone();
     let staker = genesis_config.additional_accounts[1].clone();
     let indexer = genesis_config.additional_accounts[2].clone();
-    let campaigner = genesis_config.additional_accounts[3].clone();
-    let delegate0 = genesis_config.additional_accounts[4].clone();
-    let delegate1 = genesis_config.additional_accounts[5].clone();
-    let delegate2 = genesis_config.additional_accounts[6].clone();
+    let relayer = genesis_config.additional_accounts[3].clone();
+    let campaigner = genesis_config.additional_accounts[4].clone();
     let delegates = vec![
-        delegate0.address(),
-        delegate1.address(),
-        delegate2.address(),
+        genesis_config.additional_accounts[5].clone(),
+        genesis_config.additional_accounts[6].clone(),
+        genesis_config.additional_accounts[7].clone(),
     ];
+    let delegate_addrs = delegates.iter().map(|u| u.address()).collect::<Vec<_>>();
 
     let campaign = {
         let mut campaign = generate_test_campaign(campaigner.address());
-        campaign.delegates = delegates.clone();
+        campaign.delegates = delegate_addrs.clone();
         campaign.indexer = Some(indexer.address());
         campaign
     };
@@ -411,8 +504,9 @@ fn setup() -> (TestRoles<S>, TestRunner<TestCoreRuntime<S, MockDaSpec>, S>) {
         CoreConfig {
             admin: admin.address(),
             campaigns: vec![campaign.clone()],
-            delegates: delegates.clone(),
+            delegates: delegate_addrs,
             indexers: vec![],
+            relayers: vec![relayer.address()],
         },
     );
 
@@ -422,8 +516,8 @@ fn setup() -> (TestRoles<S>, TestRunner<TestCoreRuntime<S, MockDaSpec>, S>) {
             campaign,
             campaigner,
             delegates,
-            delegate0,
             indexer,
+            relayer,
             staker,
         },
         TestRunner::new_with_genesis(genesis.into_genesis_params(), TestCoreRuntime::default()),

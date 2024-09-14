@@ -18,6 +18,7 @@ use crate::{
     Core,
     Event,
     Indexer,
+    Relayer,
 };
 
 /// This enumeration represents the available call messages for interacting with
@@ -65,6 +66,9 @@ pub enum CallMessage<S: Spec> {
     },
     RegisterIndexer(S::Address, String),
     UnregisterIndexer(S::Address),
+
+    RegisterRelayer(S::Address),
+    UnregisterRelayer(S::Address),
 }
 
 impl<S: Spec> Core<S> {
@@ -350,7 +354,7 @@ impl<S: Spec> Core<S> {
     }
 }
 
-// // Indexer handlers.
+// Indexer handlers.
 impl<S: Spec> Core<S> {
     pub(crate) fn register_indexer(
         &self,
@@ -431,6 +435,82 @@ impl<S: Spec> Core<S> {
     }
 }
 
+// Relayer handlers.
+impl<S: Spec> Core<S> {
+    pub(crate) fn register_relayer(
+        &self,
+        relayer: S::Address,
+        sender: S::Address,
+        state: &mut impl TxState<S>,
+    ) -> Result<()> {
+        tracing::info!(%relayer, "Register relayer request");
+
+        // Only allow admin to update registry for now.
+        let admin = self
+            .admin
+            .get(state)?
+            .ok_or(anyhow!("module admin is not set"))?;
+        if sender != admin {
+            bail!("sender '{sender}' is not an admin");
+        }
+
+        let relayers = self
+            .relayers
+            .iter(state)?
+            .collect::<Result<Vec<_>, StateAccessorError<<S as Spec>::Gas>>>()?;
+
+        if !relayers.iter().any(|each| *each == relayer) {
+            self.relayers.push(&relayer, state)?;
+        }
+
+        self.emit_event(
+            state,
+            Event::<S>::RelayerRegistered {
+                addr: relayer.clone(),
+            },
+        );
+        tracing::info!(%relayer, "Relayer registered");
+
+        Ok(())
+    }
+
+    pub(crate) fn unregister_relayer(
+        &self,
+        relayer: S::Address,
+        sender: S::Address,
+        state: &mut impl TxState<S>,
+    ) -> Result<()> {
+        tracing::info!(%relayer, "Unregister Relayer request");
+
+        let admin = self
+            .admin
+            .get(state)?
+            .ok_or(anyhow!("module admin is not set"))?;
+        if sender != admin {
+            bail!("sender '{sender}' is not an admin");
+        }
+
+        let pos = self
+            .relayers
+            .iter(state)?
+            .collect::<Result<Vec<_>, StateAccessorError<<S as Spec>::Gas>>>()?
+            .iter()
+            .position(|each| *each == relayer)
+            .ok_or(anyhow!("relayer '{relayer}' is not registered"))?;
+        self.relayers.remove(pos, state)?;
+
+        self.emit_event(
+            state,
+            Event::RelayerUnregistered {
+                addr: relayer.clone(),
+            },
+        );
+        tracing::info!(%relayer, "Relayer unregistered");
+
+        Ok(())
+    }
+}
+
 // Queries.
 impl<S: Spec> Core<S> {
     pub fn get_campaign<Accessor: StateAccessor>(
@@ -492,5 +572,18 @@ impl<S: Spec> Core<S> {
         state: &mut Accessor,
     ) -> Result<Option<Segment>, <Accessor as StateReader<User>>::Error> {
         self.segments.get(&campaign_id, state)
+    }
+
+    pub fn get_relayer<Accessor: StateAccessor>(
+        &self,
+        addr: S::Address,
+        state: &mut Accessor,
+    ) -> Result<Option<Relayer<S>>, <Accessor as StateReader<User>>::Error> {
+        Ok(self
+            .relayers
+            .iter(state)?
+            .collect::<Result<Vec<_>, <Accessor as StateReader<User>>::Error>>()?
+            .into_iter()
+            .find(|relayer| addr == *relayer))
     }
 }

@@ -51,4 +51,11 @@ pub enum Event<S: Spec> {
         campaign_id: u64,
         indexer: S::Address,
     },
+
+    RelayerRegistered {
+        addr: S::Address,
+    },
+    RelayerUnregistered {
+        addr: S::Address,
+    },
 }
