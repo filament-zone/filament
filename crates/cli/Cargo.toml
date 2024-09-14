@@ -13,11 +13,14 @@ publish       = { workspace = true }
 workspace = true
 
 [dependencies]
+filament-hub-core   = { workspace = true, features = [ "native" ] }
 filament-hub-rollup = { workspace = true }
 filament-hub-stf    = { workspace = true }
 
 sov-modules-api               = { workspace = true, features = [ "native" ] }
+sov-mock-zkvm                 = { workspace = true, features = [ "native" ] }
 sov-modules-rollup-blueprint  = { workspace = true }
 
 anyhow  = { workspace = true }
+clap    = { workspace = true }
 tokio   = { workspace = true }

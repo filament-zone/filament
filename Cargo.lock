@@ -3095,8 +3095,11 @@ name = "filament-hub-cli"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "clap",
+ "filament-hub-core",
  "filament-hub-rollup",
  "filament-hub-stf",
+ "sov-mock-zkvm",
  "sov-modules-api",
  "sov-modules-rollup-blueprint",
  "tokio",

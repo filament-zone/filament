@@ -30,7 +30,7 @@ tracing         = { workspace = true }
 [dev-dependencies]
 filament-hub-core = { path = ".", version = "*", features = [ "native" ] }
 
-sov-test-utils              = { workspace = true }
+sov-test-utils = { workspace = true }
 
 assert_matches    = { workspace = true }
 pretty_assertions = { workspace = true, features = [ "alloc" ] }
