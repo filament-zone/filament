@@ -3,9 +3,11 @@ on:
   merge_group:
     types: [checks_requested]
   pull_request:
+    types: [opened, reopened, synchronize]
   push:
     branches:
       - main
+    tags: ["*"]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

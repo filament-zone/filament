@@ -3,16 +3,13 @@ on:
   merge_group:
     types: [checks_requested]
   pull_request:
+    types: [opened, reopened, synchronize]
     paths:
       - .github/workflows/docs.yml
       - docs/**
-
   push:
     branches:
       - "main"
-    paths:
-      - .github/workflows/docs.yml
-      - docs/**
 
 jobs:
   deploy-docs:

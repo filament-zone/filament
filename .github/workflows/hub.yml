@@ -3,6 +3,7 @@ on:
   merge_group:
     types: [checks_requested]
   pull_request:
+    types: [opened, reopened, synchronize]
     paths:
       - .github/workflows/hub.yml
       - Cargo.lock
@@ -15,6 +16,7 @@ on:
   push:
     branches:
       - main
+    tags: ["*"]
     paths:
       - .github/workflows/hub.yml
       - Cargo.lock

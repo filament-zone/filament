@@ -1,11 +1,19 @@
 name: Control
 
 on:
+  merge_group:
+    types: [checks_requested]
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      - .github/workflows/ethereum_control.yml
+      - control/**
   push:
     branches: [main]
     tags: ["*"]
-  pull_request:
-    types: [opened, reopened, synchronize]
+    paths:
+      - .github/workflows/ethereum_control.yml
+      - control/**
 
 env:
   FOUNDRY_PROFILE: ci
@@ -13,10 +21,12 @@ env:
 jobs:
   check:
     strategy:
+      matrix:
+        os: [ubuntu-latest]
       fail-fast: true
 
     name: Foundry project
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
         with:
