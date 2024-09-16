@@ -116,18 +116,27 @@ async fn test_proof_generation() {
             ExecutionContext::Node,
         );
 
-        let data = StateTransitionWitness::<
-            <TestSTF as StateTransitionFunction<Risc0Verifier, MockZkVerifier, MockDaSpec>>::StateRoot,
-            <TestSTF as StateTransitionFunction<Risc0Verifier, MockZkVerifier, MockDaSpec>>::Witness,
-            MockDaSpec,
-        > {
-            initial_state_root: prev_state_root,
-            da_block_header: filtered_block.header().clone(),
-            relevant_proofs,
-            witness: result.witness,
-            relevant_blobs,
-            final_state_root: result.state_root,
-        };
+        let data =
+            StateTransitionWitness::<
+                <TestSTF<'_> as StateTransitionFunction<
+                    Risc0Verifier,
+                    MockZkVerifier,
+                    MockDaSpec,
+                >>::StateRoot,
+                <TestSTF<'_> as StateTransitionFunction<
+                    Risc0Verifier,
+                    MockZkVerifier,
+                    MockDaSpec,
+                >>::Witness,
+                MockDaSpec,
+            > {
+                initial_state_root: prev_state_root,
+                da_block_header: filtered_block.header().clone(),
+                relevant_proofs,
+                witness: result.witness,
+                relevant_blobs,
+                final_state_root: result.state_root,
+            };
 
         let data = StateTransitionWitnessWithAddress {
             stf_witness: data,

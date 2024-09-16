@@ -105,6 +105,7 @@ impl<S: Spec> Core<S> {
 }
 
 // Voting queries.
+#[allow(clippy::type_complexity)]
 impl<S: Spec> Core<S> {
     pub fn get_voting_power<Accessor: StateAccessor>(
         &self,
@@ -118,10 +119,9 @@ impl<S: Spec> Core<S> {
         &self,
         state: &mut Accessor,
     ) -> Result<Vec<(S::Address, Power)>, <Accessor as StateReader<User>>::Error> {
-        Ok(self
-            .powers_index
+        self.powers_index
             .iter(state)?
-            .collect::<Result<Vec<_>, <Accessor as StateReader<User>>::Error>>()?)
+            .collect::<Result<Vec<_>, <Accessor as StateReader<User>>::Error>>()
     }
 }
 
@@ -177,6 +177,7 @@ impl<S: Spec> Core<S> {
 
 // Axum routes.
 impl<S: Spec> Core<S> {
+    #[allow(clippy::single_call_fn, clippy::unused_async)]
     async fn route_get_campaign(
         state: ApiState<Self, S>,
         Path(campaign_id): Path<u64>,

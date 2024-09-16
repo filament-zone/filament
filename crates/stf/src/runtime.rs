@@ -1,3 +1,5 @@
+#![allow(unused_doc_comments)]
+
 //! The Rollup entrypoint.
 //!
 //! On a high level, the rollup node receives serialized call messages from the DA layer and

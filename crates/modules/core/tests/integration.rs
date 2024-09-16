@@ -110,7 +110,7 @@ fn init_campaign() {
             let expected = {
                 let delegates = delegates.iter().map(|u| u.address()).collect::<Vec<_>>();
                 let mut campaign = generate_test_campaign(campaigner.address());
-                campaign.proposed_delegates = delegates.clone();
+                campaign.proposed_delegates.clone_from(&delegates);
                 campaign.delegates = delegates;
                 campaign
             };
@@ -600,7 +600,7 @@ fn setup() -> (TestRoles<S>, TestRunner<TestCoreRuntime<S, MockDaSpec>, S>) {
 
     let campaign = {
         let mut campaign = generate_test_campaign(campaigner.address());
-        campaign.delegates = delegate_addrs.clone();
+        campaign.delegates.clone_from(&delegate_addrs);
         campaign.indexer = Some(indexer.address());
         campaign
     };

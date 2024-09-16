@@ -113,7 +113,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04-16core]
-        toolchain: [stable]
+        toolchain: ["1.79"]
 
     name: Clippy Hub
     runs-on: ${{ matrix.os }}
@@ -163,7 +163,7 @@ jobs:
           key: ${{ matrix.os }}-${{ matrix.toolchain }}
 
       - name: Clippy crates
-        run: cargo metadata --format-version=1 --no-deps | jq -r '.packages[] | select(.name != "filament-hub-cli" and .name != "filament-hub-rollup" and .name != "filament-prover-risc0" and .name != "oracle") | .name' | xargs -I {} cargo clippy -p {} --no-deps -- -Dwarnings -Dnonstandard-style -Drust-2018-idioms -Dunused -Drust-2021-compatibility
+        run: cargo clippy --workspace --all-features --all-targets --no-deps -- -Dwarnings -Dunused -Dfuture-incompatible -Drefining-impl-trait -Dnonstandard-style -Drust-2018-idioms -Drust-2021-compatibility
 
   fmt:
     strategy:
