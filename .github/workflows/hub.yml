@@ -267,7 +267,7 @@ jobs:
         os: [ubuntu-22.04-16core]
         toolchain: ["1.79"]
 
-    name: Test WASM
+    name: WASM
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -315,10 +315,10 @@ jobs:
         run: wasm-pack test --firefox --headless crates/wasm
 
       - name: Build release package
-        run: wasm-pack build --release --target web crates/wasm
+        run: make build-wasm-release
 
       - name: Pack package
-        run: wasm-pack pack crates/wasm
+        run: make pack-wasm
 
       - name: Upload tar
         uses: actions/upload-artifact@v4

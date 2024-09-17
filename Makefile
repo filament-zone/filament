@@ -19,6 +19,7 @@ install-dev-tools: install-risc0-toolchain
 	cargo install flaky-finder
 	cargo install cargo-nextest --locked
 	cargo install zepter
+	cargo install wasm-pack
 	rustup target add wasm32-unknown-unknown
 
 install-risc0-toolchain:
@@ -55,3 +56,12 @@ find-unused-deps: ## Prints unused dependencies for project. Note: requires nigh
 
 find-flaky-tests:  ## Runs tests over and over to find if there's flaky tests
 	flaky-finder -j16 -r320 --continue "cargo test -- --nocapture"
+
+build-wasm-dev:
+	wasm-pack build --dev --no-opt --target web crates/wasm
+
+build-wasm-release:
+	wasm-pack build --release --target web crates/wasm
+
+pack-wasm:
+	wasm-pack pack crates/wasm
