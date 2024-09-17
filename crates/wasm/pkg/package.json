@@ -1,0 +1,24 @@
+{
+  "name": "filament-hub-wasm",
+  "type": "module",
+  "collaborators": [
+    "Filament Team <core@filament.zone>"
+  ],
+  "version": "0.1.0",
+  "license": "MIT or Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/filament-zone/filament"
+  },
+  "files": [
+    "filament_hub_wasm_bg.wasm",
+    "filament_hub_wasm.js",
+    "filament_hub_wasm.d.ts"
+  ],
+  "main": "filament_hub_wasm.js",
+  "homepage": "https://filament.zone",
+  "types": "filament_hub_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

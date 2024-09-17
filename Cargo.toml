@@ -7,6 +7,7 @@ members   = [
   "crates/provers/risc0",
   "crates/rollup",
   "crates/stf",
+  "crates/wasm"
 ]
 
 [workspace.package]
@@ -15,7 +16,7 @@ authors       = ["Filament Team <core@filament.zone>"]
 edition       = "2021"
 license       = "MIT or Apache-2.0"
 homepage      = "https://filament.zone"
-repository    = "https://github.com/filament-zone/incentives"
+repository    = "https://github.com/filament-zone/filament"
 rust-version  = "1.77"
 publish       = false
 
@@ -81,38 +82,41 @@ sov-value-setter              = { git = "ssh://git@github.com/filament-zone/sove
 
 sov-cycle-utils = { git = "https://github.com/Sovereign-Labs/risc0-cycle-macros.git", rev = "99cfee6d5fdf179062aa983a20f427c59e34cba3" }
 
-anyhow              = { version = "1.0.68",   default-features = false }
-assert_matches      = { version = "1.5",      default-features = false }
-async-trait         = { version = "0.1.81",   default-features = false }
-axum                = { version = "0.7",      default-features = false }
-backon              = { version = "0.4.4",    default-features = false }
-bincode             = { version = "1.3.3",    default-features = false }
-borsh               = { version = "1",        default-features = false }
-clap                = { version = "4.5.16",   default-features = false }
-ethereum-types      = { version = "0.14.1",   default-features = false }
-futures             = { version = "0.3",      default-features = false }
-hex                 = { version = "0.4.3",    default-features = false }
-jsonrpsee           = { version = "0.24",     default-features = false }
-lazy_static         = { version = "1.5",      default-features = false }
-pretty_assertions   = { version = "1.4.0",    default-features = false }
-prometheus          = { version = "0.13.4",   default-features = false }
-prometheus_exporter = { version = "0.8.5",    default-features = false }
-proptest            = { version = "1.5",      default-features = false }
-rand                = { version = "0.8",      default-features = false }
-reqwest             = { version = "0.12",     default-features = false }
-risc0-build         = { version = "1.0.5",    default-features = false }
-schemars            = { version = "0.8.21",   default-features = false }
-secp256k1           = { version = "0.29.0",   default-features = false }
-serde               = { version = "1.0.196",  default-features = false }
-serde_bytes         = { version = "0.11",     default-features = false }
-serde_json          = { version = "1.0",      default-features = false }
-sha2                = { version = "0.10.8",   default-features = false }
-tempfile            = { version = "3.8",      default-features = false }
-tendermint          = { version = "0.32",     default-features = false }
-thiserror           = { version = "1.0.50",   default-features = false }
-tokio               = { version = "1.35",     default-features = false }
-tracing             = { version = "0.1.40",   default-features = false }
-tracing-subscriber  = { version = "0.3.17",   default-features = false }
+anyhow                    = { version = "1.0.68",   default-features = false }
+assert_matches            = { version = "1.5",      default-features = false }
+async-trait               = { version = "0.1.81",   default-features = false }
+axum                      = { version = "0.7",      default-features = false }
+backon                    = { version = "0.4.4",    default-features = false }
+bincode                   = { version = "1.3.3",    default-features = false }
+borsh                     = { version = "1",        default-features = false }
+clap                      = { version = "4.5.16",   default-features = false }
+console_error_panic_hook  = { version = "0.1.7", default-features = false }
+ethereum-types            = { version = "0.14.1",   default-features = false }
+futures                   = { version = "0.3",      default-features = false }
+hex                       = { version = "0.4.3",    default-features = false }
+jsonrpsee                 = { version = "0.24",     default-features = false }
+lazy_static               = { version = "1.5",      default-features = false }
+pretty_assertions         = { version = "1.4.0",    default-features = false }
+prometheus                = { version = "0.13.4",   default-features = false }
+prometheus_exporter       = { version = "0.8.5",    default-features = false }
+proptest                  = { version = "1.5",      default-features = false }
+rand                      = { version = "0.8",      default-features = false }
+reqwest                   = { version = "0.12",     default-features = false }
+risc0-build               = { version = "1.0.5",    default-features = false }
+schemars                  = { version = "0.8.21",   default-features = false }
+secp256k1                 = { version = "0.29.0",   default-features = false }
+serde                     = { version = "1.0.196",  default-features = false }
+serde_bytes               = { version = "0.11",     default-features = false }
+serde_json                = { version = "1.0",      default-features = false }
+sha2                      = { version = "0.10.8",   default-features = false }
+tempfile                  = { version = "3.8",      default-features = false }
+tendermint                = { version = "0.32",     default-features = false }
+thiserror                 = { version = "1.0.50",   default-features = false }
+tokio                     = { version = "1.35",     default-features = false }
+tracing                   = { version = "0.1.40",   default-features = false }
+tracing-subscriber        = { version = "0.3.17",   default-features = false }
+wasm-bindgen              = { version = "0.2.84",   default-features = false }
+wasm-bindgen-test         = { version = "0.3.34",   default-features = false }
 
 ethers-core = { version = "=2.0.14", default-features = false }
 ethers-contract = { version = "=2.0.14", default-features = false }
@@ -128,3 +132,6 @@ revm-inspectors = { version = "0.5", default-features = false }
 [patch."ssh://git@github.com/Sovereign-Labs/sov-wallet-format.git"]
 sov-wallet-format               = { git = "ssh://git@github.com/filament-zone/sov-wallet-format.git", rev = "44e23f9" }
 sov-wallet-format-macro-helpers = { git = "ssh://git@github.com/filament-zone/sov-wallet-format.git", rev = "44e23f9" }
+
+[profile.release.package.filament-hub-wasm]
+opt-level = "s"
