@@ -260,3 +260,68 @@ jobs:
 
       - name: Run tests
         run: cargo nextest run --workspace --all-targets
+
+  wasm:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04-16core]
+        toolchain: ["1.79"]
+
+    name: Test WASM
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Startup SSH agent for private repo access
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+            ssh-private-key: |
+              ${{ secrets.SSH_DEPLOY_KEY }}
+              ${{ secrets.SSH_FORMAT_DEPLOY_KEY }}
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v3
+        with:
+          version: "23.2"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          override: true
+          components: rustfmt, rust-src, clippy
+
+      - name: Install mold linker
+        uses: rui314/setup-mold@v1
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
+
+      - name: Cache dependencies & tools
+        uses: Swatinem/rust-cache@v2
+        timeout-minutes: 1
+        continue-on-error: true
+        with:
+          key: ${{ matrix.os }}-${{ matrix.toolchain }}
+
+      - name: Run tests in Chrome
+        run: wasm-pack test --chrome --headless crates/wasm
+      - name: Run tests in Firefox
+        run: wasm-pack test --firefox --headless crates/wasm
+
+      - name: Build release package
+        run: wasm-pack build --release --target web crates/wasm
+
+      - name: Pack package
+        run: wasm-pack pack crates/wasm
+
+      - name: Upload tar
+        uses: actions/upload-artifact@v4
+        with:
+          name: filament-hub-wasm
+          path: crates/wasm/pkg/filament-hub-wasm-0.1.0.tgz
