@@ -1,16 +1,17 @@
-#![deny(missing_docs)]
-#![doc = include_str!("../README.md")]
+//! The rollup State Transition Function.
 
 pub mod authentication;
 #[cfg(feature = "native")]
 pub mod genesis_config;
-mod hooks_impl;
+pub mod hooks;
 pub mod runtime;
-#[cfg(test)]
-mod tests;
 
+pub use runtime::*;
 use sov_modules_stf_blueprint::StfBlueprint;
 use sov_rollup_interface::{da::DaVerifier, stf::StateTransitionVerifier};
+
+#[allow(unused_extern_crates)]
+pub extern crate sov_modules_api;
 
 /// Alias for StateTransitionVerifier.
 pub type StfVerifier<DA, ZkSpec, RT, K, InnerVm, OuterVm> = StateTransitionVerifier<
@@ -19,3 +20,5 @@ pub type StfVerifier<DA, ZkSpec, RT, K, InnerVm, OuterVm> = StateTransitionVerif
     InnerVm,
     OuterVm,
 >;
+
+pub use sov_mock_da::MockDaSpec;

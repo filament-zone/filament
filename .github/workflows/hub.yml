@@ -109,13 +109,49 @@ jobs:
           name: filament-hub-rollup
           path: target/release/filament-hub-rollup
 
-  clippy:
+  fmt:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04-16core]
+        toolchain: [nightly]
+
+    name: Format Hub
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Startup SSH agent for private repo access
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+            ssh-private-key: |
+              ${{ secrets.SSH_DEPLOY_KEY }}
+              ${{ secrets.SSH_FORMAT_DEPLOY_KEY }}
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          override: true
+          components: rustfmt, clippy
+
+      - name: Cache dependencies & tools
+        uses: Swatinem/rust-cache@v2
+        timeout-minutes: 1
+        continue-on-error: true
+        with:
+          key: ${{ matrix.os }}-${{ matrix.toolchain }}
+
+      - name: Fmt Hub
+        run: cargo fmt --all -- --check
+
+  lint:
     strategy:
       matrix:
         os: [ubuntu-22.04-16core]
         toolchain: ["1.79"]
 
-    name: Clippy Hub
+    name: Lint Hub
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout sources
@@ -155,42 +191,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Cache dependencies & tools
-        uses: Swatinem/rust-cache@v2
-        timeout-minutes: 1
-        continue-on-error: true
+      - name: Install zepter
+        uses: taiki-e/install-action@v2
         with:
-          key: ${{ matrix.os }}-${{ matrix.toolchain }}
-
-      - name: Clippy crates
-        run: cargo clippy --workspace --all-features --all-targets --no-deps -- -Dwarnings -Dunused -Dfuture-incompatible -Drefining-impl-trait -Dnonstandard-style -Drust-2018-idioms -Drust-2021-compatibility
-
-  fmt:
-    strategy:
-      matrix:
-        os: [ubuntu-22.04-16core]
-        toolchain: [nightly]
-
-    name: Format Hub
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v4
-
-      - name: Startup SSH agent for private repo access
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-            ssh-private-key: |
-              ${{ secrets.SSH_DEPLOY_KEY }}
-              ${{ secrets.SSH_FORMAT_DEPLOY_KEY }}
-
-      - name: Install toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: ${{ matrix.toolchain }}
-          override: true
-          components: rustfmt, clippy
+          tool: zepter
 
       - name: Cache dependencies & tools
         uses: Swatinem/rust-cache@v2
@@ -199,8 +203,8 @@ jobs:
         with:
           key: ${{ matrix.os }}-${{ matrix.toolchain }}
 
-      - name: Fmt Hub
-        run: cargo fmt --all -- --check
+      - name: Lint Hub
+        run: make lint
 
   test:
     strategy:
@@ -259,7 +263,7 @@ jobs:
         uses: taiki-e/install-action@nextest
 
       - name: Run tests
-        run: cargo nextest run --workspace --all-targets
+        run: make test
 
   wasm:
     strategy:
@@ -310,9 +314,9 @@ jobs:
           key: ${{ matrix.os }}-${{ matrix.toolchain }}
 
       - name: Run tests in Chrome
-        run: wasm-pack test --chrome --headless crates/wasm
+        run: make test-wasm-chrome
       - name: Run tests in Firefox
-        run: wasm-pack test --firefox --headless crates/wasm
+        run: make test-wasm-firefox
 
       - name: Build release package
         run: make build-wasm-release

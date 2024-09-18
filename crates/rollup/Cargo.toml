@@ -1,128 +1,69 @@
 [package]
-name = "filament-hub-rollup"
-version = { workspace = true }
-edition = { workspace = true }
-authors = { workspace = true }
-license = { workspace = true }
-homepage = { workspace = true }
-publish = false
-resolver = "2"
-default-run = "filament-hub-rollup"
-
-[lints]
-workspace = true
+name          = "filament-hub-rollup"
+version       = { workspace = true }
+authors       = { workspace = true }
+edition       = { workspace = true }
+license       = { workspace = true }
+homepage      = { workspace = true }
+repository    = { workspace = true }
+rust-version  = { workspace = true }
+publish       = { workspace = true }
 
 [dependencies]
-# non-optional dependencies
-sov-celestia-adapter = { workspace = true, features = ["native"] }
-sov-mock-da = { workspace = true, features = ["native"] }
-filament-hub-config = { workspace = true }
-sov-stf-runner = { workspace = true }
-sov-rollup-interface = { workspace = true, features = ["native"] }
-
-sov-modules-rollup-blueprint = { workspace = true, features = ["native"] }
-sov-kernels = { workspace = true }
-sov-modules-stf-blueprint = { workspace = true, features = ["native"] }
-sov-modules-api = { workspace = true, features = ["native"] }
-sov-bank = { workspace = true }
-sov-nft = { workspace = true }
-filament-hub-stf = { workspace = true, features = ["native"] }
-sov-ledger-apis = { workspace = true }
+filament-hub-stf      = { workspace = true, features = ["native"] }
 filament-prover-risc0 = { workspace = true }
-borsh = { workspace = true, features = ["bytes"] }
-async-trait = { workspace = true }
-anyhow = { workspace = true }
-axum = { workspace = true }
-backon = { workspace = true }
-jsonrpsee = { workspace = true, features = [
-    "http-client",
-    "server",
-    "ws-client",
-] }
-serde = { workspace = true, features = ["derive"] }
-serde_json = { workspace = true }
-tracing = { workspace = true }
-hex = { workspace = true, optional = true }
-tokio = { workspace = true, features = [
-    "rt-multi-thread",
-    "sync",
-    "time",
-    "macros",
-] }
-tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
-tracing-panic = "0.1.2"
-prometheus_exporter = "0.8.5"
 
-sov-db = { workspace = true }
-sov-ethereum = { workspace = true, features = ["local"] }
-sov-sequencer = { workspace = true }
-sov-risc0-adapter = { workspace = true, features = ["native"] }
-sov-sp1-adapter = { workspace = true, features = ["native"] }
-sov-mock-zkvm = { workspace = true, features = ["native"] }
-sov-state = { workspace = true, features = ["native"] }
-sov-cli = { workspace = true }
-clap = { workspace = true }
-secp256k1 = { workspace = true }
-sha2 = { workspace = true }
-sov-cycle-utils = { workspace = true, optional = true }
-sov-test-harness = { workspace = true }
+sov-accounts                  = { workspace = true, features = ["native"] }
+sov-bank                      = { workspace = true, features = ["native"] }
+sov-celestia-adapter          = { workspace = true, features = ["native"], optional = true }
+sov-cli                       = { workspace = true }
+sov-db                        = { workspace = true }
+sov-kernels                   = { workspace = true, features = ["native"] }
+sov-ledger-apis               = { workspace = true }
+sov-mock-da                   = { workspace = true, features = ["native"], optional = true }
+sov-mock-zkvm                 = { workspace = true, features = ["native"] }
+sov-modules-api               = { workspace = true, features = ["native"] }
+sov-modules-rollup-blueprint  = { workspace = true }
+sov-modules-stf-blueprint     = { workspace = true, features = ["native"] }
+sov-risc0-adapter             = { workspace = true, features = ["native"] }
+sov-rollup-interface          = { workspace = true }
+sov-state                     = { workspace = true }
+sov-sequencer                 = { workspace = true }
+sov-sequencer-registry        = { workspace = true, features = ["native"] }
+sov-stf-runner                = { workspace = true }
 
-sov-sequencer-json-client = { workspace = true }
+anyhow              = { workspace = true }
+async-trait         = { workspace = true }
+axum                = { workspace = true }
+backon              = { workspace = true }
+borsh               = { workspace = true }
+clap                = { workspace = true }
+jsonrpsee           = { workspace = true }
+prometheus_exporter = { workspace = true }
+serde               = { workspace = true }
+serde_json          = { workspace = true }
+sha2                = { workspace = true }
+tokio               = { workspace = true, features = ["rt", "rt-multi-thread", "macros"] }
+tracing             = { workspace = true }
+tracing-appender    = { workspace = true }
+
+# binary dependencies
+bytes               = "1.7.1"
+rand                = "0.8.5"
+tracing-panic       = "0.1.2"
+tracing-subscriber  = { version = "0.3.17", features = ["env-filter"] }
 
 [dev-dependencies]
-sov-rollup-interface = { workspace = true, features = ["arbitrary"] }
-sov-mock-da = { workspace = true }
-sov-bank = { workspace = true, features = ["native"] }
-sov-sequencer-registry = { workspace = true, features = ["native"] }
-sov-accounts = { workspace = true, features = ["native"] }
-sov-nft = { workspace = true, features = ["native"] }
-sov-ledger-json-client = { workspace = true }
-sov-modules-macros = { workspace = true }
-sov-test-utils = { workspace = true }
-sov-chain-state = { workspace = true }
-sov-value-setter = { workspace = true, features = ["native"] }
-humantime = "2.1"
-reth-primitives = { workspace = true }
-futures = { workspace = true }
-
-hex = { workspace = true }
-bincode = { workspace = true }
-sha2 = { workspace = true }
-tempfile = { workspace = true }
-proptest = { workspace = true }
-tokio = { workspace = true, features = ["full"] }
-rand = { workspace = true }
-
-ethereum-types = { workspace = true }
-ethers-core = { workspace = true }
-ethers-contract = { workspace = true }
-ethers-middleware = { workspace = true }
-ethers-providers = { workspace = true }
-ethers-signers = { workspace = true }
-revm = { workspace = true }
-
-reqwest = { workspace = true, features = ["rustls-tls"] }
-prometheus = { workspace = true }
-prettytable-rs = "^0.10"
-criterion = "0.5.1"
+futures         = { version = "0.3", default-features = false }
+sov-test-utils  = { workspace = true }
+sov-mock-zkvm   = { workspace = true, features = ["native"] }
+tempfile        = { workspace = true }
 
 [features]
-default = []
-bincode = ["filament-prover-risc0/bincode", "sov-risc0-adapter/bincode"]
-offchain = ["filament-hub-stf/offchain", "sov-nft/offchain"]
+default     = ["mock_da"]                  # set mock_da as the default feature
+celestia_da = ["sov-celestia-adapter"]
+mock_da     = ["sov-mock-da"]
 
 [[bin]]
-name = "sov-cli"
-path = "src/sov-cli/main.rs"
-
-[[bin]]
-name = "sov-nft-script"
-path = "src/bin/sov_nft_script.rs"
-
-[[bin]]
-name = "filament-hub-rollup"
-path = "src/main.rs"
-
-[[bin]]
-name = "sov-demo-celestia-harness"
-path = "src/test-harness/sov_demo_celestia_harness.rs"
+name = "node"
+path = "src/bin/node.rs"

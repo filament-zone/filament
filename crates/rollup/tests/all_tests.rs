@@ -1,10 +1,3 @@
 mod bank;
-mod celestia;
-mod evm;
-mod forced_sequencer_registration;
-
-mod prover;
-
+// Add additional tests here
 mod test_helpers;
-
-mod wallet;

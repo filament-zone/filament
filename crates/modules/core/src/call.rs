@@ -1,5 +1,5 @@
 use anyhow::{anyhow, bail, Result};
-use sov_modules_api::{EventEmitter as _, Spec, StateAccessorError, TxState};
+use sov_modules_api::{EventEmitter as _, Spec, TxState};
 
 use crate::{
     campaign::{Campaign, Payment, Phase},
@@ -99,10 +99,7 @@ impl<S: Spec> Core<S> {
         }
 
         // TODO(xla): Compute list of proposed delegates based on matching criteria.
-        let proposed_delegates = self
-            .delegates
-            .iter(state)?
-            .collect::<Result<Vec<_>, StateAccessorError<<S as Spec>::Gas>>>()?;
+        let proposed_delegates = self.delegates.iter(state)?.collect::<Result<Vec<_>, _>>()?;
 
         if !evictions.iter().all(|e| proposed_delegates.contains(e)) {
             bail!("invalid eviction, only proposed delegates can be evicted");
@@ -372,10 +369,7 @@ impl<S: Spec> Core<S> {
             bail!("sender '{sender}' is not an admin");
         }
 
-        let indexers = self
-            .indexers
-            .iter(state)?
-            .collect::<Result<Vec<_>, StateAccessorError<<S as Spec>::Gas>>>()?;
+        let indexers = self.indexers.iter(state)?.collect::<Result<Vec<_>, _>>()?;
 
         if !indexers.iter().any(|each| *each == indexer) {
             self.indexers.push(&indexer, state)?;
@@ -415,7 +409,7 @@ impl<S: Spec> Core<S> {
         let pos = self
             .indexers
             .iter(state)?
-            .collect::<Result<Vec<_>, StateAccessorError<<S as Spec>::Gas>>>()?
+            .collect::<Result<Vec<_>, _>>()?
             .iter()
             .position(|each| *each == indexer)
             .ok_or(anyhow!("indexer '{indexer}' is not registered"))?;
@@ -454,10 +448,7 @@ impl<S: Spec> Core<S> {
             bail!("sender '{sender}' is not an admin");
         }
 
-        let relayers = self
-            .relayers
-            .iter(state)?
-            .collect::<Result<Vec<_>, StateAccessorError<<S as Spec>::Gas>>>()?;
+        let relayers = self.relayers.iter(state)?.collect::<Result<Vec<_>, _>>()?;
 
         if !relayers.iter().any(|each| *each == relayer) {
             self.relayers.push(&relayer, state)?;
@@ -494,7 +485,7 @@ impl<S: Spec> Core<S> {
         let pos = self
             .relayers
             .iter(state)?
-            .collect::<Result<Vec<_>, StateAccessorError<<S as Spec>::Gas>>>()?
+            .collect::<Result<Vec<_>, _>>()?
             .iter()
             .position(|each| *each == relayer)
             .ok_or(anyhow!("relayer '{relayer}' is not registered"))?;
@@ -527,7 +518,7 @@ impl<S: Spec> Core<S> {
         // Only registered relayers are allowed to update voting power.
         self.relayers
             .iter(state)?
-            .collect::<Result<Vec<_>, StateAccessorError<<S as Spec>::Gas>>>()?
+            .collect::<Result<Vec<_>, _>>()?
             .into_iter()
             .find(|each| *each == sender)
             .ok_or(anyhow!("sender '{}' is not a registered relayer", sender))?;
@@ -536,7 +527,7 @@ impl<S: Spec> Core<S> {
         let mut index = self
             .powers_index
             .iter(state)?
-            .collect::<Result<Vec<_>, StateAccessorError<<S as Spec>::Gas>>>()?;
+            .collect::<Result<Vec<_>, _>>()?;
 
         if let Some((_, stored)) = index.iter_mut().find(|(stored, _)| *stored == addr) {
             *stored = power;

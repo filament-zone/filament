@@ -4,10 +4,7 @@ help: ## Display this help message
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 test:  ## Runs test suite using next test
-	@cargo nextest run --workspace --all-features --status-level skip
-
-test-default-features:  ## Runs test suite using default features
-	@cargo nextest run --workspace --status-level skip
+	@cargo nextest run --workspace --no-default-features --features mock_da --features native --all-targets --status-level skip
 
 install-dev-tools:  ## Installs all necessary cargo helpers
 install-dev-tools: install-risc0-toolchain
@@ -36,15 +33,19 @@ install-sp1-toolchain: ## FIXME(xla): Currently fails with segfault when invokin
 	@echo "SP1 toolchain version:"
 	cargo +succinct --version
 
+fmt:
+	cargo +nightly fmt --all --check
+
 lint:  ## cargo check and clippy. Skip clippy on guest code since it's not supported by risc0
 	## fmt first, because it's the cheapest
-	cargo +nightly fmt --all --check
-	cargo check --all-targets --all-features
+	SKIP_GUEST_BUILD=1 cargo check
+	SKIP_GUEST_BUILD=1 cargo check --features celestia_da --no-default-features
+	SKIP_GUEST_BUILD=1 cargo clippy --workspace --no-deps -- -Dwarnings -Dunused -Dfuture-incompatible -Drefining-impl-trait -Dnonstandard-style -Drust-2018-idioms -Drust-2021-compatibility
+	SKIP_GUEST_BUILD=1 cargo clippy --workspace --features celestia_da --no-default-features --no-deps -- -Dwarnings -Dunused -Dfuture-incompatible -Drefining-impl-trait -Dnonstandard-style -Drust-2018-idioms -Drust-2021-compatibility
 	## Invokes Zepter multiple times because fixes sometimes unveal more underlying issues.
 	zepter
 	zepter
 	zepter
-	SKIP_GUEST_BUILD=1 cargo clippy --all-targets --all-features
 
 lint-fix:  ## cargo fmt, fix and clippy. Skip clippy on guest code since it's not supported by risc0
 	cargo +nightly fmt --all
@@ -65,3 +66,9 @@ build-wasm-release:
 
 pack-wasm:
 	wasm-pack pack crates/wasm
+
+test-wasm-chrome:
+	wasm-pack test --chrome --headless crates/wasm
+
+test-wasm-firefox:
+	wasm-pack test --firefox --headless crates/wasm

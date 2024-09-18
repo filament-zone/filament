@@ -1,9 +1,17 @@
 {
   "gas_token_config": {
-    "token_name": "sov-integration-test-token",
+    "token_name": "sov-token",
     "address_and_balances": [
       [
         "sov1l6n2cku82yfqld30lanm2nfw43n2auc8clw7r5u5m6s7p8jrm4zqrr8r94",
+        1000000000
+      ],
+      [
+        "sov1x3jtvq0zwhj2ucsc4hqugskvralrulxvf53vwtkred93s2x9gmzs04jvyr",
+        1000000000
+      ],
+      [
+        "sov15vspj48hpttzyvxu8kzq5klhvaczcpyxn6z6k0hwpwtzs4a6wkvqwr57gc",
         1000000000
       ],
       [
@@ -16,6 +24,10 @@
       ],
       [
         "sov1nc27sae83wj0prl0en4y9lldk6e7v9qz63k50tus95zpd8h84rfsfzczmv",
+        1000000000
+      ],
+      [
+        "sov16wxfprgt9lhvd097kes7e2v4juz5rn8jrzt7477cp9dw0qldydas769lvu",
         1000000000
       ]
     ],

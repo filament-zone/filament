@@ -2,7 +2,6 @@
 
 #![no_main]
 
-use filament_hub_config::{ROLLUP_BATCH_NAMESPACE_RAW, ROLLUP_PROOF_NAMESPACE_RAW};
 use filament_hub_stf::{runtime::Runtime, StfVerifier};
 use sov_celestia_adapter::{types::Namespace, verifier::CelestiaVerifier};
 use sov_kernels::basic::BasicKernel;
@@ -12,9 +11,9 @@ use sov_modules_stf_blueprint::StfBlueprint;
 use sov_risc0_adapter::{guest::Risc0Guest, Risc0Verifier};
 use sov_state::ZkStorage;
 
-// The rollup stores its data in the namespace b"sov-test" on Celestia
-const ROLLUP_BATCH_NAMESPACE: Namespace = Namespace::const_v0(ROLLUP_BATCH_NAMESPACE_RAW);
-const ROLLUP_PROOF_NAMESPACE: Namespace = Namespace::const_v0(ROLLUP_PROOF_NAMESPACE_RAW);
+/// The namespace for the rollup on Celestia. Must be kept in sync with the "rollup/src/lib.rs"
+const ROLLUP_BATCH_NAMESPACE: Namespace = Namespace::const_v0(*b"sov-test-b");
+const ROLLUP_PROOF_NAMESPACE: Namespace = Namespace::const_v0(*b"sov-test-p");
 
 risc0_zkvm::guest::entry!(main);
 

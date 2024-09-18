@@ -19,7 +19,6 @@ crate-type = [ "cdylib", "rlib" ]
 default = [ "console_error_panic_hook" ]
 
 [dependencies]
-filament-hub-core = { workspace = true }
 filament-hub-stf  = { workspace = true }
 
 sov-mock-da           = { workspace = true }

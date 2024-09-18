@@ -1,15 +1,20 @@
+//! This module implements the various "hooks" that are called by the STF during execution.
+//! These hooks can be used to add custom logic at various points in the slot lifecycle:
+//! - Before and after each transaction is executed.
+//! - At the beginning and end of each batch ("blob")
+//! - At the beginning and end of each slot (DA layer block)
 use sov_modules_api::{
     hooks::{ApplyBatchHooks, FinalizeHook, SlotHooks, TxHooks},
-    AccessoryStateReaderAndWriter,
     BatchSequencerReceipt,
     Spec,
     StateCheckpoint,
+    StateReaderAndWriter,
     WorkingSet,
 };
 use sov_rollup_interface::da::DaSpec;
-use sov_state::Storage;
+use sov_state::{namespaces::Accessory, Storage};
 
-use crate::runtime::Runtime;
+use super::runtime::Runtime;
 
 impl<S: Spec, Da: DaSpec> TxHooks for Runtime<S, Da> {
     type Spec = S;
@@ -41,27 +46,21 @@ impl<S: Spec, Da: DaSpec> SlotHooks for Runtime<S, Da> {
 
     fn begin_slot_hook(
         &self,
-        pre_state_root: &<<S as Spec>::Storage as Storage>::Root,
-        versioned_working_set: &mut sov_modules_api::StateCheckpoint<S::Storage>,
+        _pre_state_root: &<<S as Spec>::Storage as Storage>::Root,
+        _versioned_working_set: &mut StateCheckpoint<S::Storage>,
     ) {
-        self.evm
-            .begin_slot_hook(pre_state_root, versioned_working_set);
     }
 
-    fn end_slot_hook(&self, state: &mut sov_modules_api::StateCheckpoint<S::Storage>) {
-        self.evm.end_slot_hook(state);
-    }
+    fn end_slot_hook(&self, _state: &mut StateCheckpoint<S::Storage>) {}
 }
 
-impl<S: Spec, Da: sov_modules_api::DaSpec> FinalizeHook for Runtime<S, Da> {
+impl<S: Spec, Da: DaSpec> FinalizeHook for Runtime<S, Da> {
     type Spec = S;
 
     fn finalize_hook(
         &self,
-        #[allow(unused_variables)] root_hash: &<<S as Spec>::Storage as Storage>::Root,
-        #[allow(unused_variables)] state: &mut impl AccessoryStateReaderAndWriter,
+        _root_hash: &<<S as Spec>::Storage as Storage>::Root,
+        _accessory_working_set: &mut impl StateReaderAndWriter<Accessory>,
     ) {
-        #[cfg(feature = "native")]
-        self.evm.finalize_hook(root_hash, state);
     }
 }

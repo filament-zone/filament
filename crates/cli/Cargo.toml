@@ -24,3 +24,12 @@ sov-modules-rollup-blueprint  = { workspace = true }
 anyhow  = { workspace = true }
 clap    = { workspace = true }
 tokio   = { workspace = true }
+
+[features]
+default     = [ "mock_da" ]
+celestia_da = [
+  "filament-hub-rollup/celestia_da"
+]
+mock_da     = [
+  "filament-hub-rollup/mock_da"
+]
