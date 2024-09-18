@@ -7,14 +7,21 @@ import {EarlyExitPenalty, PenaltyTooHigh, PenaltyTooLow, Unauthorized} from "../
 contract EarlyExitPenaltyTest is Test {
     EarlyExitPenalty public eep;
 
-    address public adjustor;
-
     function setUp() public {
-        eep = new EarlyExitPenalty(address(this), 1000, 20000, 100);
+        address adjustor_ = address(this);
+        uint16 penalty = 1000; // 1000 bps or 10%
+        uint16 maxPenalty = 2000;
+        uint16 minPenalty = 100;
+        eep = new EarlyExitPenalty(address(this), penalty, maxPenalty, minPenalty);
     }
 
     function test_Adjustor() public view {
         assertEq(eep.adjustor(), address(this));
+    }
+
+    function test_ComputePenalty() public {
+        uint256 penalty = eep.computePenalty(1 ether);
+        assertEq(penalty, 0.1 ether);
     }
 
     function test_SetAdjustorUnauthorized() public {

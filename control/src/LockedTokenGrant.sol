@@ -94,6 +94,8 @@ import {IERC4626} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
  *   These functions set the delegation of the Grant address (the address of the grant contract).
  *   Only the recipient and a LOCKED_TOKEN_DELEGATION_AGENT (if appointed) can call these functions.
  */
+error Unauthorized();
+
 contract LockedTokenGrant is TimeLockedTokens {
     // contract LockedTokenGrant is TimeLockedTokens, DelegationSupport {
     address public immutable token;
@@ -107,6 +109,8 @@ contract LockedTokenGrant is TimeLockedTokens {
     event TokensSentToRecipient(
         address indexed recipient, address indexed grantContract, uint256 amountSent, uint256 aggregateSent
     );
+
+    event EarlyTokenRelease(address indexed recipient, address indexed grantContract, uint256 amount, uint256 penalty);
 
     event TokenAllowanceForStaking(
         address indexed grantContract, address indexed stakingContract, uint256 allowanceSet
@@ -147,24 +151,44 @@ contract LockedTokenGrant is TimeLockedTokens {
     */
     // function releaseTokens(uint256 requestedAmount) external onlyAllowedAgent(LOCKED_TOKEN_RELEASE_AGENT) {
     function releaseTokens(uint256 requestedAmount) external {
-        require(msg.sender == recipient, "UNAUTHORIZED");
+        if (msg.sender != recipient) revert Unauthorized();
         require(requestedAmount <= availableTokens(), "REQUESTED_AMOUNT_UNAVAILABLE");
+
         releasedTokens += requestedAmount;
         IERC20(token).transfer(recipient, requestedAmount);
         emit TokensSentToRecipient(recipient, address(this), requestedAmount, releasedTokens);
     }
 
-    // XXX: should we just restrict early exit to be full?
-    function earlyReleaseTokens(uint256 requestedAmount) external {
-        require(msg.sender == recipient, "UNAUTHORIZED");
+    function availableEarlyTokens() public view returns (uint256) {
+        uint256 currentBalance = IERC20(token).balanceOf(address(this));
+        if (isGrantFullyUnlocked()) return currentBalance;
+
+        uint256 available = unlockedTokens() - releasedTokens;
+        // eg. grantAmount is 1000, unlockedTokens is 500, releasedTokens is 400,
+        // available is 100.
+        // we need to apply the penalty to grantAmount - unlockedTokens and then
+        // return toBePenalized - penalty + available
+        uint256 toBePenalized = grantAmount - unlockedTokens();
+        uint256 penalty = penaltyManager.computePenalty(toBePenalized);
+        return available + toBePenalized - penalty;
+    }
+
+    // XXX: should we allow partial early releases?
+    function earlyReleaseTokens() external {
+        if (msg.sender != recipient) revert Unauthorized();
 
         // earlyExitPenalty() computes penalty based on locked tokens only
-        uint256 penalty = earlyExitPenalty();
+        uint256 available = unlockedTokens() - releasedTokens;
+        uint256 toBePenalized = grantAmount - unlockedTokens();
+        uint256 penalty = penaltyManager.computePenalty(toBePenalized);
+        uint256 release = available + toBePenalized - penalty;
 
-        releasedTokens += requestedAmount;
+        releasedTokens = grantAmount;
 
         IERC20(token).transfer(stakingContract, penalty);
-        IERC20(token).transfer(recipient, requestedAmount - penalty);
+        IERC20(token).transfer(recipient, release);
+
+        emit EarlyTokenRelease(recipient, address(this), release, penalty);
     }
 
     /*
@@ -172,13 +196,14 @@ contract LockedTokenGrant is TimeLockedTokens {
       to allow staking up to that amount of tokens.
     */
     function approveForStaking(uint256 approvedAmount) external {
-        require(msg.sender == recipient, "UNAUTHORIZED");
+        if (msg.sender != recipient) revert Unauthorized();
+
         IERC20(token).approve(stakingContract, approvedAmount);
         emit TokenAllowanceForStaking(address(this), stakingContract, approvedAmount);
     }
 
     function stake(uint256 amount_) external {
-        require(msg.sender == recipient, "UNAUTHORIZED");
+        if (msg.sender != recipient) revert Unauthorized();
         require(amount_ <= grantAmount, "AMOUNT_TOO_BIG");
 
         IERC20(token).approve(stakingContract, amount_);
@@ -187,7 +212,7 @@ contract LockedTokenGrant is TimeLockedTokens {
     }
 
     function unstake() external {
-        require(msg.sender == recipient, "UNAUTHORIZED");
+        if (msg.sender != recipient) revert Unauthorized();
 
         IERC4626(stakingContract).redeem(IERC20(stakingContract).balanceOf(address(this)), address(this), address(this));
     }

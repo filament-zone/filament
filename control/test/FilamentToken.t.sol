@@ -5,12 +5,11 @@ import {Test, console} from "forge-std/Test.sol";
 import {FilamentToken} from "../src/FilamentToken.sol";
 
 contract FilamentTokenTest is Test {
-    FilamentToken public ft;
+    function setUp() public {}
 
-    address public adjustor;
+    function testFuzz_Constructor(address _receiver, uint256 _amount) public {
+        FilamentToken tok = new FilamentToken(_receiver, _amount);
 
-    function setUp() public {
-        ft = new FilamentToken(address(0), 100);
+        assertEq(tok.balanceOf(_receiver), _amount);
     }
-
 }

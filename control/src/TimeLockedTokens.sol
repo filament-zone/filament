@@ -10,7 +10,7 @@ import {EarlyExitPenalty} from "./EarlyExitPenalty.sol";
  *   and indicates if the grant has fully unlocked.
  */
 abstract contract TimeLockedTokens {
-    EarlyExitPenalty immutable penalty;
+    EarlyExitPenalty immutable penaltyManager;
 
     // The grant start time.
     // Grant can be deployed with startTime in the past or in the future.
@@ -28,7 +28,7 @@ abstract contract TimeLockedTokens {
     uint256 public immutable grantAmount;
 
     constructor(address penalty_, uint256 grantAmount_, uint256 startTime_, uint256 endTime_) {
-        penalty = EarlyExitPenalty(penalty_);
+        penaltyManager = EarlyExitPenalty(penalty_);
         grantAmount = grantAmount_;
         startTime = startTime_;
         endTime = endTime_;
@@ -42,10 +42,12 @@ abstract contract TimeLockedTokens {
         return block.timestamp >= endTime;
     }
 
-    /// @notice Compute the early exit penalty for this grant. This takes into
-    ///         account that there is no penalty for unlocked tokens.
-    function earlyExitPenalty() public view returns (uint256) {
-        return penalty.computePenalty(grantAmount - this.unlockedTokens());
+    /// @notice Compute the early exit penalty for this grant at the current point
+    ///         in time. This takes into account that there is no penalty for
+    ///         unlocked tokens.
+    function earlyExitPenalty(uint256 amount_) public view returns (uint256) {
+        if (amount_ < this.unlockedTokens()) return 0;
+        return penaltyManager.computePenalty(amount_ - this.unlockedTokens());
     }
 
     /*
