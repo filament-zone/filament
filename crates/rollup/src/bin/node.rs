@@ -35,19 +35,19 @@ compile_error!("Neither mock_da and celestia_da are enabled, but only one should
 
 // config and genesis for mock da
 #[cfg(all(feature = "mock_da", not(feature = "celestia_da")))]
-const DEFAULT_CONFIG_PATH: &str = "../../rollup_config.toml";
+const DEFAULT_CONFIG_PATH: &str = "config/rollup_config.toml";
 #[cfg(all(feature = "mock_da", not(feature = "celestia_da")))]
-const DEFAULT_GENESIS_PATH: &str = "../../test-data/genesis/mock/";
+const DEFAULT_GENESIS_PATH: &str = "test-data/genesis/mock/";
 #[cfg(all(feature = "mock_da", not(feature = "celestia_da")))]
-const DEFAULT_KERNEL_GENESIS_PATH: &str = "../../test-data/genesis/mock/chain_state.json";
+const DEFAULT_KERNEL_GENESIS_PATH: &str = "test-data/genesis/mock/chain_state.json";
 
 // config and genesis for local docker celestia
 #[cfg(all(feature = "celestia_da", not(feature = "mock_da")))]
-const DEFAULT_CONFIG_PATH: &str = "../../celestia_rollup_config.toml";
+const DEFAULT_CONFIG_PATH: &str = "config/celestia_rollup_config.toml";
 #[cfg(all(feature = "celestia_da", not(feature = "mock_da")))]
-const DEFAULT_GENESIS_PATH: &str = "../../test-data/genesis/celestia/";
+const DEFAULT_GENESIS_PATH: &str = "test-data/genesis/celestia/";
 #[cfg(all(feature = "celestia_da", not(feature = "mock_da")))]
-const DEFAULT_KERNEL_GENESIS_PATH: &str = "../../test-data/genesis/celestia/chain_state.json";
+const DEFAULT_KERNEL_GENESIS_PATH: &str = "test-data/genesis/celestia/chain_state.json";
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]

@@ -93,7 +93,7 @@ pub struct Core<S: Spec> {
 
     // Voting
     #[state]
-    pub(crate) totol_voting_power: StateValue<Power>,
+    pub(crate) total_voting_power: StateValue<Power>,
 
     #[state]
     pub(crate) powers: StateMap<S::Address, Power>,

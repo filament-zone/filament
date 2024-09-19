@@ -39,6 +39,8 @@ tracing     = { workspace = true }
 [features]
 default = []
 native = [
+    "filament-hub-core/native",
+
     "sov-accounts/native",
     "sov-attester-incentives/native",
     "sov-bank/native",

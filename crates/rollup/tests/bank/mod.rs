@@ -1,6 +1,6 @@
 use std::{env, net::SocketAddr, str::FromStr};
 
-use anyhow::Context;
+use anyhow::Context as _;
 use filament_hub_stf::{genesis_config::GenesisPaths, RuntimeCall};
 use futures::StreamExt;
 use sov_bank::BankRpcClient;

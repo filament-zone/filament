@@ -734,11 +734,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "28dea519a9695b9977216879a3ebfddf92f1c08c05d984f8996aecd6ecdc811d"
 
 [[package]]
+name = "filament-hub-core"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "borsh",
+ "lazy_static",
+ "serde",
+ "serde_bytes",
+ "sov-bank",
+ "sov-modules-api",
+ "sov-state",
+ "tracing",
+]
+
+[[package]]
 name = "filament-hub-stf"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "borsh",
+ "filament-hub-core",
  "serde",
  "serde_json",
  "sov-accounts",
@@ -1007,6 +1023,12 @@ checksum = "ecc2af9a1119c51f12a14607e783cb977bde58bc069ff0c3da1095e635d70654"
 dependencies = [
  "cpufeatures",
 ]
+
+[[package]]
+name = "lazy_static"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
 
 [[package]]
 name = "libc"
@@ -1490,6 +1512,15 @@ name = "serde-big-array"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "11fc7cc2c76d73e0f27ee52abbd64eec84d46f370c88371120433196934e4b7f"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "serde_bytes"
+version = "0.11.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "387cc504cb06bb40a96c8e04e951fe01854cf6bc921053c954e4a606d9675c6a"
 dependencies = [
  "serde",
 ]

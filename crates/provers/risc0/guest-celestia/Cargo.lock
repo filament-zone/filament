@@ -1124,11 +1124,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "28dea519a9695b9977216879a3ebfddf92f1c08c05d984f8996aecd6ecdc811d"
 
 [[package]]
+name = "filament-hub-core"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "borsh",
+ "lazy_static",
+ "serde",
+ "serde_bytes",
+ "sov-bank",
+ "sov-modules-api",
+ "sov-state",
+ "tracing",
+]
+
+[[package]]
 name = "filament-hub-stf"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "borsh",
+ "filament-hub-core",
  "serde",
  "serde_json",
  "sov-accounts",
