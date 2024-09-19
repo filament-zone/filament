@@ -22,7 +22,7 @@ block_time_ms = 3_000
 
 [storage]
 # The path to the rollup's data directory. Paths that do not begin with `/` are interpreted as relative paths.
-path = "../../rollup-starter-data"
+path = "./filament-hub-rollup-data"
 
 # We define the rollup's genesis to occur at block number `start_height`. The rollup will ignore
 # any blocks before this height

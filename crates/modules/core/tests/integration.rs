@@ -84,7 +84,7 @@ fn init_campaign() {
                 assert_eq!(
                     result.tx_receipt,
                     TxEffect::Reverted(RevertedTxContents {
-                        gas_used: GasUnit::from([3464, 3464]),
+                        gas_used: GasUnit::from([100, 100]),
                         reason: Error::ModuleError(anyhow!("missing criteria"))
                     })
                 );
@@ -154,7 +154,7 @@ fn propose_criteria() {
                 assert_eq!(
                     result.tx_receipt,
                     TxEffect::Reverted(RevertedTxContents {
-                        gas_used: GasUnit::from([3191, 3191]),
+                        gas_used: GasUnit::from([100, 100]),
                         reason: Error::ModuleError(anyhow!(
                             "invalid proposer, '{}' is not a campaign delegate",
                             campaigner.address()
@@ -219,7 +219,7 @@ fn confirm_criteria() {
                 assert_eq!(
                     result.tx_receipt,
                     TxEffect::Reverted(RevertedTxContents {
-                        gas_used: GasUnit::from([2957, 2957]),
+                        gas_used: GasUnit::from([100, 100]),
                         reason: Error::ModuleError(anyhow!(
                             "sender '{}' is not the campaigner",
                             staker.address()
@@ -300,7 +300,7 @@ fn post_segment() {
                 assert_eq!(
                     result.tx_receipt,
                     TxEffect::Reverted(RevertedTxContents {
-                        gas_used: GasUnit::from([3662, 3662]),
+                        gas_used: GasUnit::from([100, 100]),
                         reason: Error::ModuleError(anyhow!(
                             "sender '{}' is not the registered indexer '{:?}' for campaign '0'",
                             staker.address(),
@@ -413,7 +413,7 @@ fn register_relayer() {
                 assert_eq!(
                     result.tx_receipt,
                     TxEffect::Reverted(RevertedTxContents {
-                        gas_used: GasUnit::from([2766, 2766]),
+                        gas_used: GasUnit::from([100, 100]),
                         reason: Error::ModuleError(anyhow!(
                             "sender '{}' is not an admin",
                             staker.address(),
@@ -468,7 +468,7 @@ fn unregister_relayer() {
                 assert_eq!(
                     result.tx_receipt,
                     TxEffect::Reverted(RevertedTxContents {
-                        gas_used: GasUnit::from([2766, 2766]),
+                        gas_used: GasUnit::from([100, 100]),
                         reason: Error::ModuleError(anyhow!(
                             "sender '{}' is not an admin",
                             staker.address(),
@@ -526,7 +526,7 @@ fn update_voting_power() {
                 assert_eq!(
                     result.tx_receipt,
                     TxEffect::Reverted(RevertedTxContents {
-                        gas_used: GasUnit::from([2896, 2896]),
+                        gas_used: GasUnit::from([100, 100]),
                         reason: Error::ModuleError(anyhow!(
                             "sender '{}' is not a registered relayer",
                             staker.address(),

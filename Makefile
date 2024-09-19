@@ -3,6 +3,13 @@
 help: ## Display this help message
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
+clean:
+	@cargo clean
+	@cargo clean --manifest-path crates/provers/risc0/guest-celestia/Cargo.toml
+	@cargo clean --manifest-path crates/provers/risc0/guest-mock/Cargo.toml
+	rm -rf rollup-starter-data/
+	rm -rf mock_da.sqlite
+
 test:  ## Runs test suite using next test
 	@cargo nextest run --workspace --no-default-features --features mock_da --features native --all-targets --status-level skip
 

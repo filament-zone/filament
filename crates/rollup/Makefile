@@ -1,7 +1,7 @@
 PROJECT_ROOT := $(shell git rev-parse --show-toplevel)
-SOV_CLI_REL_PATH := $(PROJECT_ROOT)/target/debug/starter-cli-wallet
+SOV_CLI_REL_PATH := $(PROJECT_ROOT)/target/debug/filament-hub-cli
 
-CELESTIA_CONFIG := $(PROJECT_ROOT)/celestia_rollup_config.toml
+CELESTIA_CONFIG := $(PROJECT_ROOT)/config/celestia_rollup_config.toml
 
 DOCKER_COMPOSE_DIR := $(PROJECT_ROOT)/docker
 DOCKER_COMPOSE_CFG := $(DOCKER_COMPOSE_DIR)/docker-compose.yml
