@@ -4,7 +4,6 @@ use sov_modules_api::Spec;
 use crate::{
     criteria::Criteria,
     delegate::{Delegate, Eviction},
-    playbook::Budget,
 };
 
 pub const EVICTION_COST: u64 = 100;
@@ -54,9 +53,9 @@ pub struct Campaign<S: Spec> {
     pub phase: Phase,
 
     pub criteria: Criteria,
-    pub budget: Budget,
-    pub payments: Vec<Payment>,
-
+    // TODO(xla): Needs furhter clarification.
+    // pub budget: Budget,
+    // pub payments: Vec<Payment>,
     pub proposed_delegates: Vec<Delegate<S>>,
     pub evictions: Vec<Eviction<S>>,
     pub delegates: Vec<Delegate<S>>,

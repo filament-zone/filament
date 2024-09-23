@@ -1,6 +1,6 @@
 use sov_modules_api::Spec;
 
-use crate::{campaign::Payment, delegate::Eviction, Power, Relayer};
+use crate::{delegate::Eviction, Power, Relayer};
 
 #[derive(
     Clone,
@@ -20,7 +20,6 @@ pub enum Event<S: Spec> {
     CampaignInitialized {
         campaign_id: u64,
         campaigner: S::Address,
-        payment: Option<Payment>,
         evictions: Vec<Eviction<S>>,
     },
     CampaignIndexing {

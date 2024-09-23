@@ -126,18 +126,9 @@ impl<S: Spec> Module for Core<S> {
             // Campaign
             call::CallMessage::Init {
                 criteria,
-                budget,
-                payment,
                 evictions,
             } => {
-                self.init_campaign(
-                    criteria,
-                    budget,
-                    payment,
-                    evictions,
-                    context.sender(),
-                    state,
-                )?;
+                self.init_campaign(criteria, evictions, context.sender(), state)?;
                 Ok(CallResponse::default())
             },
             call::CallMessage::ProposeCriteria {

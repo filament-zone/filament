@@ -2,10 +2,9 @@ use anyhow::{anyhow, bail, Result};
 use sov_modules_api::{EventEmitter as _, Spec, TxState};
 
 use crate::{
-    campaign::{Campaign, Payment, Phase},
+    campaign::{Campaign, Phase},
     criteria::{Criteria, CriteriaProposal},
     delegate::Eviction,
-    playbook::Budget,
     segment::Segment,
     Core,
     Event,
@@ -34,8 +33,6 @@ pub enum CallMessage<S: Spec> {
     // campaign
     Init {
         criteria: Criteria,
-        budget: Budget,
-        payment: Option<Payment>,
         evictions: Vec<Eviction<S>>,
     },
     ProposeCriteria {
@@ -73,8 +70,6 @@ impl<S: Spec> Core<S> {
     pub(crate) fn init_campaign(
         &self,
         criteria: Criteria,
-        budget: Budget,
-        payment: Option<Payment>,
         evictions: Vec<Eviction<S>>,
         sender: &S::Address,
         state: &mut impl TxState<S>,
@@ -112,10 +107,10 @@ impl<S: Spec> Core<S> {
         };
 
         // TODO(xla): Settle payment in case of evictions.
-        let mut payments = vec![];
-        if let Some(ref payment) = payment {
-            payments.push(payment.clone());
-        }
+        // let mut payments = vec![];
+        // if let Some(ref payment) = payment {
+        //     payments.push(payment.clone());
+        // }
 
         self.campaigns.set(
             &campaign_id,
@@ -124,9 +119,8 @@ impl<S: Spec> Core<S> {
                 phase: Phase::Criteria,
 
                 criteria,
-                budget,
-                payments,
-
+                // budget,
+                // payments,
                 proposed_delegates,
                 evictions: evictions.clone(),
                 delegates,
@@ -142,7 +136,6 @@ impl<S: Spec> Core<S> {
             Event::CampaignInitialized {
                 campaign_id,
                 campaigner: sender.clone(),
-                payment,
                 evictions,
             },
         );

@@ -2,6 +2,8 @@ use std::{net::SocketAddr, path::Path, str::FromStr};
 
 use filament_hub_rollup::mock_rollup::MockRollup;
 use filament_hub_stf::genesis_config::GenesisPaths;
+use k256::ecdsa::SigningKey;
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use sha2::Sha256;
 use sov_cli::wallet_state::PrivateKeyAndAddress;
 use sov_kernels::basic::{BasicKernelGenesisConfig, BasicKernelGenesisPaths};
@@ -116,4 +118,31 @@ pub fn read_private_keys<S: Spec>(suffix: &str) -> PrivateKeyAndAddress<S> {
     );
 
     key_and_address
+}
+
+/// A struct representing an ETH signing key and associated address.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(bound = "S::Address: Serialize + DeserializeOwned")]
+pub struct EthSigningKeyAndAddres<S: sov_modules_api::Spec> {
+    /// Signing key of the address.
+    pub signing_key: String,
+    /// Address associated from the private key.
+    pub address: S::Address,
+}
+
+pub fn read_eth_key<S: Spec>(suffix: &str) -> anyhow::Result<(SigningKey, S::Address)> {
+    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+
+    let private_keys_dir = Path::new(&manifest_dir).join("../../test-data/eth");
+
+    let data = std::fs::read_to_string(private_keys_dir.join(suffix))
+        .expect("Unable to read file to string");
+
+    let parsed: EthSigningKeyAndAddres<S> = serde_json::from_str(&data).unwrap_or_else(|_| {
+        panic!("Unable to convert data {} to PrivateKeyAndAddress", &data);
+    });
+
+    let signing_key = SigningKey::from_bytes(hex::decode(parsed.signing_key)?.as_slice().into())?;
+
+    Ok((signing_key, parsed.address))
 }

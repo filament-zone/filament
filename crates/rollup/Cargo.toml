@@ -48,13 +48,19 @@ tracing             = { workspace = true }
 tracing-appender    = { workspace = true }
 
 # binary dependencies
-bytes               = "1.7.1"
-rand                = "0.8.5"
-tracing-panic       = "0.1.2"
+bytes               = { workspace = true }
+rand                = { workspace = true }
+tracing-panic       = { workspace = true }
 tracing-subscriber  = { version = "0.3.17", features = ["env-filter"] }
 
 [dev-dependencies]
-futures         = { version = "0.3", default-features = false }
+filament-hub-core = { workspace = true, features = ["native"] }
+filament-hub-eth  = { workspace = true }
+
+futures         = { workspace = true }
+hex             = { workspace = true }
+k256            = { workspace = true }
+sha3            = { workspace = true }
 sov-test-utils  = { workspace = true }
 sov-mock-zkvm   = { workspace = true, features = ["native"] }
 tempfile        = { workspace = true }
