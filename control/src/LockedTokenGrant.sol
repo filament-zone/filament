@@ -59,7 +59,6 @@ contract LockedTokenGrant is TimeLockedTokens {
     /*
       Transfers `requestedAmount` tokens (if available) to the `recipient`.
     */
-    // function releaseTokens(uint256 requestedAmount) external onlyAllowedAgent(LOCKED_TOKEN_RELEASE_AGENT) {
     function releaseTokens(uint256 requestedAmount) external {
         if (msg.sender != recipient) revert Unauthorized();
         require(requestedAmount <= availableTokens(), "REQUESTED_AMOUNT_UNAVAILABLE");
@@ -84,6 +83,7 @@ contract LockedTokenGrant is TimeLockedTokens {
     }
 
     // XXX: should we allow partial early releases?
+    // XXX: staked balances
     function earlyReleaseTokens() external {
         if (msg.sender != recipient) revert Unauthorized();
 
