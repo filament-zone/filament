@@ -7,6 +7,7 @@ paths:
   /campaigns/{campaign_id}:
     get:
       summary: Fetch a campaign
+      tags: [Core]
       parameters:
         - name: campaign_id
           in: path

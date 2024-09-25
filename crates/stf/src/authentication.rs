@@ -1,11 +1,13 @@
-//! The demo-rollup supports `EVM` and `sov-module` authenticators.
+//! The stf-rollup supports `sov-module` authenticator. To support other authentication schemes,
+//! you can check out how we support `EVM` authenticator here:
+//! https://github.com/Sovereign-Labs/sovereign-sdk-wip/blob/146d5c2c5fa07ab7bb59ba6b2e64690ac9b63830/examples/demo-rollup/stf/src/authentication.rs#L29-L32
+use std::marker::PhantomData;
 
 use borsh::{BorshDeserialize, BorshSerialize};
 use serde::{Deserialize, Serialize};
-use sov_evm::EthereumAuthenticator;
 use sov_modules_api::{
-    capabilities::{AuthorizationData, UnregisteredAuthenticationError},
-    runtime::capabilities::{AuthenticationResult, RuntimeAuthenticator},
+    capabilities::{AuthenticationResult, AuthorizationData, UnregisteredAuthenticationError},
+    runtime::capabilities::TransactionAuthenticator,
     DaSpec,
     DispatchCall,
     PreExecWorkingSet,
@@ -17,15 +19,13 @@ use sov_sequencer_registry::SequencerStakeMeter;
 
 use crate::runtime::{Runtime, RuntimeCall};
 
-impl<S: Spec, Da: DaSpec> RuntimeAuthenticator<S> for Runtime<S, Da>
-where
-    EthereumToRollupAddressConverter: TryInto<S::Address>,
-{
+impl<S: Spec, Da: DaSpec> TransactionAuthenticator<S> for Runtime<S, Da> {
     type AuthorizationData = AuthorizationData<S>;
     type Decodable = <Self as DispatchCall>::Decodable;
     type Input = Auth;
     type SequencerStakeMeter = SequencerStakeMeter<S::Gas>;
 
+    #[cfg_attr(all(target_os = "zkvm", feature = "bench"), cycle_tracker)]
     fn authenticate(
         &self,
         input: &Self::Input,
@@ -37,16 +37,8 @@ where
                 Self,
                 Self::SequencerStakeMeter,
             >(tx, pre_exec_ws),
-            Auth::Evm(tx) => {
-                let (tx_and_raw_hash, auth_data, runtime_call) = sov_evm::authenticate::<
-                    S,
-                    Self::SequencerStakeMeter,
-                    EthereumToRollupAddressConverter,
-                >(tx, pre_exec_ws)?;
-                let call = RuntimeCall::Evm(runtime_call);
-
-                Ok((tx_and_raw_hash, auth_data, call))
-            },
+            // Leaving the line below as an example to support different authentication schemes:
+            // Auth::Evm(tx) => EvmAuth::<S, Da>::authenticate(&tx, sequencer_stake_meter),
         }
     }
 
@@ -60,11 +52,8 @@ where
         Self::AuthorizationData,
         UnregisteredAuthenticationError,
     > {
-        let contents = if let Auth::Mod(tx) = raw_tx {
-            tx
-        } else {
-            return Err(UnregisteredAuthenticationError::InvalidAuthenticator)?;
-        };
+        let Auth::Mod(contents) = raw_tx;
+
         let (tx_and_raw_hash, auth_data, runtime_call) =
             sov_modules_api::capabilities::authenticate::<
                 S,
@@ -85,43 +74,13 @@ where
     }
 }
 
-/// Describes which authenticator to use to deserialize and check the signature on
-/// the transaction.
 #[derive(Debug, PartialEq, Clone, BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 pub enum Auth {
-    /// Authenticate using the `EVM` authenticator, which expects a standard EVM transaction
-    /// (i.e. an rlp-encoded payload signed using secp256k1 and hashed using keccak256).
-    Evm(Vec<u8>),
-    /// Authenticate using the standard `sov-module` authenticator, which uses the default
-    /// signature scheme and hashing algorithm defined in the rollup's [`Spec`].
     Mod(Vec<u8>),
+    // Leaving the line below as an example to support different authentication schemes:
+    // Evm(Vec<u8>),
 }
 
-impl<S: Spec, Da: DaSpec> EthereumAuthenticator<S> for Runtime<S, Da>
-where
-    EthereumToRollupAddressConverter: TryInto<S::Address>,
-{
-    fn add_ethereum_auth(tx: RawTx) -> <Self as RuntimeAuthenticator<S>>::Input {
-        Auth::Evm(tx.data)
-    }
-}
-
-/// A converter from an Ethereum address to a rollup address.
-pub struct EthereumToRollupAddressConverter(
-    /// The raw bytes of the ethereum address.
-    pub [u8; 20],
-);
-
-impl From<sov_evm::EvmAddress> for EthereumToRollupAddressConverter {
-    fn from(address: sov_evm::EvmAddress) -> Self {
-        Self(address.into())
-    }
-}
-
-impl<H> TryInto<sov_modules_api::Address<H>> for EthereumToRollupAddressConverter {
-    type Error = anyhow::Error;
-
-    fn try_into(self) -> Result<sov_modules_api::Address<H>, Self::Error> {
-        anyhow::bail!("Not implemented")
-    }
+pub struct ModAuth<S: Spec, Da: DaSpec> {
+    _phantom: PhantomData<(S, Da)>,
 }

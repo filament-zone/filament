@@ -1,9 +1,6 @@
 use std::collections::HashMap;
 
 fn main() {
-    println!("cargo::rerun-if-env-changed=SKIP_GUEST_BUILD");
-    println!("cargo::rerun-if-env-changed=OUT_DIR");
-
     if std::env::var("SKIP_GUEST_BUILD").is_ok() {
         println!("Skipping guest build for CI run");
         let out_dir = std::env::var_os("OUT_DIR").unwrap();
@@ -23,21 +20,5 @@ fn main() {
 }
 
 fn get_guest_options() -> HashMap<&'static str, risc0_build::GuestOptions> {
-    let mut guest_pkg_to_options = HashMap::new();
-    let mut features = vec![];
-
-    if cfg!(feature = "bench") {
-        features.push("bench".to_string());
-    }
-    if cfg!(feature = "bincode") {
-        features.push("bincode".to_string());
-    }
-    guest_pkg_to_options.insert(
-        "filament-prover-risc0-guest-mock",
-        risc0_build::GuestOptions {
-            features,
-            ..Default::default()
-        },
-    );
-    guest_pkg_to_options
+    HashMap::new()
 }

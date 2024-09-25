@@ -1,9 +1,9 @@
 [gas.Bank]
-create_token = [4, 4]
-transfer = [5, 5]
-burn = [2, 2]
-mint = [2, 2]
-freeze = [1, 1]
+burn          = [0, 0]
+create_token  = [0, 0]
+freeze        = [0, 0]
+mint          = [0, 0]
+transfer      = [0, 0]
 
 [constants]
 # We use the ID 4321 for demo purposes. Change this value before deploying!
@@ -29,28 +29,28 @@ GAS_FORCED_SEQUENCER_REGISTRATION_COST = [100000, 100000]
 GAS_TOKEN_ID = "token_1rwrh8gn2py0dl4vv65twgctmlwck6esm2as9dftumcw89kqqn3nqrduss6"
 # --- Gas parameters to charge for state accesses ---
 # The cost of a storage access operation.
-GAS_TO_CHARGE_FOR_ACCESS = [5, 5]
+GAS_TO_CHARGE_FOR_ACCESS = [0, 0]
 # Gas to refund for a read from a hot storage slot
-GAS_TO_REFUND_FOR_HOT_ACCESS = [4, 4]
+GAS_TO_REFUND_FOR_HOT_ACCESS = [0, 0]
 # Gas to charge for a write to a cold storage slot
-GAS_TO_CHARGE_FOR_WRITE = [10, 10]
+GAS_TO_CHARGE_FOR_WRITE = [0, 0]
 # Gas to refund for a write to a hot storage slot
-GAS_TO_REFUND_FOR_HOT_WRITE = [8, 8]
+GAS_TO_REFUND_FOR_HOT_WRITE = [0, 0]
 # Gas to charge for decoding a state access
-GAS_TO_CHARGE_FOR_DECODING = [2, 2]
+GAS_TO_CHARGE_FOR_DECODING = [0, 0]
 # --- End Gas parameters to charge for state accesses ---
 # --- Gas parameters to specify how to charge gas for hashing ---
 # The cost of updating a hash.
-GAS_TO_CHARGE_PER_BYTE_HASH_UPDATE = [10, 10]
+GAS_TO_CHARGE_PER_BYTE_HASH_UPDATE = [0, 0]
 # The cost of finalizing a hash.
-GAS_TO_CHARGE_PER_BYTE_HASH_FINALIZE = [3, 3]
+GAS_TO_CHARGE_PER_BYTE_HASH_FINALIZE = [0, 0]
 # --- End Gas parameters to specify how to charge gas for hashing ---
 # --- Gas parameters to specify how to charge gas for signature verification ---
 # The cost of verifying a signature per byte of the signature
-DEFAULT_GAS_TO_CHARGE_PER_BYTE_SIGNATURE_VERIFICATION = [1, 1]
+DEFAULT_GAS_TO_CHARGE_PER_BYTE_SIGNATURE_VERIFICATION = [0, 0]
 # The fixed cost of verifying a signature
 DEFAULT_FIXED_GAS_TO_CHARGE_PER_SIGNATURE_VERIFICATION = [100, 100]
-DEFAULT_GAS_TO_CHARGE_PER_BYTE_BORSH_DESERIALIZATION = [1, 1]
+DEFAULT_GAS_TO_CHARGE_PER_BYTE_BORSH_DESERIALIZATION = [0, 0]
 TEST_U32 = 42
 TEST_BOOL = true
 TEST_STRING = "Some Other String"

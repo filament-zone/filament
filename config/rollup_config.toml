@@ -18,20 +18,19 @@ block_producing = "periodic"
 # Block time depends on `block_producing`:
 # For `periodic` it defines how often new blocks will be produced, approximately.
 # For `on_submit` it defines max time service will wait for a new block.
-block_time_ms = 1_000
+block_time_ms = 3_000
 
 [storage]
 # The path to the rollup's data directory. Paths that do not begin with `/` are interpreted as relative paths.
-path = "./filament-hub-rollup-mock_data"
+path = "./filament-hub-rollup-data"
 
-# We define the rollup's genesis to occur at block number `genesis_height`. The rollup will ignore
-# any blocks before this height, and any blobs at this height will not be processed
+# We define the rollup's genesis to occur at block number `start_height`. The rollup will ignore
+# any blocks before this height
 [runner]
 genesis_height = 0
 da_polling_interval_ms = 1000
 
 [runner.rpc_config]
-# the host and port to bind the rpc server for
 bind_host = "127.0.0.1"
 bind_port = 12345
 [runner.axum_config]
@@ -41,6 +40,7 @@ bind_port = 12346
 [proof_manager]
 aggregated_proof_block_jump = 1
 prover_address = "sov1pv9skzctpv9skzctpv9skzctpv9skzctpv9skzctpv9skzctpv9stup8tx"
+
 
 [sequencer]
 max_allowed_blocks_behind = 5

@@ -1,0 +1,39 @@
+[package]
+name          = "filament-hub-wasm"
+version       = { workspace = true }
+authors       = { workspace = true }
+edition       = { workspace = true }
+license       = { workspace = true }
+homepage      = { workspace = true }
+repository    = { workspace = true }
+rust-version  = { workspace = true }
+publish       = { workspace = true }
+
+[lints]
+workspace = true
+
+[lib]
+crate-type = [ "cdylib", "rlib" ]
+
+[features]
+default = [ "console_error_panic_hook" ]
+
+[dependencies]
+filament-hub-stf  = { workspace = true }
+
+sov-mock-da           = { workspace = true }
+sov-mock-zkvm         = { workspace = true }
+sov-modules-api       = { workspace = true }
+sov-risc0-adapter     = { workspace = true }
+sov-rollup-interface  = { workspace = true }
+
+borsh         = { workspace = true, features = [ "derive" ] }
+serde         = { workspace = true }
+serde_json    = { workspace = true }
+wasm-bindgen  = { workspace = true }
+
+console_error_panic_hook = { workspace = true, optional = true }
+
+[dev-dependencies]
+serde_json = { workspace = true, features = [ "std" ] }
+wasm-bindgen-test = { workspace = true }

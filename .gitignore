@@ -12,6 +12,8 @@ node_modules
 .env
 .idea
 mock_da.sqlite
+filament-hub-rollup-data
+filament-hub-rollup-mock_data
 
 /crates/provers/risc0/guest-celestia/target
 /crates/provers/risc0/guest-mock/target

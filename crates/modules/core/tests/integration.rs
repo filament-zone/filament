@@ -21,9 +21,11 @@ use sov_modules_api::{
     prelude::UnwrapInfallible,
     test_utils::generate_address,
     Error,
+    GasUnit,
     Spec,
     TxEffect,
 };
+use sov_modules_stf_blueprint::RevertedTxContents;
 use sov_test_utils::{
     generate_optimistic_runtime,
     runtime::{genesis::optimistic::HighLevelOptimisticGenesisConfig, TestRunner},
@@ -81,7 +83,10 @@ fn init_campaign() {
             assert: Box::new(move |result, _state| {
                 assert_eq!(
                     result.tx_receipt,
-                    TxEffect::Reverted(Error::ModuleError(anyhow!("missing criteria",)))
+                    TxEffect::Reverted(RevertedTxContents {
+                        gas_used: GasUnit::from([100, 100]),
+                        reason: Error::ModuleError(anyhow!("missing criteria"))
+                    })
                 );
             }),
         });
@@ -95,7 +100,7 @@ fn init_campaign() {
             evictions: vec![],
         }),
         assert: Box::new(move |result, state| {
-            assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+            assert!(result.tx_receipt.is_successful());
             assert_eq!(result.events.len(), 1);
             assert_eq!(
                 result.events[0],
@@ -110,7 +115,7 @@ fn init_campaign() {
             let expected = {
                 let delegates = delegates.iter().map(|u| u.address()).collect::<Vec<_>>();
                 let mut campaign = generate_test_campaign(campaigner.address());
-                campaign.proposed_delegates = delegates.clone();
+                campaign.proposed_delegates.clone_from(&delegates);
                 campaign.delegates = delegates;
                 campaign
             };
@@ -148,10 +153,13 @@ fn propose_criteria() {
             assert: Box::new(move |result, _state| {
                 assert_eq!(
                     result.tx_receipt,
-                    TxEffect::Reverted(Error::ModuleError(anyhow!(
-                        "invalid proposer, '{}' is not a campaign delegate",
-                        campaigner.address()
-                    )))
+                    TxEffect::Reverted(RevertedTxContents {
+                        gas_used: GasUnit::from([100, 100]),
+                        reason: Error::ModuleError(anyhow!(
+                            "invalid proposer, '{}' is not a campaign delegate",
+                            campaigner.address()
+                        ))
+                    })
                 );
             }),
         });
@@ -163,7 +171,7 @@ fn propose_criteria() {
             criteria: generate_test_criteria(),
         }),
         assert: Box::new(move |result, state| {
-            assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+            assert!(result.tx_receipt.is_successful());
             assert_eq!(result.events.len(), 1);
             assert_eq!(
                 result.events[0],
@@ -210,10 +218,13 @@ fn confirm_criteria() {
             assert: Box::new(move |result, _state| {
                 assert_eq!(
                     result.tx_receipt,
-                    TxEffect::Reverted(Error::ModuleError(anyhow!(
-                        "sender '{}' is not the campaigner",
-                        staker.address()
-                    )))
+                    TxEffect::Reverted(RevertedTxContents {
+                        gas_used: GasUnit::from([100, 100]),
+                        reason: Error::ModuleError(anyhow!(
+                            "sender '{}' is not the campaigner",
+                            staker.address()
+                        ))
+                    })
                 );
             }),
         });
@@ -225,7 +236,7 @@ fn confirm_criteria() {
             proposal_id: None,
         }),
         assert: Box::new(move |result, state| {
-            assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+            assert!(result.tx_receipt.is_successful());
             assert_eq!(result.events.len(), 1);
             assert_eq!(
                 result.events[0],
@@ -288,11 +299,14 @@ fn post_segment() {
             assert: Box::new(move |result, _state| {
                 assert_eq!(
                     result.tx_receipt,
-                    TxEffect::Reverted(Error::ModuleError(anyhow!(
-                        "sender '{}' is not the registered indexer '{:?}' for campaign '0'",
-                        staker.address(),
-                        campaign.indexer,
-                    )))
+                    TxEffect::Reverted(RevertedTxContents {
+                        gas_used: GasUnit::from([100, 100]),
+                        reason: Error::ModuleError(anyhow!(
+                            "sender '{}' is not the registered indexer '{:?}' for campaign '0'",
+                            staker.address(),
+                            campaign.indexer,
+                        ))
+                    })
                 );
             }),
         });
@@ -305,7 +319,7 @@ fn post_segment() {
             segment: segment.clone(),
         }),
         assert: Box::new(move |result, state| {
-            assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+            assert!(result.tx_receipt.is_successful());
             assert_eq!(result.events.len(), 1);
             assert_eq!(
                 result.events[0],
@@ -338,7 +352,7 @@ fn indexer_registration() {
                 "numia".to_string(),
             )),
             assert: Box::new(move |result, state| {
-                assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+                assert!(result.tx_receipt.is_successful());
                 assert_eq!(result.events.len(), 1);
                 assert_eq!(
                     result.events[0],
@@ -366,7 +380,7 @@ fn indexer_registration() {
         input: admin
             .create_plain_message::<Core<S>>(CallMessage::UnregisterIndexer(indexer.address())),
         assert: Box::new(move |result, state| {
-            assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+            assert!(result.tx_receipt.is_successful());
             assert_eq!(result.events.len(), 1);
             assert_eq!(
                 result.events[0],
@@ -398,10 +412,13 @@ fn register_relayer() {
             assert: Box::new(move |result, _state| {
                 assert_eq!(
                     result.tx_receipt,
-                    TxEffect::Reverted(Error::ModuleError(anyhow!(
-                        "sender '{}' is not an admin",
-                        staker.address(),
-                    )))
+                    TxEffect::Reverted(RevertedTxContents {
+                        gas_used: GasUnit::from([100, 100]),
+                        reason: Error::ModuleError(anyhow!(
+                            "sender '{}' is not an admin",
+                            staker.address(),
+                        ))
+                    })
                 );
             }),
         });
@@ -410,7 +427,7 @@ fn register_relayer() {
     runner.execute_transaction(TransactionTestCase {
         input: admin.create_plain_message::<Core<S>>(CallMessage::RegisterRelayer(relayer)),
         assert: Box::new(move |result, state| {
-            assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+            assert!(result.tx_receipt.is_successful());
             assert_eq!(result.events.len(), 1);
             assert_eq!(
                 result.events[0],
@@ -450,10 +467,13 @@ fn unregister_relayer() {
             assert: Box::new(move |result, _state| {
                 assert_eq!(
                     result.tx_receipt,
-                    TxEffect::Reverted(Error::ModuleError(anyhow!(
-                        "sender '{}' is not an admin",
-                        staker.address(),
-                    )))
+                    TxEffect::Reverted(RevertedTxContents {
+                        gas_used: GasUnit::from([100, 100]),
+                        reason: Error::ModuleError(anyhow!(
+                            "sender '{}' is not an admin",
+                            staker.address(),
+                        ))
+                    })
                 );
             }),
         });
@@ -463,7 +483,7 @@ fn unregister_relayer() {
         input: admin
             .create_plain_message::<Core<S>>(CallMessage::UnregisterRelayer(relayer.address())),
         assert: Box::new(move |result, state| {
-            assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+            assert!(result.tx_receipt.is_successful());
             assert_eq!(result.events.len(), 1);
             assert_eq!(
                 result.events[0],
@@ -505,10 +525,13 @@ fn update_voting_power() {
             assert: Box::new(move |result, _state| {
                 assert_eq!(
                     result.tx_receipt,
-                    TxEffect::Reverted(Error::ModuleError(anyhow!(
-                        "sender '{}' is not a registered relayer",
-                        staker.address(),
-                    )))
+                    TxEffect::Reverted(RevertedTxContents {
+                        gas_used: GasUnit::from([100, 100]),
+                        reason: Error::ModuleError(anyhow!(
+                            "sender '{}' is not a registered relayer",
+                            staker.address(),
+                        )),
+                    })
                 );
             }),
         });
@@ -522,7 +545,7 @@ fn update_voting_power() {
             input: relayer
                 .create_plain_message::<Core<S>>(CallMessage::UpdateVotingPower(delegate, 1000)),
             assert: Box::new(move |result, state| {
-                assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+                assert!(result.tx_receipt.is_successful());
                 assert_eq!(result.events.len(), 1);
                 assert_eq!(
                     result.events[0],
@@ -552,7 +575,7 @@ fn update_voting_power() {
             input: relayer
                 .create_plain_message::<Core<S>>(CallMessage::UpdateVotingPower(delegate, 10000)),
             assert: Box::new(move |result, _| {
-                assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+                assert!(result.tx_receipt.is_successful());
             }),
         });
     }
@@ -565,7 +588,7 @@ fn update_voting_power() {
             input: relayer
                 .create_plain_message::<Core<S>>(CallMessage::UpdateVotingPower(delegate, 8000)),
             assert: Box::new(move |result, state| {
-                assert_eq!(result.tx_receipt, TxEffect::Successful(()));
+                assert!(result.tx_receipt.is_successful());
 
                 assert_eq!(
                     Core::<S>::default()
@@ -600,7 +623,7 @@ fn setup() -> (TestRoles<S>, TestRunner<TestCoreRuntime<S, MockDaSpec>, S>) {
 
     let campaign = {
         let mut campaign = generate_test_campaign(campaigner.address());
-        campaign.delegates = delegate_addrs.clone();
+        campaign.delegates.clone_from(&delegate_addrs);
         campaign.indexer = Some(indexer.address());
         campaign
     };

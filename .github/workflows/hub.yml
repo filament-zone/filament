@@ -109,13 +109,49 @@ jobs:
           name: filament-hub-rollup
           path: target/release/filament-hub-rollup
 
-  clippy:
+  fmt:
     strategy:
       matrix:
         os: [ubuntu-22.04-16core]
-        toolchain: [stable]
+        toolchain: [nightly]
 
-    name: Clippy Hub
+    name: Format Hub
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Startup SSH agent for private repo access
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+            ssh-private-key: |
+              ${{ secrets.SSH_DEPLOY_KEY }}
+              ${{ secrets.SSH_FORMAT_DEPLOY_KEY }}
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          override: true
+          components: rustfmt, clippy
+
+      - name: Cache dependencies & tools
+        uses: Swatinem/rust-cache@v2
+        timeout-minutes: 1
+        continue-on-error: true
+        with:
+          key: ${{ matrix.os }}-${{ matrix.toolchain }}
+
+      - name: Fmt Hub
+        run: cargo fmt --all -- --check
+
+  lint:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04-16core]
+        toolchain: ["1.79"]
+
+    name: Lint Hub
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout sources
@@ -155,42 +191,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Cache dependencies & tools
-        uses: Swatinem/rust-cache@v2
-        timeout-minutes: 1
-        continue-on-error: true
+      - name: Install zepter
+        uses: taiki-e/install-action@v2
         with:
-          key: ${{ matrix.os }}-${{ matrix.toolchain }}
-
-      - name: Clippy crates
-        run: cargo metadata --format-version=1 --no-deps | jq -r '.packages[] | select(.name != "filament-hub-cli" and .name != "filament-hub-rollup" and .name != "filament-prover-risc0" and .name != "oracle") | .name' | xargs -I {} cargo clippy -p {} --no-deps -- -Dwarnings -Dnonstandard-style -Drust-2018-idioms -Dunused -Drust-2021-compatibility
-
-  fmt:
-    strategy:
-      matrix:
-        os: [ubuntu-22.04-16core]
-        toolchain: [nightly]
-
-    name: Format Hub
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v4
-
-      - name: Startup SSH agent for private repo access
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-            ssh-private-key: |
-              ${{ secrets.SSH_DEPLOY_KEY }}
-              ${{ secrets.SSH_FORMAT_DEPLOY_KEY }}
-
-      - name: Install toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: ${{ matrix.toolchain }}
-          override: true
-          components: rustfmt, clippy
+          tool: zepter
 
       - name: Cache dependencies & tools
         uses: Swatinem/rust-cache@v2
@@ -199,8 +203,8 @@ jobs:
         with:
           key: ${{ matrix.os }}-${{ matrix.toolchain }}
 
-      - name: Fmt Hub
-        run: cargo fmt --all -- --check
+      - name: Lint Hub
+        run: make lint
 
   test:
     strategy:
@@ -259,4 +263,69 @@ jobs:
         uses: taiki-e/install-action@nextest
 
       - name: Run tests
-        run: cargo nextest run --workspace --all-targets
+        run: make test
+
+  wasm:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04-16core]
+        toolchain: ["1.79"]
+
+    name: WASM
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Startup SSH agent for private repo access
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+            ssh-private-key: |
+              ${{ secrets.SSH_DEPLOY_KEY }}
+              ${{ secrets.SSH_FORMAT_DEPLOY_KEY }}
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v3
+        with:
+          version: "23.2"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          override: true
+          components: rustfmt, rust-src, clippy
+
+      - name: Install mold linker
+        uses: rui314/setup-mold@v1
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
+
+      - name: Cache dependencies & tools
+        uses: Swatinem/rust-cache@v2
+        timeout-minutes: 1
+        continue-on-error: true
+        with:
+          key: ${{ matrix.os }}-${{ matrix.toolchain }}
+
+      - name: Run tests in Chrome
+        run: make test-wasm-chrome
+      - name: Run tests in Firefox
+        run: make test-wasm-firefox
+
+      - name: Build release package
+        run: make build-wasm-release
+
+      - name: Pack package
+        run: make pack-wasm
+
+      - name: Upload tar
+        uses: actions/upload-artifact@v4
+        with:
+          name: filament-hub-wasm
+          path: crates/wasm/pkg/filament-hub-wasm-0.1.0.tgz
