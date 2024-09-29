@@ -29,7 +29,13 @@ contract TimeLockedTokensTest is Test {
     address public adjustor;
 
     function setUp() public {
-        eep = new EarlyExitPenalty(address(this), 1000, 20000, 100);
+        address adjustor_ = address(this);
+        uint16 penalty = 1000; // 1000 bps or 10%
+        uint16 maxPenalty = 2000;
+        uint16 minPenalty = 100;
+        uint256 startTime = 1717556330;
+        uint256 endTime = startTime + 720 days;
+        eep = new EarlyExitPenalty(address(this), penalty, maxPenalty, minPenalty, startTime, endTime);
 
         // penaltyManager = makeAddr("penaltyManager");
         token = new MockERC20("Filamock Token", "FILA");
