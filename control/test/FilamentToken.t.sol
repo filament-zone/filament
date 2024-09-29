@@ -7,9 +7,10 @@ import {FilamentToken} from "../src/FilamentToken.sol";
 contract FilamentTokenTest is Test {
     function setUp() public {}
 
-    function testFuzz_Constructor(address _receiver, uint256 _amount) public {
-        FilamentToken tok = new FilamentToken(_receiver, _amount);
+    function testFuzz_Constructor(uint256 amount_) public {
+        address receiver_ = makeAddr("receiver");
+        FilamentToken ft = new FilamentToken(receiver_, amount_);
 
-        assertEq(tok.balanceOf(_receiver), _amount);
+        assertEq(ft.balanceOf(receiver_), amount_);
     }
 }
