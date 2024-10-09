@@ -9,7 +9,8 @@ import {IERC4626} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
 error Unauthorized();
 
 contract LockedTokenGrant is TimeLockedTokens {
-    // contract LockedTokenGrant is TimeLockedTokens, DelegationSupport {
+    address public immutable manager;
+
     address public immutable token;
 
     address public immutable recipient;
@@ -24,22 +25,19 @@ contract LockedTokenGrant is TimeLockedTokens {
 
     event EarlyTokenRelease(address indexed recipient, address indexed grantContract, uint256 amount, uint256 penalty);
 
-    event TokenAllowanceForStaking(
-        address indexed grantContract, address indexed stakingContract, uint256 allowanceSet
-    );
+    event TokensClawedBack(address indexed target, uint256 amount);
 
     constructor(
         address token_,
+        address manager_,
         address stakingContract_,
         address penaltyManager_,
         address recipient_,
         uint256 grantAmount_,
         uint256 startTime_,
         uint256 endTime_
-    )
-        // DelegationSupport(defaultRegistry_, recipient_, address(token_), stakingContract_)
-        TimeLockedTokens(penaltyManager_, grantAmount_, startTime_, endTime_)
-    {
+    ) TimeLockedTokens(penaltyManager_, grantAmount_, startTime_, endTime_) {
+        manager = manager_;
         token = token_;
         recipient = recipient_;
         stakingContract = stakingContract_;
@@ -101,5 +99,14 @@ contract LockedTokenGrant is TimeLockedTokens {
         IERC20(token).transfer(recipient, release);
 
         emit EarlyTokenRelease(recipient, address(this), release, penalty);
+    }
+
+    function claw(address target_) external {
+        if (msg.sender != manager) revert Unauthorized();
+
+        uint256 currentBalance = IERC20(token).balanceOf(address(this));
+        IERC20(token).transfer(target_, currentBalance);
+
+        emit TokensClawedBack(target_, currentBalance);
     }
 }
