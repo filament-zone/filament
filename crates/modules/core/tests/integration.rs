@@ -16,14 +16,7 @@ use filament_hub_core::{
 use lazy_static::lazy_static;
 use pretty_assertions::assert_eq;
 use sov_bank::{get_token_id, TokenId};
-use sov_modules_api::{
-    prelude::UnwrapInfallible,
-    test_utils::generate_address,
-    Error,
-    GasUnit,
-    Spec,
-    TxEffect,
-};
+use sov_modules_api::{prelude::UnwrapInfallible, Error, GasUnit, Spec, TxEffect};
 use sov_modules_stf_blueprint::RevertedTxContents;
 use sov_test_utils::{
     generate_optimistic_runtime,
@@ -35,18 +28,18 @@ use sov_test_utils::{
     TransactionTestCase,
 };
 
-lazy_static! {
-    static ref FILA_TOKEN_ID: TokenId = {
-        let salt = 0;
-        let admin_addr = generate_address::<S>("admin");
-        let token_name = "FILA".to_owned();
-        get_token_id::<S>(&token_name, &admin_addr, salt)
-    };
-}
-
 type S = TestSpec;
 
 generate_optimistic_runtime!(TestCoreRuntime <= core: Core<S>);
+
+lazy_static! {
+    static ref FILA_TOKEN_ID: TokenId = {
+        let salt = 0;
+        let admin = TestUser::<S>::generate_with_default_balance();
+        let token_name = "FILA".to_owned();
+        get_token_id::<S>(&token_name, &admin.address(), salt)
+    };
+}
 
 struct TestRoles<S: Spec> {
     admin: TestUser<S>,
@@ -407,13 +400,14 @@ fn indexer_registration() {
 #[test]
 fn register_relayer() {
     let (TestRoles { admin, staker, .. }, mut runner) = setup();
-    let relayer = generate_address::<S>("another-relayer");
+    let relayer = TestUser::<S>::generate_with_default_balance();
 
     // Confirm that only the module admin can unregister a relayer..
     {
         runner.execute_transaction(TransactionTestCase {
-            input: staker
-                .create_plain_message::<Core<S>>(CallMessage::RegisterRelayer { address: relayer }),
+            input: staker.create_plain_message::<Core<S>>(CallMessage::RegisterRelayer {
+                address: relayer.address(),
+            }),
             assert: Box::new(move |result, _state| {
                 assert_eq!(
                     result.tx_receipt,
@@ -430,24 +424,25 @@ fn register_relayer() {
     }
 
     runner.execute_transaction(TransactionTestCase {
-        input: admin
-            .create_plain_message::<Core<S>>(CallMessage::RegisterRelayer { address: relayer }),
+        input: admin.create_plain_message::<Core<S>>(CallMessage::RegisterRelayer {
+            address: relayer.address(),
+        }),
         assert: Box::new(move |result, state| {
             assert!(result.tx_receipt.is_successful());
             assert_eq!(result.events.len(), 1);
             assert_eq!(
                 result.events[0],
                 TestCoreRuntimeEvent::Core(Event::RelayerRegistered {
-                    addr: relayer,
+                    addr: relayer.address(),
                     sender: admin.address()
                 })
             );
 
             assert_eq!(
                 Core::<S>::default()
-                    .get_relayer(relayer, state)
+                    .get_relayer(relayer.address(), state)
                     .unwrap_infallible(),
-                Some(relayer),
+                Some(relayer.address()),
             );
         }),
     });

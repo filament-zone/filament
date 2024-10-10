@@ -124,7 +124,7 @@ pub fn authenticate<S: Spec, D: DispatchCall<Spec = S>, Meter: GasMeter<S::Gas>>
         S::Gas,
         PreExecWorkingSet<S, Meter>,
         <S::CryptoSpec as CryptoSpec>::Hasher,
-    >::digest(raw_tx, state)
+    >::digest::<S>(raw_tx, state)
     .map(TxHash::new)
     .map_err(|e| AuthenticationError::Invalid(e.to_string()))?;
 
