@@ -180,10 +180,11 @@ impl<S: Spec> Core<S> {
     #[allow(clippy::single_call_fn, clippy::unused_async)]
     async fn route_get_campaign(
         state: ApiState<Self, S>,
+        mut accessor: ApiStateAccessor<S>,
         Path(campaign_id): Path<u64>,
     ) -> ApiResult<Campaign<S>> {
         let campaign = state
-            .get_campaign(campaign_id, &mut state.api_state_accessor())
+            .get_campaign(campaign_id, &mut accessor)
             .unwrap_infallible()
             .ok_or_else(|| errors::not_found_404("Campaign", campaign_id))?;
         Ok(campaign.into())
@@ -193,15 +194,18 @@ impl<S: Spec> Core<S> {
 impl<S: Spec> HasCustomRestApi for Core<S> {
     type Spec = S;
 
-    fn custom_rest_api(&self, state: ApiState<Self, Self::Spec>) -> Router<()> {
+    fn custom_rest_api(&self, state: ApiState<(), S>) -> Router<()> {
         Router::new()
             .route("/campaigns/:campaignId", get(Self::route_get_campaign))
-            .with_state(state)
+            .with_state(state.with(self.clone()))
     }
 
     fn custom_openapi_spec(&self) -> Option<OpenApi> {
-        let open_api =
+        let mut open_api: OpenApi =
             serde_yaml::from_str(include_str!("../openapi-v3.yaml")).expect("Invalid OpenAPI spec");
+        for path_item in open_api.paths.paths.values_mut() {
+            path_item.extensions = None;
+        }
         Some(open_api)
     }
 }

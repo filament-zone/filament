@@ -34,10 +34,9 @@ generate_optimistic_runtime!(TestCoreRuntime <= core: Core<S>);
 
 lazy_static! {
     static ref FILA_TOKEN_ID: TokenId = {
-        let salt = 0;
         let admin = TestUser::<S>::generate_with_default_balance();
         let token_name = "FILA".to_owned();
-        get_token_id::<S>(&token_name, &admin.address(), salt)
+        get_token_id::<S>(&token_name, &admin.address())
     };
 }
 

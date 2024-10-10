@@ -60,7 +60,7 @@ where
 
 #[async_trait]
 impl FullNodeBlueprint<Native> for MockRollup<Native> {
-    type BondingProofService = BondingProofServiceImpl<Self::Spec, Self::DaSpec>;
+    type BondingProofService = BondingProofServiceImpl<Self::Spec, Self::DaSpec, Self::Kernel>;
     type DaService = DaServiceWithRetries<StorableMockDaService>;
     /// Inner Zkvm representing the rollup circuit
     type InnerZkvmHost = Risc0Host<'static>;
@@ -123,6 +123,7 @@ impl FullNodeBlueprint<Native> for MockRollup<Native> {
             sequencer_db,
             da_service,
             &rollup_config.sequencer,
+            &rollup_config.runner,
         )
         .await
     }
