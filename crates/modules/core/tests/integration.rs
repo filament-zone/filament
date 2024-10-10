@@ -6,7 +6,6 @@ use filament_hub_core::{
     criteria::{Criteria, CriteriaProposal, Criterion},
     crypto::Ed25519Signature,
     segment::{GithubSegment, SegmentData, SegmentProof},
-    Budget,
     CallMessage,
     Core,
     CoreConfig,
@@ -16,7 +15,7 @@ use filament_hub_core::{
 };
 use lazy_static::lazy_static;
 use pretty_assertions::assert_eq;
-use sov_bank::{get_token_id, Coins, TokenId};
+use sov_bank::{get_token_id, TokenId};
 use sov_modules_api::{
     prelude::UnwrapInfallible,
     test_utils::generate_address,
@@ -76,8 +75,6 @@ fn init_campaign() {
         runner.execute_transaction(TransactionTestCase {
             input: campaigner.create_plain_message::<Core<S>>(CallMessage::Init {
                 criteria: vec![],
-                budget: generate_test_budget(),
-                payment: None,
                 evictions: vec![],
             }),
             assert: Box::new(move |result, _state| {
@@ -95,8 +92,6 @@ fn init_campaign() {
     runner.execute_transaction(TransactionTestCase {
         input: campaigner.create_plain_message::<Core<S>>(CallMessage::Init {
             criteria: generate_test_criteria(),
-            budget: generate_test_budget(),
-            payment: None,
             evictions: vec![],
         }),
         assert: Box::new(move |result, state| {
@@ -107,7 +102,6 @@ fn init_campaign() {
                 TestCoreRuntimeEvent::Core(Event::CampaignInitialized {
                     campaign_id: 1,
                     campaigner: campaigner.address(),
-                    payment: None,
                     evictions: vec![]
                 })
             );
@@ -654,27 +648,12 @@ fn setup() -> (TestRoles<S>, TestRunner<TestCoreRuntime<S, MockDaSpec>, S>) {
     )
 }
 
-fn generate_test_budget() -> Budget {
-    Budget {
-        fee: Coins {
-            amount: 100,
-            token_id: *FILA_TOKEN_ID,
-        },
-        incentives: Coins {
-            amount: 100,
-            token_id: *FILA_TOKEN_ID,
-        },
-    }
-}
-
 fn generate_test_campaign(campaigner: <S as Spec>::Address) -> Campaign<S> {
     Campaign {
         campaigner,
         phase: Phase::Criteria,
 
         criteria: generate_test_criteria(),
-        budget: generate_test_budget(),
-        payments: vec![],
 
         proposed_delegates: vec![],
 

@@ -2111,6 +2111,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "filament-hub-eth"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bech32",
+ "borsh",
+ "hex",
+ "k256",
+ "serde",
+ "sha3",
+ "sov-modules-api",
+ "sov-rollup-interface",
+]
+
+[[package]]
 name = "filament-hub-rollup"
 version = "0.1.0"
 dependencies = [
@@ -2121,15 +2136,20 @@ dependencies = [
  "borsh",
  "bytes",
  "clap",
+ "filament-hub-core",
+ "filament-hub-eth",
  "filament-hub-stf",
  "filament-prover-risc0",
  "futures",
+ "hex",
  "jsonrpsee",
+ "k256",
  "prometheus_exporter",
  "rand",
  "serde",
  "serde_json",
  "sha2 0.10.8",
+ "sha3",
  "sov-accounts",
  "sov-bank",
  "sov-celestia-adapter",
@@ -2165,6 +2185,7 @@ dependencies = [
  "borsh",
  "clap",
  "filament-hub-core",
+ "filament-hub-eth",
  "jsonrpsee",
  "serde",
  "serde_json",
@@ -2191,6 +2212,7 @@ version = "0.1.0"
 dependencies = [
  "borsh",
  "console_error_panic_hook",
+ "filament-hub-eth",
  "filament-hub-stf",
  "serde",
  "serde_json",

@@ -32,13 +32,20 @@ impl<S: Spec, Da: DaSpec> TransactionAuthenticator<S> for Runtime<S, Da> {
         pre_exec_ws: &mut PreExecWorkingSet<S, Self::SequencerStakeMeter>,
     ) -> AuthenticationResult<S, Self::Decodable, Self::AuthorizationData> {
         match input {
-            Auth::Mod(tx) => sov_modules_api::capabilities::authenticate::<
-                S,
-                Self,
-                Self::SequencerStakeMeter,
-            >(tx, pre_exec_ws),
-            // Leaving the line below as an example to support different authentication schemes:
-            // Auth::Evm(tx) => EvmAuth::<S, Da>::authenticate(&tx, sequencer_stake_meter),
+            Auth::Mod(tx) => {
+                match filament_hub_eth::authenticate::<S, Self, Self::SequencerStakeMeter>(
+                    tx,
+                    pre_exec_ws,
+                ) {
+                    Ok(res) => return Ok(res),
+                    Err(err) => tracing::error!(%err, "failed to authenticate eth transaction"),
+                }
+
+                sov_modules_api::capabilities::authenticate::<S, Self, Self::SequencerStakeMeter>(
+                    tx,
+                    pre_exec_ws,
+                )
+            },
         }
     }
 
@@ -77,8 +84,6 @@ impl<S: Spec, Da: DaSpec> TransactionAuthenticator<S> for Runtime<S, Da> {
 #[derive(Debug, PartialEq, Clone, BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 pub enum Auth {
     Mod(Vec<u8>),
-    // Leaving the line below as an example to support different authentication schemes:
-    // Evm(Vec<u8>),
 }
 
 pub struct ModAuth<S: Spec, Da: DaSpec> {
