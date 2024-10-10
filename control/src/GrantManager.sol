@@ -27,11 +27,14 @@ contract GrantManager {
 
     // Permissioned functions
 
-    function giveGrant(address recipient_, uint256 amount_, uint256 start_, uint256 end_) external {
+    function giveGrant(address recipient_, address clawManager_, uint256 amount_, uint256 start_, uint256 end_)
+        external
+    {
         require(msg.sender == controller, "UNAUTHORIZED");
 
-        LockedTokenGrant grant =
-            new LockedTokenGrant(token, stakingContract, penaltyManager, recipient_, amount_, start_, end_);
+        LockedTokenGrant grant = new LockedTokenGrant(
+            token, clawManager_, stakingContract, penaltyManager, recipient_, amount_, start_, end_
+        );
 
         IERC20(token).transfer(address(grant), amount_);
 
