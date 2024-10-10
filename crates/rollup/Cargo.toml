@@ -14,6 +14,7 @@ filament-hub-stf      = { workspace = true, features = ["native"] }
 filament-prover-risc0 = { workspace = true }
 
 sov-accounts                  = { workspace = true, features = ["native"] }
+sov-attester-incentives       = { workspace = true, features = ["native"] }
 sov-bank                      = { workspace = true, features = ["native"] }
 sov-celestia-adapter          = { workspace = true, features = ["native"], optional = true }
 sov-cli                       = { workspace = true }
