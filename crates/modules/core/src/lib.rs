@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 
 use sov_modules_api::{
-    macros::ModuleRestApi,
     CallResponse,
     Context,
     Error,
@@ -9,6 +8,7 @@ use sov_modules_api::{
     Module,
     ModuleId,
     ModuleInfo,
+    ModuleRestApi,
     Spec,
     StateMap,
     StateValue,

@@ -11,18 +11,13 @@ use filament_hub_rollup::mock_rollup::MockRollup;
 use filament_hub_stf::genesis_config::GenesisPaths;
 use sha2::Sha256;
 #[cfg(feature = "celestia_da")]
-use sov_celestia_adapter::verifier::CelestiaSpec;
-#[cfg(feature = "celestia_da")]
-use sov_celestia_adapter::CelestiaConfig;
+use sov_celestia_adapter::CelestiaService;
 use sov_kernels::basic::{BasicKernelGenesisConfig, BasicKernelGenesisPaths};
 #[cfg(feature = "mock_da")]
-use sov_mock_da::MockDaConfig;
-#[cfg(feature = "mock_da")]
-use sov_mock_da::MockDaSpec;
+use sov_mock_da::storable::service::StorableMockDaService;
 use sov_modules_api::Address;
 use sov_modules_rollup_blueprint::{FullNodeBlueprint, Rollup};
-use sov_rollup_interface::execution_mode::Native;
-use sov_sequencer::FairBatchBuilderConfig;
+use sov_rollup_interface::{execution_mode::Native, node::da::DaServiceWithRetries};
 use sov_stf_runner::{from_toml_path, processes::RollupProverConfig, RollupConfig};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
@@ -156,16 +151,13 @@ async fn new_rollup(
 ) -> Result<Rollup<MockRollup<Native>, Native>, anyhow::Error> {
     tracing::info!("Starting mock rollup with config {}", rollup_config_path);
 
-    let rollup_config: RollupConfig<
-        Address<Sha256>,
-        MockDaConfig,
-        FairBatchBuilderConfig<MockDaSpec>,
-    > = from_toml_path(rollup_config_path).with_context(|| {
-        format!(
-            "Failed to read rollup configuration from {}",
-            rollup_config_path
-        )
-    })?;
+    let rollup_config: RollupConfig<Address<Sha256>, DaServiceWithRetries<StorableMockDaService>> =
+        from_toml_path(rollup_config_path).with_context(|| {
+            format!(
+                "Failed to read rollup configuration from {}",
+                rollup_config_path
+            )
+        })?;
 
     let mock_rollup = MockRollup::default();
 
@@ -198,16 +190,13 @@ async fn new_rollup(
         rollup_config_path
     );
 
-    let rollup_config: RollupConfig<
-        Address<Sha256>,
-        CelestiaConfig,
-        FairBatchBuilderConfig<CelestiaSpec>,
-    > = from_toml_path(rollup_config_path).with_context(|| {
-        format!(
-            "Failed to read rollup configuration from {}",
-            rollup_config_path
-        )
-    })?;
+    let rollup_config: RollupConfig<Address<Sha256>, DaServiceWithRetries<CelestiaService>> =
+        from_toml_path(rollup_config_path).with_context(|| {
+            format!(
+                "Failed to read rollup configuration from {}",
+                rollup_config_path
+            )
+        })?;
 
     let kernel_genesis = BasicKernelGenesisConfig {
         chain_state: serde_json::from_str(
