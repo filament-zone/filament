@@ -200,10 +200,11 @@ impl<S: Spec> Core<S> {
     #[allow(clippy::single_call_fn, clippy::unused_async)]
     async fn route_get_campaign(
         state: ApiState<Self, S>,
+        mut accessor: ApiStateAccessor<S>,
         Path(campaign_id): Path<u64>,
     ) -> ApiResult<Campaign<S>> {
         let campaign = state
-            .get_campaign(campaign_id, &mut state.api_state_accessor())
+            .get_campaign(campaign_id, &mut accessor)
             .unwrap_infallible()
             .ok_or_else(|| errors::not_found_404("Campaign", campaign_id))?;
         Ok(campaign.into())
@@ -211,22 +212,24 @@ impl<S: Spec> Core<S> {
 
     async fn route_get_campaigns_by_addr(
         state: ApiState<Self, S>,
+        mut accessor: ApiStateAccessor<S>,
         Path(addr): Path<S::Address>,
     ) -> ApiResult<Vec<Campaign<S>>> {
         let campaigns = state
-            .get_campaigns_by_addr(addr, &mut state.api_state_accessor())
+            .get_campaigns_by_addr(addr, &mut accessor)
             .unwrap_infallible();
         Ok(campaigns.into())
     }
 
     async fn route_get_campaigns_by_eth_addr(
         state: ApiState<Self, S>,
+        mut accessor: ApiStateAccessor<S>,
         Path(eth_addr): Path<String>,
     ) -> ApiResult<Vec<Campaign<S>>> {
         let addr = filament_hub_eth::addr_to_hub_address::<S>(&eth_addr)
             .map_err(|e| errors::bad_request_400("malformed address", e))?;
         Ok(state
-            .get_campaigns_by_addr(addr, &mut state.api_state_accessor())
+            .get_campaigns_by_addr(addr, &mut accessor)
             .unwrap_infallible()
             .into())
     }
@@ -235,7 +238,7 @@ impl<S: Spec> Core<S> {
 impl<S: Spec> HasCustomRestApi for Core<S> {
     type Spec = S;
 
-    fn custom_rest_api(&self, state: ApiState<Self, Self::Spec>) -> Router<()> {
+    fn custom_rest_api(&self, state: ApiState<(), S>) -> Router<()> {
         let cors = CorsLayer::new()
             .allow_origin(Any)
             .allow_methods(vec![Method::GET, Method::OPTIONS])
@@ -244,20 +247,24 @@ impl<S: Spec> HasCustomRestApi for Core<S> {
         Router::new()
             .route("/campaigns/:campaignId", get(Self::route_get_campaign))
             .route(
-                "/campaigns/by_addr/:addr}",
+                "/campaigns/by_addr/:addr",
                 get(Self::route_get_campaigns_by_addr),
             )
             .route(
-                "/campaigns/by_eth_addr/:eth_addr}",
+                "/campaigns/by_eth_addr/:eth_addr",
                 get(Self::route_get_campaigns_by_eth_addr),
             )
             .layer(cors)
-            .with_state(state)
+            .with_state(state.with(self.clone()))
     }
 
-    fn custom_openapi_spec(&self) -> Option<OpenApi> {
-        let open_api =
-            serde_yaml::from_str(include_str!("../openapi-v3.yaml")).expect("Invalid OpenAPI spec");
-        Some(open_api)
-    }
+    // FIXME(xla): This broke in bd3981a of the SDK.
+    // fn custom_openapi_spec(&self) -> Option<OpenApi> {
+    //     let mut open_api: OpenApi =
+    //         serde_yaml::from_str(include_str!("../openapi-v3.yaml")).expect("Invalid OpenAPI
+    // spec");     for path_item in open_api.paths.paths.values_mut() {
+    //         path_item.extensions = None;
+    //     }
+    //     Some(open_api)
+    // }
 }

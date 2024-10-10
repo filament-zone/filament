@@ -1,14 +1,14 @@
-use std::{env, net::SocketAddr, str::FromStr as _};
+use std::{env, str::FromStr as _};
 
 use anyhow::Context as _;
 use filament_hub_core::{
     campaign::{Campaign, Phase},
     criteria::{Criterion, CriterionCategory},
-    CoreRpcClient,
 };
 use filament_hub_eth::Tx;
 use filament_hub_stf::{genesis_config::GenesisPaths, RuntimeCall};
 use futures::StreamExt;
+use sov_cli::NodeClient;
 use sov_kernels::basic::BasicKernelGenesisPaths;
 use sov_mock_da::{BlockProducingConfig, MockAddress, MockDaConfig, MockDaSpec};
 use sov_modules_api::{
@@ -18,7 +18,6 @@ use sov_modules_api::{
     Spec,
 };
 use sov_stf_runner::processes::RollupProverConfig;
-use sov_test_utils::ApiClient;
 use tracing_subscriber::{fmt, layer::SubscriberExt as _, util::SubscriberInitExt as _, EnvFilter};
 
 use super::test_helpers::start_rollup;
@@ -64,21 +63,19 @@ async fn authenticate_tx_tests() -> Result<(), anyhow::Error> {
         )
         .await;
     });
-    let rpc_port = rpc_port_rx.await.unwrap();
-    let rest_port = rest_port_rx.await.unwrap();
+    let _ = rpc_port_rx.await;
+    let rest_port = rest_port_rx.await?.port();
+    let client = NodeClient::new_at_localhost(rest_port).await?;
 
     // If the rollup throws an error, return it and stop trying to send the transaction
     tokio::select! {
         err = rollup_task => err?,
-        res = send_eth_tx(rpc_port, rest_port) => res?,
+        res = send_eth_tx(&client) => res?,
     }
     Ok(())
 }
 
-async fn send_eth_tx(
-    rpc_address: SocketAddr,
-    rest_address: SocketAddr,
-) -> Result<(), anyhow::Error> {
+async fn send_eth_tx(client: &NodeClient) -> Result<(), anyhow::Error> {
     let (signing_key, address) = read_eth_key::<TestSpec>("signer.json")?;
     let user_address: <TestSpec as Spec>::Address = address;
 
@@ -128,10 +125,6 @@ async fn send_eth_tx(
         },
     };
 
-    let rpc_port = rpc_address.port();
-    let rest_port = rest_address.port();
-    let client = ApiClient::new(rpc_port, rest_port).await?;
-
     let mut slot_subscription = client
         .ledger
         .subscribe_slots()
@@ -142,6 +135,7 @@ async fn send_eth_tx(
         .sequencer
         .publish_batch_with_serialized_txs(&[tx])
         .await?;
+
     // Wait until the rollup has processed the next slot
     let _slot_number = slot_subscription
         .next()
@@ -150,9 +144,11 @@ async fn send_eth_tx(
         .map(|slot| slot.number)
         .unwrap_or_default();
 
-    let campaign_response = CoreRpcClient::<TestSpec>::rpc_get_campaign(&client.rpc, 0).await?;
+    let campaign = client
+        .query_rest_endpoint::<Option<Campaign<TestSpec>>>("/campaigns/0")
+        .await?;
     assert_eq!(
-        campaign_response,
+        campaign,
         Some(Campaign {
             campaigner: user_address,
             phase: Phase::Criteria,

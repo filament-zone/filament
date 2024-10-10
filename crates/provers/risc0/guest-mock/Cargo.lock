@@ -450,12 +450,6 @@ checksum = "7c74b8349d32d297c9134b8c88677813a227df8f779daa29bfc29c183fe3dca6"
 
 [[package]]
 name = "convert_case"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6245d59a3e82a7fc217c5828a6692dbc6dfb63a0c8c90495621f7b9d79704a0e"
-
-[[package]]
-name = "convert_case"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec182b0ca2f35d8fc196cf3404988fd8b8c739a4d270ff118a398feb0cbec1ca"
@@ -557,36 +551,12 @@ dependencies = [
 
 [[package]]
 name = "darling"
-version = "0.14.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b750cb3417fd1b327431a470f388520309479ab0bf5e323505daf0290cd3850"
-dependencies = [
- "darling_core 0.14.4",
- "darling_macro 0.14.4",
-]
-
-[[package]]
-name = "darling"
 version = "0.20.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6f63b86c8a8826a49b8c21f08a2d07338eec8d900540f8630dc76284be802989"
 dependencies = [
- "darling_core 0.20.10",
- "darling_macro 0.20.10",
-]
-
-[[package]]
-name = "darling_core"
-version = "0.14.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "109c1ca6e6b7f82cc233a97004ea8ed7ca123a9af07a8230878fcfda9b158bf0"
-dependencies = [
- "fnv",
- "ident_case",
- "proc-macro2",
- "quote",
- "strsim 0.10.0",
- "syn 1.0.109",
+ "darling_core",
+ "darling_macro",
 ]
 
 [[package]]
@@ -599,19 +569,13 @@ dependencies = [
  "ident_case",
  "proc-macro2",
  "quote",
+<<<<<<< HEAD
  "strsim 0.11.1",
  "syn 2.0.86",
-]
-
-[[package]]
-name = "darling_macro"
-version = "0.14.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4aab4dbc9f7611d8b55048a3a16d2d010c2c8334e46304b40ac1cc14bf3b48e"
-dependencies = [
- "darling_core 0.14.4",
- "quote",
- "syn 1.0.109",
+=======
+ "strsim",
+ "syn 2.0.77",
+>>>>>>> bc15340 (chore(hub): Bump SDK to bd3981a)
 ]
 
 [[package]]
@@ -620,7 +584,7 @@ version = "0.20.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d336a2a514f6ccccaa3e09b02d41d35330c07ddf03a62165fcec10bb561c7806"
 dependencies = [
- "darling_core 0.20.10",
+ "darling_core",
  "quote",
  "syn 2.0.86",
 ]
@@ -658,15 +622,28 @@ dependencies = [
 
 [[package]]
 name = "derive_more"
-version = "0.99.18"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f33878137e4dafd7fa914ad4e259e18a4e8e532b9617a2d0150262bf53abfce"
+checksum = "4a9b99b9cbbe49445b21764dc0625032a89b145a2642e67603e1c936f5458d05"
 dependencies = [
- "convert_case 0.4.0",
+ "derive_more-impl",
+]
+
+[[package]]
+name = "derive_more-impl"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cb7330aeadfbe296029522e6c40f315320aba36fc43a5b3632f3795348f3bd22"
+dependencies = [
  "proc-macro2",
  "quote",
+<<<<<<< HEAD
  "rustc_version",
  "syn 2.0.86",
+=======
+ "syn 2.0.77",
+ "unicode-xid",
+>>>>>>> bc15340 (chore(hub): Bump SDK to bd3981a)
 ]
 
 [[package]]
@@ -1312,12 +1289,12 @@ dependencies = [
 
 [[package]]
 name = "prettier-please"
-version = "0.1.16"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be31b7957122175fcf33c6d8f54489a5262176020bf096026a86b308b7fa5b23"
+checksum = "32db37eb2b0ec0af154e9c1b33425902d8cd9481e35167c4e9ffb28fec3916bb"
 dependencies = [
  "proc-macro2",
- "syn 1.0.109",
+ "syn 2.0.77",
 ]
 
 [[package]]
@@ -1718,7 +1695,7 @@ version = "3.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9d846214a9854ef724f3da161b426242d8de7c1fc7de2f89bb1efcb154dca79d"
 dependencies = [
- "darling 0.20.10",
+ "darling",
  "proc-macro2",
  "quote",
  "syn 2.0.86",
@@ -1763,7 +1740,7 @@ dependencies = [
 [[package]]
 name = "sov-accounts"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=b03b549#b03b5491fcc518ae9f2db85dad6cfa9e5f3a4b5f"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=bd3981a#bd3981a1eb6f6e14b7ec0ae3a8fca67d3dae3529"
 dependencies = [
  "anyhow",
  "borsh",
@@ -1776,7 +1753,7 @@ dependencies = [
 [[package]]
 name = "sov-attester-incentives"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=b03b549#b03b5491fcc518ae9f2db85dad6cfa9e5f3a4b5f"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=bd3981a#bd3981a1eb6f6e14b7ec0ae3a8fca67d3dae3529"
 dependencies = [
  "anyhow",
  "borsh",
@@ -1793,7 +1770,7 @@ dependencies = [
 [[package]]
 name = "sov-bank"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=b03b549#b03b5491fcc518ae9f2db85dad6cfa9e5f3a4b5f"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=bd3981a#bd3981a1eb6f6e14b7ec0ae3a8fca67d3dae3529"
 dependencies = [
  "anyhow",
  "borsh",
@@ -1808,7 +1785,7 @@ dependencies = [
 [[package]]
 name = "sov-blob-storage"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=b03b549#b03b5491fcc518ae9f2db85dad6cfa9e5f3a4b5f"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=bd3981a#bd3981a1eb6f6e14b7ec0ae3a8fca67d3dae3529"
 dependencies = [
  "anyhow",
  "borsh",
@@ -1825,7 +1802,7 @@ dependencies = [
 [[package]]
 name = "sov-capabilities"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=b03b549#b03b5491fcc518ae9f2db85dad6cfa9e5f3a4b5f"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=bd3981a#bd3981a1eb6f6e14b7ec0ae3a8fca67d3dae3529"
 dependencies = [
  "anyhow",
  "sov-accounts",
@@ -1842,7 +1819,7 @@ dependencies = [
 [[package]]
 name = "sov-chain-state"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=b03b549#b03b5491fcc518ae9f2db85dad6cfa9e5f3a4b5f"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=bd3981a#bd3981a1eb6f6e14b7ec0ae3a8fca67d3dae3529"
 dependencies = [
  "anyhow",
  "borsh",
@@ -1878,7 +1855,7 @@ dependencies = [
 [[package]]
 name = "sov-kernels"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=b03b549#b03b5491fcc518ae9f2db85dad6cfa9e5f3a4b5f"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=bd3981a#bd3981a1eb6f6e14b7ec0ae3a8fca67d3dae3529"
 dependencies = [
  "anyhow",
  "sov-blob-storage",
@@ -1890,7 +1867,7 @@ dependencies = [
 [[package]]
 name = "sov-mock-da"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=b03b549#b03b5491fcc518ae9f2db85dad6cfa9e5f3a4b5f"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=bd3981a#bd3981a1eb6f6e14b7ec0ae3a8fca67d3dae3529"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1908,7 +1885,7 @@ dependencies = [
 [[package]]
 name = "sov-mock-zkvm"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=b03b549#b03b5491fcc518ae9f2db85dad6cfa9e5f3a4b5f"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=bd3981a#bd3981a1eb6f6e14b7ec0ae3a8fca67d3dae3529"
 dependencies = [
  "anyhow",
  "bincode",
@@ -1925,7 +1902,7 @@ dependencies = [
 [[package]]
 name = "sov-modules-api"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=b03b549#b03b5491fcc518ae9f2db85dad6cfa9e5f3a4b5f"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=bd3981a#bd3981a1eb6f6e14b7ec0ae3a8fca67d3dae3529"
 dependencies = [
  "anyhow",
  "bech32",
@@ -1944,6 +1921,7 @@ dependencies = [
  "sov-state",
  "sov-wallet-format",
  "thiserror",
+ "toml",
  "tracing",
  "unwrap-infallible",
 ]
@@ -1951,27 +1929,28 @@ dependencies = [
 [[package]]
 name = "sov-modules-macros"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=b03b549#b03b5491fcc518ae9f2db85dad6cfa9e5f3a4b5f"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=bd3981a#bd3981a1eb6f6e14b7ec0ae3a8fca67d3dae3529"
 dependencies = [
  "anyhow",
  "bech32",
  "blake2",
- "convert_case 0.6.0",
- "darling 0.14.4",
+ "convert_case",
+ "darling",
  "derive_more",
  "hex",
  "prettier-please",
  "proc-macro2",
  "quote",
+ "serde",
  "sov-wallet-format-macro-helpers",
- "syn 1.0.109",
+ "syn 2.0.77",
  "toml",
 ]
 
 [[package]]
 name = "sov-modules-stf-blueprint"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=b03b549#b03b5491fcc518ae9f2db85dad6cfa9e5f3a4b5f"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=bd3981a#bd3981a1eb6f6e14b7ec0ae3a8fca67d3dae3529"
 dependencies = [
  "anyhow",
  "borsh",
@@ -1990,7 +1969,7 @@ dependencies = [
 [[package]]
 name = "sov-nonces"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=b03b549#b03b5491fcc518ae9f2db85dad6cfa9e5f3a4b5f"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=bd3981a#bd3981a1eb6f6e14b7ec0ae3a8fca67d3dae3529"
 dependencies = [
  "anyhow",
  "borsh",
@@ -2002,7 +1981,7 @@ dependencies = [
 [[package]]
 name = "sov-prover-incentives"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=b03b549#b03b5491fcc518ae9f2db85dad6cfa9e5f3a4b5f"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=bd3981a#bd3981a1eb6f6e14b7ec0ae3a8fca67d3dae3529"
 dependencies = [
  "anyhow",
  "borsh",
@@ -2019,7 +1998,7 @@ dependencies = [
 [[package]]
 name = "sov-risc0-adapter"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=b03b549#b03b5491fcc518ae9f2db85dad6cfa9e5f3a4b5f"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=bd3981a#bd3981a1eb6f6e14b7ec0ae3a8fca67d3dae3529"
 dependencies = [
  "anyhow",
  "bincode",
@@ -2040,7 +2019,7 @@ dependencies = [
 [[package]]
 name = "sov-rollup-interface"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=b03b549#b03b5491fcc518ae9f2db85dad6cfa9e5f3a4b5f"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=bd3981a#bd3981a1eb6f6e14b7ec0ae3a8fca67d3dae3529"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2058,7 +2037,7 @@ dependencies = [
 [[package]]
 name = "sov-sequencer-registry"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=b03b549#b03b5491fcc518ae9f2db85dad6cfa9e5f3a4b5f"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=bd3981a#bd3981a1eb6f6e14b7ec0ae3a8fca67d3dae3529"
 dependencies = [
  "anyhow",
  "borsh",
@@ -2073,7 +2052,7 @@ dependencies = [
 [[package]]
 name = "sov-state"
 version = "0.3.0"
-source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=b03b549#b03b5491fcc518ae9f2db85dad6cfa9e5f3a4b5f"
+source = "git+ssh://git@github.com/filament-zone/sovereign-sdk-wip.git?rev=bd3981a#bd3981a1eb6f6e14b7ec0ae3a8fca67d3dae3529"
 dependencies = [
  "anyhow",
  "bcs",
@@ -2110,8 +2089,8 @@ name = "sov-wallet-format-macro-helpers"
 version = "0.1.0"
 source = "git+ssh://git@github.com/filament-zone/sov-wallet-format.git?rev=44e23f9#44e23f901b9ddff026563fa74558a54d306ba7f2"
 dependencies = [
- "convert_case 0.6.0",
- "darling 0.20.10",
+ "convert_case",
+ "darling",
  "hex",
  "proc-macro2",
  "quote",
@@ -2146,12 +2125,6 @@ dependencies = [
  "quote",
  "syn 2.0.86",
 ]
-
-[[package]]
-name = "strsim"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
 
 [[package]]
 name = "strsim"
@@ -2391,6 +2364,12 @@ name = "unicode-segmentation"
 version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f6ccf251212114b54433ec949fd6a7841275f9ada20dddd2f29e9ceea4501493"
+
+[[package]]
+name = "unicode-xid"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
 
 [[package]]
 name = "unwrap-infallible"
