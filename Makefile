@@ -79,3 +79,9 @@ test-wasm-chrome:
 
 test-wasm-firefox:
 	wasm-pack test --firefox --headless crates/wasm
+
+run-local-hub:
+	SKIP_GUEST_BUILD=1 cargo run -p filament-hub-rollup
+
+generate-core-schema:
+	SKIP_GUEST_BUILD=1 cargo run -p filament-hub-cli --bin generate-schema
