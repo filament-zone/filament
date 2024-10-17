@@ -23,6 +23,10 @@
     {
       "credential_id": "0x0000000000000000000000004Fa6c577eE74B4F3C5309Af1b6313dd6D525e694",
       "address": "sov16wxfprgt9lhvd097kes7e2v4juz5rn8jrzt7477cp9dw0qldydas769lvu"
+    },
+    {
+      "credential_id": "0x1ffaaaf76249aeccc2dd0c2dc5f535eeec04c00dec67893379ce7e91eccdfbb9",
+      "address": "sov16gpcy4nfplk4savhykw9lcfggpga394qqqqqqqqqqqqqqqqqqqqq0vxxdm"
     }
   ]
 }
