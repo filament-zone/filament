@@ -84,4 +84,7 @@ run-local-hub:
 	SKIP_GUEST_BUILD=1 cargo run -p filament-hub-rollup
 
 generate-core-schema:
-	SKIP_GUEST_BUILD=1 cargo run -p filament-hub-cli --bin generate-schema
+	cargo run -p filament-hub-cli --bin generate-schema
+
+convert-eth-to-hub-address:
+	cargo run -p filament-hub-cli --bin hub-address
