@@ -1,10 +1,7 @@
-use std::hash::Hash;
-
 use anyhow::anyhow;
 use bech32::{Bech32m, Hrp};
-use borsh::{BorshDeserialize, BorshSerialize};
+use borsh::BorshDeserialize;
 use k256::ecdsa::{signature::DigestVerifier as _, RecoveryId, Signature, VerifyingKey};
-use serde::{Deserialize, Serialize};
 use sha3::{Digest as _, Keccak256};
 use sov_modules_api::{
     capabilities::{AuthenticationError, AuthenticationResult, AuthorizationData, FatalError},
@@ -23,35 +20,12 @@ use sov_modules_api::{
     GasMeter,
     MeteredHasher,
     PreExecWorkingSet,
-    PublicKey,
     Spec,
 };
 use sov_rollup_interface::{crypto::SigVerificationError, TxHash};
 
 /// The chain id of the rollup.
 pub const CHAIN_ID: u64 = config_value!("CHAIN_ID");
-
-#[derive(Clone, Debug, Eq, PartialEq, BorshDeserialize, BorshSerialize, Deserialize, Serialize)]
-struct PubKey {
-    vk: Vec<u8>,
-}
-
-impl Hash for PubKey {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.vk.hash(state);
-    }
-}
-
-impl sov_rollup_interface::crypto::PublicKey for PubKey {
-    fn credential_id<Hasher: sha3::Digest<OutputSize = sha3::digest::consts::U32>>(
-        &self,
-    ) -> CredentialId {
-        let mut hasher = Hasher::new();
-        hasher.update(self.vk.clone());
-
-        CredentialId(hasher.finalize().into())
-    }
-}
 
 #[derive(
     Clone,
@@ -154,10 +128,7 @@ pub fn authenticate<S: Spec, D: DispatchCall<Spec = S>, Meter: GasMeter<S::Gas>>
         ))
     })?;
 
-    let eth_pk = PubKey {
-        vk: tx.verifying_key.clone(),
-    };
-    let credential_id = eth_pk.credential_id::<<S::CryptoSpec as CryptoSpec>::Hasher>();
+    let credential_id = vk_to_credential_id::<<S::CryptoSpec as CryptoSpec>::Hasher>(&vk);
     let credentials = Credentials::new(credential_id);
     let address = vk_to_address::<S>(&vk)
         .map_err(|e| AuthenticationError::FatalError(FatalError::Other(e.to_string())))?;
@@ -203,4 +174,16 @@ pub fn vk_to_address<S: Spec>(vk: &VerifyingKey) -> anyhow::Result<S::Address> {
         .map_err(|_| anyhow!("bech32 parsing failed"))?;
 
     Ok(address)
+}
+
+pub fn vk_to_credential_id<Hasher: sha3::Digest<OutputSize = sha3::digest::consts::U32>>(
+    vk: &VerifyingKey,
+) -> CredentialId {
+    let ep = vk.to_encoded_point(false);
+    let bytes = &ep.as_bytes()[1..];
+
+    let mut hasher = Hasher::new();
+    hasher.update(bytes);
+
+    CredentialId(hasher.finalize().into())
 }
