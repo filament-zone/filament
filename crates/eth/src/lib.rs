@@ -57,7 +57,12 @@ impl<S: Spec> Tx<S> {
             TransactionVerificationError::TransactionDeserializationError(e.to_string())
         })?;
         let digest = Keccak256::new_with_prefix(prefix_msg(serialized_tx));
-        let signature = Signature::from_slice(&self.signature).map_err(|e| {
+
+        let mut r = [0u8; 32];
+        let mut s = [0u8; 32];
+        r.copy_from_slice(&self.signature[0..32]);
+        s.copy_from_slice(&self.signature[32..64]);
+        let signature = Signature::from_scalars(r, s).map_err(|e| {
             TransactionVerificationError::BadSignature(SigVerificationError::BadSignature(
                 e.to_string(),
             ))

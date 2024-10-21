@@ -9,7 +9,7 @@ use filament_hub_core::{
 use filament_hub_eth::Tx;
 use filament_hub_stf::{genesis_config::GenesisPaths, RuntimeCall};
 use futures::StreamExt;
-use k256::ecdsa::VerifyingKey;
+use k256::ecdsa::{Signature, VerifyingKey};
 use sha3::{Digest as _, Keccak256};
 use sov_kernels::basic::BasicKernelGenesisPaths;
 use sov_mock_da::{BlockProducingConfig, MockAddress, MockDaConfig, MockDaSpec};
@@ -113,6 +113,21 @@ async fn send_eth_tx(
 
     let digest = Keccak256::new_with_prefix(&filament_hub_eth::prefix_msg(unsigned_tx_bytes));
     let (signature, recid) = signing_key.sign_digest_recoverable(digest.clone())?;
+
+    tracing::error!("{}", signature.to_bytes().len());
+
+    let sig_hex = "0xb3c7c7b7b611ede39b43b3a5b8de3be2bcc202e0baab45f68c40513c235554060683f9328009806b55660ef5f846222d84c453c9303ac81de582dc96725986261b";
+    let sig_bytes = hex::decode(sig_hex.trim_start_matches("0x"))?;
+
+    let mut r = [0u8; 32];
+    let mut s = [0u8; 32];
+    r.copy_from_slice(&sig_bytes[0..32]);
+    s.copy_from_slice(&sig_bytes[32..64]);
+
+    tracing::error!("{}", sig_bytes.len());
+    let _ = Signature::from_scalars(r, s)?;
+
+    signature.split_bytes();
 
     let tx: Tx<TestSpec> = Tx {
         signature: signature.to_vec(),

@@ -38,6 +38,7 @@ axum                = { workspace = true }
 backon              = { workspace = true }
 borsh               = { workspace = true }
 clap                = { workspace = true }
+hex                 = { workspace = true }
 jsonrpsee           = { workspace = true }
 prometheus_exporter = { workspace = true }
 serde               = { workspace = true }

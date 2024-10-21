@@ -810,6 +810,7 @@ dependencies = [
  "sha3",
  "sov-modules-api",
  "sov-rollup-interface",
+ "tracing",
 ]
 
 [[package]]
