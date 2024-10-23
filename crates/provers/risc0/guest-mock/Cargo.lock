@@ -788,6 +788,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "borsh",
+ "filament-hub-eth",
  "lazy_static",
  "serde",
  "serde_bytes",
@@ -810,7 +811,6 @@ dependencies = [
  "sha3",
  "sov-modules-api",
  "sov-rollup-interface",
- "tracing",
 ]
 
 [[package]]

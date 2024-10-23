@@ -2148,6 +2148,7 @@ dependencies = [
  "anyhow",
  "borsh",
  "filament-hub-core",
+ "filament-hub-eth",
  "jsonrpsee",
  "lazy_static",
  "pretty_assertions",
