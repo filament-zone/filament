@@ -1,6 +1,7 @@
-use anyhow::anyhow;
+use anyhow::{anyhow, bail};
 use bech32::{Bech32m, Hrp};
 use borsh::BorshDeserialize;
+use hex::FromHex as _;
 use k256::ecdsa::{signature::DigestVerifier as _, RecoveryId, Signature, VerifyingKey};
 use sha3::{Digest as _, Keccak256};
 use sov_modules_api::{
@@ -163,6 +164,20 @@ pub fn prefix_msg(msg: Vec<u8>) -> Vec<u8> {
     [prefix.as_bytes(), &msg].concat()
 }
 
+pub fn addr_to_hub_address<S: Spec>(addr: &str) -> anyhow::Result<S::Address> {
+    let stripped = addr.strip_prefix("0x").unwrap_or(addr);
+    let bytes = Vec::from_hex(stripped)?;
+
+    if bytes.len() != 20 {
+        bail!("invalid length for Ethereum address");
+    }
+
+    let mut arr = [0u8; 20];
+    arr.copy_from_slice(&bytes);
+
+    bytes_to_address::<S>(arr)
+}
+
 pub fn vk_to_address<S: Spec>(vk: &VerifyingKey) -> anyhow::Result<S::Address> {
     let ep = vk.to_encoded_point(false);
     let pk_bytes = &ep.as_bytes()[1..];
@@ -171,14 +186,10 @@ pub fn vk_to_address<S: Spec>(vk: &VerifyingKey) -> anyhow::Result<S::Address> {
     hasher.update(pk_bytes);
     let hash = hasher.finalize();
 
-    let eth_address = &hash[12..];
-    let hrp = Hrp::parse("sov")?;
-    let bech32_address = bech32::encode::<Bech32m>(hrp, eth_address)?;
-    let address = bech32_address
-        .parse::<<S as Spec>::Address>()
-        .map_err(|_| anyhow!("bech32 parsing failed"))?;
+    let mut arr = [0u8; 20];
+    arr.copy_from_slice(&hash[12..]);
 
-    Ok(address)
+    bytes_to_address::<S>(arr)
 }
 
 pub fn vk_to_credential_id<Hasher: sha3::Digest<OutputSize = sha3::digest::consts::U32>>(
@@ -191,4 +202,14 @@ pub fn vk_to_credential_id<Hasher: sha3::Digest<OutputSize = sha3::digest::const
     hasher.update(bytes);
 
     CredentialId(hasher.finalize().into())
+}
+
+fn bytes_to_address<S: Spec>(arr: [u8; 20]) -> anyhow::Result<S::Address> {
+    let hrp = Hrp::parse("sov")?;
+    let bech32_address = bech32::encode::<Bech32m>(hrp, &arr)?;
+    let address = bech32_address
+        .parse::<<S as Spec>::Address>()
+        .map_err(|_| anyhow!("bech32 parsing failed"))?;
+
+    Ok(address)
 }

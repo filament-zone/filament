@@ -117,7 +117,13 @@ fn init_campaign() {
                 Core::<S>::default()
                     .get_campaign(1, state)
                     .unwrap_infallible(),
-                Some(expected)
+                Some(expected.clone())
+            );
+            assert_eq!(
+                Core::<S>::default()
+                    .get_campaigns_by_addr(campaigner.address(), state)
+                    .unwrap_infallible(),
+                vec![expected]
             );
         }),
     });
