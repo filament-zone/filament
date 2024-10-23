@@ -32,8 +32,12 @@ use crate::{
 pub enum CallMessage<S: Spec> {
     // campaign
     Init {
+        title: String,
+        description: String,
+
         criteria: Criteria,
-        evictions: Vec<Eviction<S>>,
+
+        evictions: Vec<S::Address>,
     },
     ProposeCriteria {
         campaign_id: u64,
@@ -69,6 +73,8 @@ pub enum CallMessage<S: Spec> {
 impl<S: Spec> Core<S> {
     pub(crate) fn init_campaign(
         &self,
+        title: String,
+        description: String,
         criteria: Criteria,
         evictions: Vec<Eviction<S>>,
         sender: &S::Address,
@@ -118,10 +124,11 @@ impl<S: Spec> Core<S> {
                 campaigner: sender.clone(),
                 phase: Phase::Criteria,
 
+                title,
+                description,
+
                 criteria,
-                // budget,
-                // payments,
-                proposed_delegates,
+
                 evictions: evictions.clone(),
                 delegates,
 

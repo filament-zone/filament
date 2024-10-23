@@ -74,6 +74,8 @@ fn init_campaign() {
         let campaigner = campaigner.clone();
         runner.execute_transaction(TransactionTestCase {
             input: campaigner.create_plain_message::<Core<S>>(CallMessage::Init {
+                title: "".to_string(),
+                description: "".to_string(),
                 criteria: vec![],
                 evictions: vec![],
             }),
@@ -91,6 +93,8 @@ fn init_campaign() {
 
     runner.execute_transaction(TransactionTestCase {
         input: campaigner.create_plain_message::<Core<S>>(CallMessage::Init {
+            title: "".to_string(),
+            description: "".to_string(),
             criteria: generate_test_criteria(),
             evictions: vec![],
         }),
@@ -109,7 +113,6 @@ fn init_campaign() {
             let expected = {
                 let delegates = delegates.iter().map(|u| u.address()).collect::<Vec<_>>();
                 let mut campaign = generate_test_campaign(campaigner.address());
-                campaign.proposed_delegates.clone_from(&delegates);
                 campaign.delegates = delegates;
                 campaign
             };
@@ -659,9 +662,10 @@ fn generate_test_campaign(campaigner: <S as Spec>::Address) -> Campaign<S> {
         campaigner,
         phase: Phase::Criteria,
 
-        criteria: generate_test_criteria(),
+        title: "".to_string(),
+        description: "".to_string(),
 
-        proposed_delegates: vec![],
+        criteria: generate_test_criteria(),
 
         evictions: vec![],
         delegates: vec![],
