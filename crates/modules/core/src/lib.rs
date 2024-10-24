@@ -128,10 +128,19 @@ impl<S: Spec> Module for Core<S> {
         match msg {
             // Campaign
             call::CallMessage::Init {
+                title,
+                description,
                 criteria,
                 evictions,
             } => {
-                self.init_campaign(criteria, evictions, context.sender(), state)?;
+                self.init_campaign(
+                    title,
+                    description,
+                    criteria,
+                    evictions,
+                    context.sender(),
+                    state,
+                )?;
                 Ok(CallResponse::default())
             },
             call::CallMessage::ProposeCriteria {

@@ -1,4 +1,3 @@
-use sov_bank::Coins;
 use sov_modules_api::Spec;
 
 use crate::{
@@ -6,30 +5,8 @@ use crate::{
     delegate::{Delegate, Eviction},
 };
 
-pub const EVICTION_COST: u64 = 100;
+pub const SEVICTION_COST: u64 = 1;
 pub const MAX_EVICTIONS: u64 = 3;
-
-pub type ChainId = String;
-
-#[cfg_attr(
-    feature = "native",
-    derive(schemars::JsonSchema),
-    derive(sov_modules_api::macros::UniversalWallet),
-    schemars(rename = "Payment")
-)]
-#[derive(
-    Clone,
-    Debug,
-    Eq,
-    PartialEq,
-    borsh::BorshDeserialize,
-    borsh::BorshSerialize,
-    serde::Deserialize,
-    serde::Serialize,
-)]
-pub struct Payment {
-    coins: Coins,
-}
 
 #[cfg_attr(
     feature = "native",
@@ -52,12 +29,13 @@ pub struct Campaign<S: Spec> {
     pub campaigner: S::Address,
     pub phase: Phase,
 
+    pub title: String,
+    pub description: String,
+
     pub criteria: Criteria,
-    // TODO(xla): Needs furhter clarification.
-    // pub budget: Budget,
-    // pub payments: Vec<Payment>,
-    pub proposed_delegates: Vec<Delegate<S>>,
+
     pub evictions: Vec<Eviction<S>>,
+    // TODO(xla): Rework into commitments in follow-up.
     pub delegates: Vec<Delegate<S>>,
 
     pub indexer: Option<S::Address>,
@@ -86,4 +64,7 @@ pub enum Phase {
     Indexing,
     Distribution,
     Settle,
+    Settled,
+    Canceled,
+    Rejected,
 }
