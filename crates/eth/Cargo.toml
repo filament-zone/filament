@@ -23,3 +23,8 @@ hex         = { workspace = true }
 k256        = { workspace = true, features = ["ecdsa"] }
 serde       = { workspace = true, features = ["derive", "rc"] }
 sha3        = { workspace = true }
+
+[dev-dependencies]
+sov-mock-zkvm = { workspace = true }
+
+serde_json = { workspace = true }

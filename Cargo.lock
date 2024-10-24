@@ -2175,7 +2175,9 @@ dependencies = [
  "hex",
  "k256",
  "serde",
+ "serde_json",
  "sha3",
+ "sov-mock-zkvm",
  "sov-modules-api",
  "sov-rollup-interface",
 ]
@@ -2204,7 +2206,6 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2 0.10.8",
- "sha3",
  "sov-accounts",
  "sov-bank",
  "sov-celestia-adapter",

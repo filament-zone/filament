@@ -61,7 +61,6 @@ filament-hub-eth  = { workspace = true }
 futures         = { workspace = true }
 hex             = { workspace = true }
 k256            = { workspace = true }
-sha3            = { workspace = true }
 sov-test-utils  = { workspace = true }
 sov-mock-zkvm   = { workspace = true, features = ["native"] }
 tempfile        = { workspace = true }

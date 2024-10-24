@@ -2,8 +2,14 @@ use anyhow::{anyhow, bail};
 use bech32::{Bech32m, Hrp};
 use borsh::BorshDeserialize;
 use hex::FromHex as _;
-use k256::ecdsa::{signature::DigestVerifier as _, RecoveryId, Signature, VerifyingKey};
-use sha3::{Digest as _, Keccak256};
+use k256::ecdsa::{
+    signature::DigestVerifier as _,
+    RecoveryId,
+    Signature,
+    SigningKey,
+    VerifyingKey,
+};
+use sha3::{Digest, Keccak256};
 use sov_modules_api::{
     capabilities::{AuthenticationError, AuthenticationResult, AuthorizationData, FatalError},
     macros::config_value,
@@ -59,10 +65,26 @@ impl<S: Spec> Tx<S> {
         })?;
         let digest = Keccak256::new_with_prefix(prefix_msg(serialized_tx));
 
+        if self.signature.len() != 65 {
+            return Err(
+                TransactionVerificationError::TransactionDeserializationError(format!(
+                    "invalid signature length: {}",
+                    self.signature.len()
+                )),
+            );
+        }
+
         let mut r = [0u8; 32];
         let mut s = [0u8; 32];
         r.copy_from_slice(&self.signature[0..32]);
         s.copy_from_slice(&self.signature[32..64]);
+
+        let v = &self.signature[64];
+        let recid = match v {
+            27 | 28 => v - 27,
+            _ => panic!("invalid recovery id"),
+        };
+
         let signature = Signature::from_scalars(r, s).map_err(|e| {
             TransactionVerificationError::BadSignature(SigVerificationError::BadSignature(
                 e.to_string(),
@@ -71,7 +93,7 @@ impl<S: Spec> Tx<S> {
         let vk = VerifyingKey::recover_from_digest(
             digest.clone(),
             &signature,
-            RecoveryId::from_byte(0).expect("construction of recovery id should not fail"),
+            RecoveryId::from_byte(recid).expect("construction of recovery id should not fail"),
         )
         .map_err(|e| {
             TransactionVerificationError::TransactionDeserializationError(e.to_string())
@@ -162,6 +184,21 @@ pub fn authenticate<S: Spec, D: DispatchCall<Spec = S>, Meter: GasMeter<S::Gas>>
 pub fn prefix_msg(msg: Vec<u8>) -> Vec<u8> {
     let prefix = format!("\x19Ethereum Signed Message:\n{}", msg.len());
     [prefix.as_bytes(), &msg].concat()
+}
+
+pub fn sign(signing_key: &SigningKey, msg: Vec<u8>) -> anyhow::Result<[u8; 65]> {
+    let digest = Keccak256::new_with_prefix(prefix_msg(msg));
+    let (signature, recid) = signing_key.sign_digest_recoverable(digest.clone())?;
+
+    let r = signature.r();
+    let s = signature.s();
+    let v = recid.to_byte() + 27;
+    let mut ethereum_sig = [0u8; 65];
+    ethereum_sig[..32].copy_from_slice(&r.to_bytes());
+    ethereum_sig[32..64].copy_from_slice(&s.to_bytes());
+    ethereum_sig[64] = v;
+
+    Ok(ethereum_sig)
 }
 
 pub fn addr_to_hub_address<S: Spec>(addr: &str) -> anyhow::Result<S::Address> {
