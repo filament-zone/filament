@@ -2159,10 +2159,10 @@ dependencies = [
  "sov-bank",
  "sov-modules-api",
  "sov-modules-stf-blueprint",
- "sov-rest-utils",
  "sov-state",
  "sov-test-utils",
  "tempfile",
+ "tower-http 0.6.1",
  "tracing",
 ]
 
@@ -6485,7 +6485,7 @@ dependencies = [
  "serde_json",
  "tokio",
  "tower",
- "tower-http",
+ "tower-http 0.5.2",
  "tower-request-id",
  "tracing",
 ]
@@ -6659,7 +6659,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "toml",
- "tower-http",
+ "tower-http 0.5.2",
  "tower-layer",
  "tracing",
 ]
@@ -7452,6 +7452,20 @@ dependencies = [
  "tower-layer",
  "tower-service",
  "tracing",
+]
+
+[[package]]
+name = "tower-http"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8437150ab6bbc8c5f0f519e3d5ed4aa883a83dd4cdd3d1b21f9482936046cb97"
+dependencies = [
+ "bitflags 2.6.0",
+ "bytes",
+ "http 1.1.0",
+ "pin-project-lite",
+ "tower-layer",
+ "tower-service",
 ]
 
 [[package]]

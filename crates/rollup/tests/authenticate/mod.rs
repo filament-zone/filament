@@ -3,7 +3,7 @@ use std::{env, net::SocketAddr, str::FromStr as _};
 use anyhow::Context as _;
 use filament_hub_core::{
     campaign::{Campaign, Phase},
-    criteria::Criterion,
+    criteria::{Criterion, CriterionCategory},
     CoreRpcClient,
 };
 use filament_hub_eth::Tx;
@@ -86,8 +86,10 @@ async fn send_eth_tx(
     let nonce = 0;
     let max_priority_fee_bips = PriorityFeeBips::ZERO;
     let criteria = vec![Criterion {
-        dataset_id: "osmosis".to_string(),
+        name: "Test Criterion".to_string(),
+        category: CriterionCategory::Balance,
         parameters: Default::default(),
+        weight: 1,
     }];
 
     let runtime_msg = {
