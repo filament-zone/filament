@@ -18,7 +18,7 @@ install-dev-tools: install-risc0-toolchain
 	rustup update nightly
 	cargo install cargo-llvm-cov
 	cargo install cargo-hack
-	cargo install --locked cargo-udeps
+	cargo install --locked cargo-udeps@0.1.50
 	cargo install cargo-deny
 	cargo install flaky-finder
 	cargo install cargo-nextest --locked
