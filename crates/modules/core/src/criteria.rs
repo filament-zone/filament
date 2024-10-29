@@ -91,7 +91,6 @@ pub enum CriterionType {
 pub struct Criterion {
     pub name: String,
     pub category: CriterionCategory,
-    pub dataset_id: DatasetId,
     pub parameters: HashMap<Field, Predicate>,
     pub weight: u64,
 }

@@ -3,7 +3,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use anyhow::anyhow;
 use filament_hub_core::{
     campaign::{Campaign, Phase},
-    criteria::{Criteria, CriteriaProposal, Criterion},
+    criteria::{Criteria, CriteriaProposal, Criterion, CriterionCategory},
     crypto::Ed25519Signature,
     segment::{GithubSegment, SegmentData, SegmentProof},
     CallMessage,
@@ -676,8 +676,10 @@ fn generate_test_campaign(campaigner: <S as Spec>::Address) -> Campaign<S> {
 
 fn generate_test_criteria() -> Criteria {
     vec![Criterion {
-        dataset_id: "osmosis".to_string(),
+        name: "Test Criterion".to_string(),
+        category: CriterionCategory::Balance,
         parameters: Default::default(),
+        weight: 1,
     }]
 }
 
