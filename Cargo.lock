@@ -2159,6 +2159,7 @@ dependencies = [
  "sov-bank",
  "sov-modules-api",
  "sov-modules-stf-blueprint",
+ "sov-rest-utils",
  "sov-state",
  "sov-test-utils",
  "tempfile",

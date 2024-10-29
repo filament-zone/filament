@@ -62,6 +62,7 @@ sov-modules-rollup-blueprint  = { git = "ssh://git@github.com/filament-zone/sove
 sov-modules-stf-blueprint     = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
 sov-nonces                    = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
 sov-prover-incentives         = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
+sov-rest-utils                = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
 sov-risc0-adapter             = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
 sov-rollup-interface          = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
 sov-sequencer                 = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }

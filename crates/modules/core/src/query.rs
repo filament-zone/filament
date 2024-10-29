@@ -17,6 +17,7 @@ use sov_modules_api::{
     StateAccessor,
     StateReader,
 };
+use sov_rest_utils::preconfigured_router_layers;
 use sov_state::User;
 
 use crate::{criteria::CriteriaProposal, Campaign, Core, Indexer, Power, Relayer, Segment};
@@ -235,17 +236,19 @@ impl<S: Spec> HasCustomRestApi for Core<S> {
     type Spec = S;
 
     fn custom_rest_api(&self, state: ApiState<Self, Self::Spec>) -> Router<()> {
-        Router::new()
-            .route("/campaigns/:campaignId", get(Self::route_get_campaign))
-            .route(
-                "/campaigns/by_addr/:addr}",
-                get(Self::route_get_campaigns_by_addr),
-            )
-            .route(
-                "/campaigns/by_eth_addr/:eth_addr}",
-                get(Self::route_get_campaigns_by_eth_addr),
-            )
-            .with_state(state)
+        preconfigured_router_layers(
+            Router::new()
+                .route("/campaigns/:campaignId", get(Self::route_get_campaign))
+                .route(
+                    "/campaigns/by_addr/:addr}",
+                    get(Self::route_get_campaigns_by_addr),
+                )
+                .route(
+                    "/campaigns/by_eth_addr/:eth_addr}",
+                    get(Self::route_get_campaigns_by_eth_addr),
+                )
+                .with_state(state),
+        )
     }
 
     fn custom_openapi_spec(&self) -> Option<OpenApi> {
