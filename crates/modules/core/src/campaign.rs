@@ -1,4 +1,5 @@
-use sov_modules_api::Spec;
+use sov_mock_zkvm::MockZkVerifier;
+use sov_modules_api::{default_spec::DefaultSpec, execution_mode::Zk, Spec};
 
 use crate::{
     criteria::Criteria,
@@ -23,9 +24,13 @@ pub const MAX_EVICTIONS: u64 = 3;
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
+    ts_rs::TS,
 )]
 #[serde(bound = "S::Address: serde::Serialize + serde::de::DeserializeOwned")]
+#[ts(export, concrete(S = DefaultSpec<MockZkVerifier, MockZkVerifier, Zk>))]
+#[ts(export_to = "../../../../bindings/Campaign.ts")]
 pub struct Campaign<S: Spec> {
+    #[ts(type = "string")]
     pub campaigner: S::Address,
     pub phase: Phase,
 
@@ -34,10 +39,13 @@ pub struct Campaign<S: Spec> {
 
     pub criteria: Criteria,
 
+    #[ts(type = "Array<string>")]
     pub evictions: Vec<Eviction<S>>,
     // TODO(xla): Rework into commitments in follow-up.
+    #[ts(type = "Array<string>")]
     pub delegates: Vec<Delegate<S>>,
 
+    #[ts(type = "string | null")]
     pub indexer: Option<S::Address>,
 }
 
@@ -56,7 +64,9 @@ pub struct Campaign<S: Spec> {
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
+    ts_rs::TS,
 )]
+#[ts(export_to = "../../../../bindings/Phase.ts")]
 pub enum Phase {
     Init,
     Criteria,

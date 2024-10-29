@@ -104,6 +104,7 @@ tracing                   = { version = "0.1.40",   default-features = false }
 tracing-appender          = { version = "0.2",      default-features = false }
 tracing-panic             = { version = "0.1.2",    default-features = false }
 tracing-subscriber        = { version = "0.3.17",   default-features = false }
+ts-rs                     = { version = "10",       default-features = false }
 wasm-bindgen              = { version = "0.2.84",   default-features = false }
 wasm-bindgen-test         = { version = "0.3.34",   default-features = false }
 

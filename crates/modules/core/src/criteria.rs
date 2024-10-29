@@ -21,7 +21,9 @@ type Predicate = String;
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
+    ts_rs::TS,
 )]
+#[ts(export_to = "../../../../bindings/CriterionContract.ts")]
 pub enum Contract {
     Ethereum { address: String },
 }
@@ -41,7 +43,9 @@ pub enum Contract {
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
+    ts_rs::TS,
 )]
+#[ts(export_to = "../../../../bindings/CriterionCategory.ts")]
 pub enum CriterionCategory {
     Balance,
     Defi,
@@ -65,7 +69,9 @@ pub enum CriterionCategory {
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
+    ts_rs::TS,
 )]
+#[ts(export_to = "../../../../bindings/CriterionType.ts")]
 pub enum CriterionType {
     LiquidityProvider { contract: Contract },
     TvlByContract { contract: Contract },
@@ -87,7 +93,9 @@ pub enum CriterionType {
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
+    ts_rs::TS,
 )]
+#[ts(export_to = "../../../../bindings/Criterion.ts")]
 pub struct Criterion {
     pub name: String,
     pub category: CriterionCategory,
