@@ -2,9 +2,13 @@
 src = "src"
 out = "out"
 libs = ["lib"]
+fs_permissions = [{ access = "read", path = "./test/deployed"}]
 
 remappings = [
 	"@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+	"@univ2-periphery/contracts=lib/v2-periphery/contracts",
+	"@univ2-core/contracts=lib/v2-core/contracts",
+	"@uniswap/v2-core/contracts=lib/v2-core/contracts",
 ]
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
