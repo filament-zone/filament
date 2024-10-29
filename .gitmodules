@@ -6,3 +6,9 @@
 	path = control/lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
 	branch = release-v5.0
+[submodule "control/lib/v2-core"]
+	path = control/lib/v2-core
+	url = https://github.com/uniswap/v2-core
+[submodule "control/lib/v2-periphery"]
+	path = control/lib/v2-periphery
+	url = https://github.com/uniswap/v2-periphery
