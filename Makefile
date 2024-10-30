@@ -66,7 +66,7 @@ find-flaky-tests:  ## Runs tests over and over to find if there's flaky tests
 	flaky-finder -j16 -r320 --continue "cargo test -- --nocapture"
 
 build-wasm-dev:
-	wasm-pack build --dev --no-opt web crates/wasm
+	wasm-pack build --dev --no-opt crates/wasm
 
 build-wasm-release:
 	wasm-pack build --release crates/wasm
