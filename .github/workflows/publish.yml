@@ -1,0 +1,118 @@
+name: Publish Hub npm package
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      - .github/workflows/publish.yml
+      - Cargo.lock
+      - Cargo.toml
+      - config/**
+      - crates/**
+      - .rustfmt.toml
+      - rust-toolchain
+      - test-data/**
+  push:
+    branches:
+      - main
+    tags: ["*"]
+    paths:
+      - .github/workflows/publish.yml
+      - Cargo.lock
+      - Cargo.toml
+      - config/**
+      - crates/**
+      - .rustfmt.toml
+      - rust-toolchain
+      - test-data/**
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_INCREMENTAL: 0
+  CARGO_NET_GIT_FETCH_WITH_CLI: true
+  CARGO_NET_RETRY: 10
+  CARGO_PROFILE_DEV_DEBUG: 1
+  CARGO_PROFILE_RELEASE_DEBUG: 1
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: short
+  RUSTUP_MAX_RETRIES: 10
+  SKIP_GUEST_BUILD: 1
+
+permissions:
+  contents: read
+  packages: write
+  pull-requests: read
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04-16core]
+        toolchain: ["1.79"]
+
+    name: Build and publish Hub npm package
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Startup SSH agent for private repo access
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+            ssh-private-key: |
+              ${{ secrets.SSH_DEPLOY_KEY }}
+              ${{ secrets.SSH_FORMAT_DEPLOY_KEY }}
+
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          override: true
+          components: rustfmt, rust-src, clippy
+
+      - name: Install mold linker
+        uses: rui314/setup-mold@v1
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
+
+      - name: Install nextest
+        uses: taiki-e/install-action@nextest
+
+      - name: Cache dependencies & tools
+        uses: Swatinem/rust-cache@v2
+        timeout-minutes: 1
+        continue-on-error: true
+        with:
+          key: ${{ matrix.os }}-${{ matrix.toolchain }}
+
+      - name: Build WASM release package
+        run: make build-wasm-release
+
+      - name: Create typescript bindings
+        run: cargo nextest run --lib
+
+      - name: Run Distribution Preparation Script
+        run: ./scripts/pkg-prepare-dist.sh
+
+      - name: Configure npm for GitHub Packages
+        working-directory: dist
+        run: |
+          echo "@filament-zone:registry=https://npm.pkg.github.com" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
+
+      - name: Run Dynamic TypeScript Export Script
+        run: ./scripts/pkg-generate-index.sh
+
+      - name: Run Package.json Update Script
+        run: ./scripts/pkg-update-package-json.sh
+
+      - name: Publish Combined Package to GitHub npm registry
+        working-directory: dist
+        run: npm publish --access public
