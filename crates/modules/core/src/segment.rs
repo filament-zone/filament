@@ -16,7 +16,10 @@ use crate::crypto::Ed25519Signature;
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
+    ts_rs::TS,
 )]
+#[serde(rename_all = "snake_case")]
+#[ts(export_to = "../../../../bindings/Segment.ts")]
 pub struct Segment {
     pub data: SegmentData,
     pub proof: SegmentProof,
@@ -37,9 +40,12 @@ pub struct Segment {
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
+    ts_rs::TS,
 )]
+#[serde(rename_all = "snake_case")]
+#[ts(export_to = "../../../../bindings/SegmentData.ts")]
 pub enum SegmentData {
-    GithubSegment(GithubSegment),
+    Plain { allocations: Vec<(String, u64)> },
 }
 
 type GithubId = u64;
@@ -77,7 +83,10 @@ pub struct GithubSegment {
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
+    ts_rs::TS,
 )]
+#[serde(rename_all = "snake_case")]
+#[ts(export_to = "../../../../bindings/SegmentProof.ts")]
 pub enum SegmentProof {
     Ed25519Signature(Ed25519Signature),
 }

@@ -1,5 +1,12 @@
 use anyhow::{anyhow, bail, Result};
-use sov_modules_api::{EventEmitter as _, Spec, TxState};
+use sov_mock_zkvm::MockZkVerifier;
+use sov_modules_api::{
+    default_spec::DefaultSpec,
+    execution_mode::Zk,
+    EventEmitter as _,
+    Spec,
+    TxState,
+};
 
 use crate::{
     campaign::{Campaign, Phase},
@@ -27,8 +34,11 @@ use crate::{
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
+    ts_rs::TS,
 )]
 #[serde(rename_all = "snake_case")]
+#[ts(export, concrete(S = DefaultSpec<MockZkVerifier, MockZkVerifier, Zk>))]
+#[ts(export_to = "../../../../bindings/CallMessage.ts")]
 pub enum CallMessage<S: Spec> {
     // campaign
     Init {
@@ -37,6 +47,7 @@ pub enum CallMessage<S: Spec> {
 
         criteria: Criteria,
 
+        #[ts(type = "Array<string>")]
         evictions: Vec<S::Address>,
     },
     ProposeCriteria {
@@ -59,15 +70,32 @@ pub enum CallMessage<S: Spec> {
     },
 
     // Indexer
-    RegisterIndexer(S::Address, String),
-    UnregisterIndexer(S::Address),
+    RegisterIndexer {
+        #[ts(type = "string")]
+        address: S::Address,
+        alias: String,
+    },
+    UnregisterIndexer {
+        #[ts(type = "string")]
+        address: S::Address,
+    },
 
     // Relayer
-    RegisterRelayer(S::Address),
-    UnregisterRelayer(S::Address),
+    RegisterRelayer {
+        #[ts(type = "string")]
+        address: S::Address,
+    },
+    UnregisterRelayer {
+        #[ts(type = "string")]
+        address: S::Address,
+    },
 
     // Voting
-    UpdateVotingPower(S::Address, Power),
+    UpdateVotingPower {
+        #[ts(type = "string")]
+        address: S::Address,
+        power: Power,
+    },
 }
 
 impl<S: Spec> Core<S> {

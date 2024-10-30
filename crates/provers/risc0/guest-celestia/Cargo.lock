@@ -3011,7 +3011,7 @@ dependencies = [
 [[package]]
 name = "sov-wallet-format"
 version = "0.1.0"
-source = "git+ssh://git@github.com/Sovereign-Labs/sov-wallet-format.git?rev=0860de2877084066477d0157a0f5a311bd1be919#0860de2877084066477d0157a0f5a311bd1be919"
+source = "git+ssh://git@github.com/filament-zone/sov-wallet-format.git?rev=44e23f9#44e23f901b9ddff026563fa74558a54d306ba7f2"
 dependencies = [
  "bech32",
  "hex",
@@ -3024,7 +3024,7 @@ dependencies = [
 [[package]]
 name = "sov-wallet-format-macro-helpers"
 version = "0.1.0"
-source = "git+ssh://git@github.com/Sovereign-Labs/sov-wallet-format.git?rev=0860de2877084066477d0157a0f5a311bd1be919#0860de2877084066477d0157a0f5a311bd1be919"
+source = "git+ssh://git@github.com/filament-zone/sov-wallet-format.git?rev=44e23f9#44e23f901b9ddff026563fa74558a54d306ba7f2"
 dependencies = [
  "convert_case 0.6.0",
  "darling 0.20.10",
@@ -3038,7 +3038,7 @@ dependencies = [
 [[package]]
 name = "sov-wallet-format-macros"
 version = "0.1.0"
-source = "git+ssh://git@github.com/Sovereign-Labs/sov-wallet-format.git?rev=0860de2877084066477d0157a0f5a311bd1be919#0860de2877084066477d0157a0f5a311bd1be919"
+source = "git+ssh://git@github.com/filament-zone/sov-wallet-format.git?rev=44e23f9#44e23f901b9ddff026563fa74558a54d306ba7f2"
 dependencies = [
  "sov-wallet-format-macro-helpers",
 ]

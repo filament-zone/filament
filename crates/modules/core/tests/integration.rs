@@ -5,7 +5,7 @@ use filament_hub_core::{
     campaign::{Campaign, Phase},
     criteria::{Criteria, CriteriaProposal, Criterion, CriterionCategory},
     crypto::Ed25519Signature,
-    segment::{GithubSegment, SegmentData, SegmentProof},
+    segment::{SegmentData, SegmentProof},
     CallMessage,
     Core,
     CoreConfig,
@@ -350,10 +350,10 @@ fn indexer_registration() {
         let admin = admin.clone();
         let indexer = indexer.clone();
         runner.execute_transaction(TransactionTestCase {
-            input: admin.create_plain_message::<Core<S>>(CallMessage::RegisterIndexer(
-                indexer.address(),
-                "numia".to_string(),
-            )),
+            input: admin.create_plain_message::<Core<S>>(CallMessage::RegisterIndexer {
+                address: indexer.address(),
+                alias: "numia".to_string(),
+            }),
             assert: Box::new(move |result, state| {
                 assert!(result.tx_receipt.is_successful());
                 assert_eq!(result.events.len(), 1);
@@ -380,8 +380,9 @@ fn indexer_registration() {
     }
 
     runner.execute_transaction(TransactionTestCase {
-        input: admin
-            .create_plain_message::<Core<S>>(CallMessage::UnregisterIndexer(indexer.address())),
+        input: admin.create_plain_message::<Core<S>>(CallMessage::UnregisterIndexer {
+            address: indexer.address(),
+        }),
         assert: Box::new(move |result, state| {
             assert!(result.tx_receipt.is_successful());
             assert_eq!(result.events.len(), 1);
@@ -411,7 +412,8 @@ fn register_relayer() {
     // Confirm that only the module admin can unregister a relayer..
     {
         runner.execute_transaction(TransactionTestCase {
-            input: staker.create_plain_message::<Core<S>>(CallMessage::RegisterRelayer(relayer)),
+            input: staker
+                .create_plain_message::<Core<S>>(CallMessage::RegisterRelayer { address: relayer }),
             assert: Box::new(move |result, _state| {
                 assert_eq!(
                     result.tx_receipt,
@@ -428,7 +430,8 @@ fn register_relayer() {
     }
 
     runner.execute_transaction(TransactionTestCase {
-        input: admin.create_plain_message::<Core<S>>(CallMessage::RegisterRelayer(relayer)),
+        input: admin
+            .create_plain_message::<Core<S>>(CallMessage::RegisterRelayer { address: relayer }),
         assert: Box::new(move |result, state| {
             assert!(result.tx_receipt.is_successful());
             assert_eq!(result.events.len(), 1);
@@ -465,8 +468,9 @@ fn unregister_relayer() {
     // Confirm that only the module admin can unregister a relayer.
     {
         runner.execute_transaction(TransactionTestCase {
-            input: staker
-                .create_plain_message::<Core<S>>(CallMessage::UnregisterIndexer(relayer.address())),
+            input: staker.create_plain_message::<Core<S>>(CallMessage::UnregisterIndexer {
+                address: relayer.address(),
+            }),
             assert: Box::new(move |result, _state| {
                 assert_eq!(
                     result.tx_receipt,
@@ -483,8 +487,9 @@ fn unregister_relayer() {
     }
 
     runner.execute_transaction(TransactionTestCase {
-        input: admin
-            .create_plain_message::<Core<S>>(CallMessage::UnregisterRelayer(relayer.address())),
+        input: admin.create_plain_message::<Core<S>>(CallMessage::UnregisterRelayer {
+            address: relayer.address(),
+        }),
         assert: Box::new(move |result, state| {
             assert!(result.tx_receipt.is_successful());
             assert_eq!(result.events.len(), 1);
@@ -521,10 +526,10 @@ fn update_voting_power() {
     // Confirm that only a registered relayer can update voting powers.
     {
         runner.execute_transaction(TransactionTestCase {
-            input: staker.create_plain_message::<Core<S>>(CallMessage::UpdateVotingPower(
-                delegates[0].address(),
-                1000,
-            )),
+            input: staker.create_plain_message::<Core<S>>(CallMessage::UpdateVotingPower {
+                address: delegates[0].address(),
+                power: 1000,
+            }),
             assert: Box::new(move |result, _state| {
                 assert_eq!(
                     result.tx_receipt,
@@ -545,8 +550,10 @@ fn update_voting_power() {
         let relayer = relayer.clone();
 
         runner.execute_transaction(TransactionTestCase {
-            input: relayer
-                .create_plain_message::<Core<S>>(CallMessage::UpdateVotingPower(delegate, 1000)),
+            input: relayer.create_plain_message::<Core<S>>(CallMessage::UpdateVotingPower {
+                address: delegate,
+                power: 1000,
+            }),
             assert: Box::new(move |result, state| {
                 assert!(result.tx_receipt.is_successful());
                 assert_eq!(result.events.len(), 1);
@@ -575,8 +582,10 @@ fn update_voting_power() {
         let relayer = relayer.clone();
 
         runner.execute_transaction(TransactionTestCase {
-            input: relayer
-                .create_plain_message::<Core<S>>(CallMessage::UpdateVotingPower(delegate, 10000)),
+            input: relayer.create_plain_message::<Core<S>>(CallMessage::UpdateVotingPower {
+                address: delegate,
+                power: 10000,
+            }),
             assert: Box::new(move |result, _| {
                 assert!(result.tx_receipt.is_successful());
             }),
@@ -588,8 +597,10 @@ fn update_voting_power() {
         let delegate = delegates[2].address();
 
         runner.execute_transaction(TransactionTestCase {
-            input: relayer
-                .create_plain_message::<Core<S>>(CallMessage::UpdateVotingPower(delegate, 8000)),
+            input: relayer.create_plain_message::<Core<S>>(CallMessage::UpdateVotingPower {
+                address: delegate,
+                power: 8000,
+            }),
             assert: Box::new(move |result, state| {
                 assert!(result.tx_receipt.is_successful());
 
@@ -685,7 +696,9 @@ fn generate_test_criteria() -> Criteria {
 
 fn generate_test_segment() -> Segment {
     Segment {
-        data: SegmentData::GithubSegment(GithubSegment { entries: vec![] }),
+        data: SegmentData::Plain {
+            allocations: vec![],
+        },
         proof: SegmentProof::Ed25519Signature(Ed25519Signature { pk: [0; 32] }),
         retrieved_at: SystemTime::now()
             .duration_since(UNIX_EPOCH)

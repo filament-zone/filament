@@ -174,28 +174,28 @@ impl<S: Spec> Module for Core<S> {
             },
 
             // Indexer
-            call::CallMessage::RegisterIndexer(addr, alias) => {
-                self.register_indexer(addr, alias, context.sender().clone(), state)?;
+            call::CallMessage::RegisterIndexer { address, alias } => {
+                self.register_indexer(address, alias, context.sender().clone(), state)?;
                 Ok(CallResponse::default())
             },
-            call::CallMessage::UnregisterIndexer(addr) => {
-                self.unregister_indexer(addr, context.sender().clone(), state)?;
+            call::CallMessage::UnregisterIndexer { address } => {
+                self.unregister_indexer(address, context.sender().clone(), state)?;
                 Ok(CallResponse::default())
             },
 
             // Relayer
-            call::CallMessage::RegisterRelayer(addr) => {
-                self.register_relayer(addr, context.sender().clone(), state)?;
+            call::CallMessage::RegisterRelayer { address } => {
+                self.register_relayer(address, context.sender().clone(), state)?;
                 Ok(CallResponse::default())
             },
-            call::CallMessage::UnregisterRelayer(addr) => {
-                self.unregister_relayer(addr, context.sender().clone(), state)?;
+            call::CallMessage::UnregisterRelayer { address } => {
+                self.unregister_relayer(address, context.sender().clone(), state)?;
                 Ok(CallResponse::default())
             },
 
             // Voting
-            call::CallMessage::UpdateVotingPower(addr, power) => {
-                self.update_voting_power(addr, power, context.sender().clone(), state)?;
+            call::CallMessage::UpdateVotingPower { address, power } => {
+                self.update_voting_power(address, power, context.sender().clone(), state)?;
                 Ok(CallResponse::default())
             },
         }
