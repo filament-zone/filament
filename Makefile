@@ -18,7 +18,7 @@ install-dev-tools: install-risc0-toolchain
 	rustup update nightly
 	cargo install cargo-llvm-cov
 	cargo install cargo-hack
-	cargo install --locked cargo-udeps
+	cargo install --locked cargo-udeps@0.1.50
 	cargo install cargo-deny
 	cargo install flaky-finder
 	cargo install cargo-nextest --locked
@@ -66,10 +66,10 @@ find-flaky-tests:  ## Runs tests over and over to find if there's flaky tests
 	flaky-finder -j16 -r320 --continue "cargo test -- --nocapture"
 
 build-wasm-dev:
-	wasm-pack build --dev --no-opt --target web crates/wasm
+	wasm-pack build --dev --no-opt crates/wasm
 
 build-wasm-release:
-	wasm-pack build --release --target web crates/wasm
+	wasm-pack build --release crates/wasm
 
 pack-wasm:
 	wasm-pack pack crates/wasm
@@ -79,3 +79,12 @@ test-wasm-chrome:
 
 test-wasm-firefox:
 	wasm-pack test --firefox --headless crates/wasm
+
+run-local-hub:
+	SKIP_GUEST_BUILD=1 cargo run -p filament-hub-rollup
+
+generate-core-schema:
+	cargo run -p filament-hub-cli --bin generate-schema
+
+convert-eth-to-hub-address:
+	cargo run -p filament-hub-cli --bin hub-address

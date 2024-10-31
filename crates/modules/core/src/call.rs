@@ -1,11 +1,17 @@
 use anyhow::{anyhow, bail, Result};
-use sov_modules_api::{EventEmitter as _, Spec, TxState};
+use sov_mock_zkvm::MockZkVerifier;
+use sov_modules_api::{
+    default_spec::DefaultSpec,
+    execution_mode::Zk,
+    EventEmitter as _,
+    Spec,
+    TxState,
+};
 
 use crate::{
-    campaign::{Campaign, Payment, Phase},
+    campaign::{Campaign, Phase},
     criteria::{Criteria, CriteriaProposal},
     delegate::Eviction,
-    playbook::Budget,
     segment::Segment,
     Core,
     Event,
@@ -28,15 +34,21 @@ use crate::{
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
+    ts_rs::TS,
 )]
 #[serde(rename_all = "snake_case")]
+#[ts(export, concrete(S = DefaultSpec<MockZkVerifier, MockZkVerifier, Zk>))]
+#[ts(export_to = "../../../../bindings/CallMessage.ts")]
 pub enum CallMessage<S: Spec> {
     // campaign
     Init {
+        title: String,
+        description: String,
+
         criteria: Criteria,
-        budget: Budget,
-        payment: Option<Payment>,
-        evictions: Vec<Eviction<S>>,
+
+        #[ts(type = "Array<string>")]
+        evictions: Vec<S::Address>,
     },
     ProposeCriteria {
         campaign_id: u64,
@@ -58,23 +70,40 @@ pub enum CallMessage<S: Spec> {
     },
 
     // Indexer
-    RegisterIndexer(S::Address, String),
-    UnregisterIndexer(S::Address),
+    RegisterIndexer {
+        #[ts(type = "string")]
+        address: S::Address,
+        alias: String,
+    },
+    UnregisterIndexer {
+        #[ts(type = "string")]
+        address: S::Address,
+    },
 
     // Relayer
-    RegisterRelayer(S::Address),
-    UnregisterRelayer(S::Address),
+    RegisterRelayer {
+        #[ts(type = "string")]
+        address: S::Address,
+    },
+    UnregisterRelayer {
+        #[ts(type = "string")]
+        address: S::Address,
+    },
 
     // Voting
-    UpdateVotingPower(S::Address, Power),
+    UpdateVotingPower {
+        #[ts(type = "string")]
+        address: S::Address,
+        power: Power,
+    },
 }
 
 impl<S: Spec> Core<S> {
     pub(crate) fn init_campaign(
         &self,
+        title: String,
+        description: String,
         criteria: Criteria,
-        budget: Budget,
-        payment: Option<Payment>,
         evictions: Vec<Eviction<S>>,
         sender: &S::Address,
         state: &mut impl TxState<S>,
@@ -112,10 +141,10 @@ impl<S: Spec> Core<S> {
         };
 
         // TODO(xla): Settle payment in case of evictions.
-        let mut payments = vec![];
-        if let Some(ref payment) = payment {
-            payments.push(payment.clone());
-        }
+        // let mut payments = vec![];
+        // if let Some(ref payment) = payment {
+        //     payments.push(payment.clone());
+        // }
 
         self.campaigns.set(
             &campaign_id,
@@ -123,11 +152,11 @@ impl<S: Spec> Core<S> {
                 campaigner: sender.clone(),
                 phase: Phase::Criteria,
 
-                criteria,
-                budget,
-                payments,
+                title,
+                description,
 
-                proposed_delegates,
+                criteria,
+
                 evictions: evictions.clone(),
                 delegates,
 
@@ -135,6 +164,13 @@ impl<S: Spec> Core<S> {
             },
             state,
         )?;
+        let mut ids = self
+            .campaigns_by_addr
+            .get(sender, state)?
+            .unwrap_or_default();
+        ids.push(campaign_id);
+        self.campaigns_by_addr.set(sender, &ids, state)?;
+
         self.next_campaign_id.set(&(campaign_id + 1), state)?;
 
         self.emit_event(
@@ -142,7 +178,6 @@ impl<S: Spec> Core<S> {
             Event::CampaignInitialized {
                 campaign_id,
                 campaigner: sender.clone(),
-                payment,
                 evictions,
             },
         );

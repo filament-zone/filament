@@ -7,12 +7,16 @@ use sov_modules_api::{
     schemars::schema_for,
 };
 
+type S = DefaultSpec<MockZkVerifier, MockZkVerifier, Native>;
+
 #[derive(Clone, Debug, Default, clap::ValueEnum)]
 enum Component {
     #[default]
     Gensis,
 
     CallMessage,
+
+    Campaign,
 }
 
 #[derive(clap::Parser)]
@@ -26,12 +30,9 @@ fn main() {
     let args = Args::parse();
 
     let schema = match args.component {
-        Component::Gensis => schema_for!(
-            filament_hub_core::CoreConfig<DefaultSpec<MockZkVerifier, MockZkVerifier, Native>>
-        ),
-        Component::CallMessage => schema_for!(
-            filament_hub_core::CallMessage<DefaultSpec<MockZkVerifier, MockZkVerifier, Native>>
-        ),
+        Component::Gensis => schema_for!(filament_hub_core::CoreConfig<S>),
+        Component::CallMessage => schema_for!(filament_hub_core::CallMessage<S>),
+        Component::Campaign => schema_for!(filament_hub_core::campaign::Campaign<S>),
     };
 
     println!("{}", serde_json::to_string_pretty(&schema).unwrap());

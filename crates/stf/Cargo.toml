@@ -11,6 +11,7 @@ publish       = { workspace = true }
 
 [dependencies]
 filament-hub-core = { workspace = true }
+filament-hub-eth  = { workspace = true }
 
 sov-accounts            = { workspace = true }
 sov-attester-incentives = { workspace = true }

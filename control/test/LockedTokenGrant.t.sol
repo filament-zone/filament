@@ -20,6 +20,8 @@ contract TimeLockedTokensTest is Test {
     MockERC20 private token;
     address private stakingContract;
 
+    address private clawManager;
+
     struct GrantDetails {
         uint256 grantAmount;
         uint256 startTime;
@@ -29,10 +31,18 @@ contract TimeLockedTokensTest is Test {
     address public adjustor;
 
     function setUp() public {
-        eep = new EarlyExitPenalty(address(this), 1000, 20000, 100);
+        address adjustor_ = address(this);
+        uint16 penalty = 1000; // 1000 bps or 10%
+        uint16 maxPenalty = 2000;
+        uint16 minPenalty = 100;
+        uint256 startTime = 1717556330;
+        uint256 endTime = startTime + 720 days;
+        eep = new EarlyExitPenalty(adjustor_, penalty, maxPenalty, minPenalty, startTime, endTime);
 
         // penaltyManager = makeAddr("penaltyManager");
         token = new MockERC20("Filamock Token", "FILA");
+
+        clawManager = makeAddr("clawManager");
 
         stakingContract = address(0);
     }
@@ -47,7 +57,7 @@ contract TimeLockedTokensTest is Test {
         address recipient = makeAddr("recipient");
 
         LockedTokenGrant ltg = new LockedTokenGrant(
-            address(token), address(stakingContract), address(eep), recipient, grantAmount, start_, end_
+            address(token), clawManager, address(stakingContract), address(eep), recipient, grantAmount, start_, end_
         );
 
         vm.warp(start_);
@@ -64,6 +74,7 @@ contract TimeLockedTokensTest is Test {
         GrantDetails memory grantDetails = createGrantDetails();
         LockedTokenGrant ltg = new LockedTokenGrant(
             address(token),
+            clawManager,
             address(stakingContract),
             address(eep),
             recipient,
@@ -86,12 +97,36 @@ contract TimeLockedTokensTest is Test {
         assertEq(token.balanceOf(address(recipient)), grantAmount);
     }
 
+    function test_Claw() public {
+        GrantDetails memory grantDetails = createGrantDetails();
+        address recipient = makeAddr("recipient");
+        LockedTokenGrant ltg = new LockedTokenGrant(
+            address(token),
+            clawManager,
+            address(stakingContract),
+            address(eep),
+            recipient,
+            grantDetails.grantAmount,
+            grantDetails.startTime,
+            grantDetails.endTime
+        );
+        token.mint(address(ltg), grantDetails.grantAmount);
+
+        assertEq(token.balanceOf(address(ltg)), grantDetails.grantAmount);
+
+        vm.prank(clawManager);
+        ltg.claw(makeAddr("clawReceiver"));
+
+        assertEq(token.balanceOf(makeAddr("clawReceiver")), grantDetails.grantAmount);
+    }
+
     function test_TokenRelease_Failure_InvalidRequester() public {
         address recipient = makeAddr("recipient");
 
         GrantDetails memory grantDetails = createGrantDetails();
         LockedTokenGrant ltg = new LockedTokenGrant(
             address(token),
+            clawManager,
             address(stakingContract),
             address(eep),
             recipient,
@@ -122,7 +157,7 @@ contract TimeLockedTokensTest is Test {
 
         GrantDetails memory grantDetails = createGrantDetails();
         LockedTokenGrant ltg = new LockedTokenGrant(
-            address(token), address(stakingContract), address(eep), recipient, grantAmount, start_, end_
+            address(token), clawManager, address(stakingContract), address(eep), recipient, grantAmount, start_, end_
         );
 
         vm.warp(start_ + half);
@@ -157,8 +192,9 @@ contract TimeLockedTokensTest is Test {
         uint256 grantAmount = grant_;
 
         GrantDetails memory grantDetails = createGrantDetails();
-        LockedTokenGrant ltg =
-            new LockedTokenGrant(address(token), penaltyRecipient, address(eep), recipient, grantAmount, start_, end_);
+        LockedTokenGrant ltg = new LockedTokenGrant(
+            address(token), clawManager, penaltyRecipient, address(eep), recipient, grantAmount, start_, end_
+        );
 
         token.mint(address(ltg), grantAmount);
         vm.warp(start_);
@@ -172,5 +208,27 @@ contract TimeLockedTokensTest is Test {
         assertEq(token.balanceOf(recipient), earlyTokens);
         assertEq(token.balanceOf(address(ltg)), 0);
         assertEq(token.balanceOf(penaltyRecipient), grantAmount - earlyTokens);
+    }
+
+    function testFuzz_ClawUnauthorized(address who_) public {
+        vm.assume(who_ != clawManager);
+
+        GrantDetails memory grantDetails = createGrantDetails();
+        address recipient = makeAddr("recipient");
+        LockedTokenGrant ltg = new LockedTokenGrant(
+            address(token),
+            clawManager,
+            address(stakingContract),
+            address(eep),
+            recipient,
+            grantDetails.grantAmount,
+            grantDetails.startTime,
+            grantDetails.endTime
+        );
+
+        vm.prank(who_);
+        vm.expectRevert(Unauthorized.selector);
+
+        ltg.claw(makeAddr("clawReceiver"));
     }
 }

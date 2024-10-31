@@ -1,0 +1,30 @@
+[package]
+name          = "filament-hub-eth"
+version       = { workspace = true }
+authors       = { workspace = true }
+edition       = { workspace = true }
+license       = { workspace = true }
+homepage      = { workspace = true }
+repository    = { workspace = true }
+rust-version  = { workspace = true }
+publish       = { workspace = true }
+
+[lints]
+workspace = true
+
+[dependencies]
+sov-modules-api       = { workspace = true }
+sov-rollup-interface  = { workspace = true }
+
+anyhow      = { workspace = true }
+bech32      = { workspace = true }
+borsh       = { workspace = true, features = ["rc", "bytes"] }
+hex         = { workspace = true }
+k256        = { workspace = true, features = ["ecdsa"] }
+serde       = { workspace = true, features = ["derive", "rc"] }
+sha3        = { workspace = true }
+
+[dev-dependencies]
+sov-mock-zkvm = { workspace = true }
+
+serde_json = { workspace = true }

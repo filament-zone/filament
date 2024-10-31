@@ -1,26 +1,28 @@
 use std::{env, net::SocketAddr, str::FromStr as _};
 
 use anyhow::Context as _;
+use filament_hub_core::{
+    campaign::{Campaign, Phase},
+    criteria::{Criterion, CriterionCategory},
+    CoreRpcClient,
+};
+use filament_hub_eth::Tx;
 use filament_hub_stf::{genesis_config::GenesisPaths, RuntimeCall};
 use futures::StreamExt;
-use sov_bank::BankRpcClient;
 use sov_kernels::basic::BasicKernelGenesisPaths;
 use sov_mock_da::{BlockProducingConfig, MockAddress, MockDaConfig, MockDaSpec};
 use sov_modules_api::{
     execution_mode::Native,
     macros::config_value,
-    transaction::{PriorityFeeBips, Transaction, UnsignedTransaction},
+    transaction::{PriorityFeeBips, TxDetails, UnsignedTransaction},
     Spec,
 };
 use sov_stf_runner::processes::RollupProverConfig;
 use sov_test_utils::ApiClient;
 use tracing_subscriber::{fmt, layer::SubscriberExt as _, util::SubscriberInitExt as _, EnvFilter};
 
-use super::test_helpers::{read_private_keys, start_rollup};
-
-const TOKEN_SALT: u64 = 0;
-const TOKEN_NAME: &str = "sov-token";
-const MAX_TX_FEE: u64 = 100_000_000;
+use super::test_helpers::start_rollup;
+use crate::test_helpers::read_eth_key;
 
 type TestSpec = sov_modules_api::default_spec::DefaultSpec<
     sov_mock_zkvm::MockZkVerifier,
@@ -29,7 +31,7 @@ type TestSpec = sov_modules_api::default_spec::DefaultSpec<
 >;
 
 #[tokio::test(flavor = "multi_thread")]
-async fn bank_tx_tests() -> Result<(), anyhow::Error> {
+async fn authenticate_tx_tests() -> Result<(), anyhow::Error> {
     tracing_subscriber::registry()
         .with(fmt::layer())
         .with(
@@ -68,45 +70,63 @@ async fn bank_tx_tests() -> Result<(), anyhow::Error> {
     // If the rollup throws an error, return it and stop trying to send the transaction
     tokio::select! {
         err = rollup_task => err?,
-        res = send_test_create_token_tx(rpc_port, rest_port) => res?,
+        res = send_eth_tx(rpc_port, rest_port) => res?,
     }
     Ok(())
 }
 
-async fn send_test_create_token_tx(
+async fn send_eth_tx(
     rpc_address: SocketAddr,
     rest_address: SocketAddr,
 ) -> Result<(), anyhow::Error> {
-    let key_and_address = read_private_keys::<TestSpec>("tx_signer_private_key.json");
-    let key = key_and_address.private_key;
-    let user_address: <TestSpec as Spec>::Address = key_and_address.address;
+    let (signing_key, address) = read_eth_key::<TestSpec>("signer.json")?;
+    let user_address: <TestSpec as Spec>::Address = address;
 
-    let token_id = sov_bank::get_token_id::<TestSpec>(TOKEN_NAME, &user_address, TOKEN_SALT);
-    let initial_balance = 1000;
-
-    let msg =
-        RuntimeCall::<TestSpec, MockDaSpec>::Bank(sov_bank::CallMessage::<TestSpec>::CreateToken {
-            salt: TOKEN_SALT,
-            token_name: TOKEN_NAME.to_string(),
-            initial_balance,
-            mint_to_address: user_address,
-            authorized_minters: vec![],
-        });
     let chain_id = config_value!("CHAIN_ID");
     let nonce = 0;
-    let max_priority_fee = PriorityFeeBips::ZERO;
-    let gas_limit = None;
-    let tx = Transaction::<TestSpec>::new_signed_tx(
-        &key,
-        UnsignedTransaction::new(
-            borsh::to_vec(&msg).unwrap(),
+    let max_priority_fee_bips = PriorityFeeBips::ZERO;
+    let criteria = vec![Criterion {
+        name: "Test Criterion".to_string(),
+        category: CriterionCategory::Balance,
+        parameters: Default::default(),
+        weight: 1,
+    }];
+
+    let runtime_msg = {
+        let msg = RuntimeCall::<TestSpec, MockDaSpec>::Core(filament_hub_core::CallMessage::<
+            TestSpec,
+        >::Init {
+            title: "".to_string(),
+            description: "".to_string(),
+            criteria: criteria.clone(),
+            evictions: vec![],
+        });
+        borsh::to_vec(&msg)?
+    };
+
+    let unsigned_tx_bytes = borsh::to_vec(&UnsignedTransaction::<TestSpec>::new(
+        runtime_msg.clone(),
+        chain_id,
+        max_priority_fee_bips,
+        100,
+        nonce,
+        None,
+    ))?;
+
+    let signature = filament_hub_eth::sign(&signing_key, unsigned_tx_bytes)?;
+
+    let tx: Tx<TestSpec> = Tx {
+        signature: signature.to_vec(),
+        verifying_key: signing_key.verifying_key().to_sec1_bytes().into_vec(),
+        runtime_msg,
+        nonce,
+        details: TxDetails {
+            max_priority_fee_bips,
+            max_fee: 100,
+            gas_limit: None,
             chain_id,
-            max_priority_fee,
-            MAX_TX_FEE,
-            nonce,
-            gas_limit,
-        ),
-    );
+        },
+    };
 
     let rpc_port = rpc_address.port();
     let rest_port = rest_address.port();
@@ -130,12 +150,22 @@ async fn send_test_create_token_tx(
         .map(|slot| slot.number)
         .unwrap_or_default();
 
-    let balance_response =
-        BankRpcClient::<TestSpec>::balance_of(&client.rpc, None, user_address, token_id).await?;
+    let campaign_response = CoreRpcClient::<TestSpec>::rpc_get_campaign(&client.rpc, 0).await?;
     assert_eq!(
-        initial_balance,
-        balance_response.amount.unwrap_or_default(),
-        "deployer initial balance is not correct"
+        campaign_response,
+        Some(Campaign {
+            campaigner: user_address,
+            phase: Phase::Criteria,
+            title: "".to_string(),
+            description: "".to_string(),
+            criteria,
+            evictions: vec![],
+            delegates: vec![],
+
+            indexer: None,
+        }),
+        "initialized campaign is incorrect"
     );
+
     Ok(())
 }

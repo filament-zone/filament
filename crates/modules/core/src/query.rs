@@ -2,7 +2,7 @@ use jsonrpsee::core::RpcResult;
 use sov_modules_api::{
     macros::rpc_gen,
     prelude::{
-        axum::{routing::get, Router},
+        axum::{http::Method, routing::get, Router},
         serde_yaml,
         utoipa::openapi::OpenApi,
         UnwrapInfallible as _,
@@ -18,6 +18,7 @@ use sov_modules_api::{
     StateReader,
 };
 use sov_state::User;
+use tower_http::cors::{Any, CorsLayer};
 
 use crate::{criteria::CriteriaProposal, Campaign, Core, Indexer, Power, Relayer, Segment};
 
@@ -29,6 +30,25 @@ impl<S: Spec> Core<S> {
         state: &mut Accessor,
     ) -> Result<Option<Campaign<S>>, <Accessor as StateReader<User>>::Error> {
         self.campaigns.get(&campaign_id, state)
+    }
+
+    pub fn get_campaigns_by_addr<Accessor: StateAccessor>(
+        &self,
+        addr: S::Address,
+        state: &mut Accessor,
+    ) -> Result<Vec<Campaign<S>>, <Accessor as StateReader<User>>::Error> {
+        let ids = self
+            .campaigns_by_addr
+            .get(&addr, state)?
+            .unwrap_or_default();
+        let mut campaigns = vec![];
+        for id in &ids {
+            if let Some(campaign) = self.campaigns.get(id, state)? {
+                campaigns.push(campaign);
+            }
+        }
+
+        Ok(campaigns)
     }
 
     pub fn get_criteria_proposal<Accessor: StateAccessor>(
@@ -188,14 +208,50 @@ impl<S: Spec> Core<S> {
             .ok_or_else(|| errors::not_found_404("Campaign", campaign_id))?;
         Ok(campaign.into())
     }
+
+    async fn route_get_campaigns_by_addr(
+        state: ApiState<Self, S>,
+        Path(addr): Path<S::Address>,
+    ) -> ApiResult<Vec<Campaign<S>>> {
+        let campaigns = state
+            .get_campaigns_by_addr(addr, &mut state.api_state_accessor())
+            .unwrap_infallible();
+        Ok(campaigns.into())
+    }
+
+    async fn route_get_campaigns_by_eth_addr(
+        state: ApiState<Self, S>,
+        Path(eth_addr): Path<String>,
+    ) -> ApiResult<Vec<Campaign<S>>> {
+        let addr = filament_hub_eth::addr_to_hub_address::<S>(&eth_addr)
+            .map_err(|e| errors::bad_request_400("malformed address", e))?;
+        Ok(state
+            .get_campaigns_by_addr(addr, &mut state.api_state_accessor())
+            .unwrap_infallible()
+            .into())
+    }
 }
 
 impl<S: Spec> HasCustomRestApi for Core<S> {
     type Spec = S;
 
     fn custom_rest_api(&self, state: ApiState<Self, Self::Spec>) -> Router<()> {
+        let cors = CorsLayer::new()
+            .allow_origin(Any)
+            .allow_methods(vec![Method::GET, Method::OPTIONS])
+            .allow_headers(Any);
+
         Router::new()
             .route("/campaigns/:campaignId", get(Self::route_get_campaign))
+            .route(
+                "/campaigns/by_addr/:addr}",
+                get(Self::route_get_campaigns_by_addr),
+            )
+            .route(
+                "/campaigns/by_eth_addr/:eth_addr}",
+                get(Self::route_get_campaigns_by_eth_addr),
+            )
+            .layer(cors)
             .with_state(state)
     }
 

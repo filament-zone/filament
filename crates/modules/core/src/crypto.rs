@@ -13,10 +13,13 @@
     borsh::BorshSerialize,
     serde::Deserialize,
     serde::Serialize,
+    ts_rs::TS,
 )]
+#[serde(rename_all = "snake_case")]
+#[ts(export_to = "../../../../bindings/Ed25519Signature.ts")]
 pub struct Ed25519Signature {
-    // FIXME(xla): Deriving JsonSchena breaks serde with, therefore we have to be explicitly assign
-    // both functins here.
+    // FIXME(xla): Deriving JsonSchena breaks serde_with, therefore we have to explicitly assign
+    // both functions here.
     //
     // https://github.com/GREsau/schemars/issues/89
     #[serde(deserialize_with = "serde_bytes::deserialize")]
