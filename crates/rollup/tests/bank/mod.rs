@@ -1,9 +1,9 @@
-use std::{env, net::SocketAddr, str::FromStr as _};
+use std::{env, str::FromStr as _};
 
 use anyhow::Context as _;
 use filament_hub_stf::{genesis_config::GenesisPaths, RuntimeCall};
 use futures::StreamExt;
-use sov_bank::BankRpcClient;
+use sov_cli::NodeClient;
 use sov_kernels::basic::BasicKernelGenesisPaths;
 use sov_mock_da::{BlockProducingConfig, MockAddress, MockDaConfig, MockDaSpec};
 use sov_modules_api::{
@@ -13,12 +13,10 @@ use sov_modules_api::{
     Spec,
 };
 use sov_stf_runner::processes::RollupProverConfig;
-use sov_test_utils::ApiClient;
 use tracing_subscriber::{fmt, layer::SubscriberExt as _, util::SubscriberInitExt as _, EnvFilter};
 
 use super::test_helpers::{read_private_keys, start_rollup};
 
-const TOKEN_SALT: u64 = 0;
 const TOKEN_NAME: &str = "sov-token";
 const MAX_TX_FEE: u64 = 100_000_000;
 
@@ -62,31 +60,28 @@ async fn bank_tx_tests() -> Result<(), anyhow::Error> {
         )
         .await;
     });
-    let rpc_port = rpc_port_rx.await.unwrap();
-    let rest_port = rest_port_rx.await.unwrap();
+    let _ = rpc_port_rx.await;
+    let rest_port = rest_port_rx.await?.port();
+    let client = NodeClient::new_at_localhost(rest_port).await?;
 
     // If the rollup throws an error, return it and stop trying to send the transaction
     tokio::select! {
         err = rollup_task => err?,
-        res = send_test_create_token_tx(rpc_port, rest_port) => res?,
+        res = send_test_create_token_tx(&client) => res?,
     }
     Ok(())
 }
 
-async fn send_test_create_token_tx(
-    rpc_address: SocketAddr,
-    rest_address: SocketAddr,
-) -> Result<(), anyhow::Error> {
+async fn send_test_create_token_tx(client: &NodeClient) -> Result<(), anyhow::Error> {
     let key_and_address = read_private_keys::<TestSpec>("tx_signer_private_key.json");
     let key = key_and_address.private_key;
     let user_address: <TestSpec as Spec>::Address = key_and_address.address;
 
-    let token_id = sov_bank::get_token_id::<TestSpec>(TOKEN_NAME, &user_address, TOKEN_SALT);
+    let token_id = sov_bank::get_token_id::<TestSpec>(TOKEN_NAME, &user_address);
     let initial_balance = 1000;
 
     let msg =
         RuntimeCall::<TestSpec, MockDaSpec>::Bank(sov_bank::CallMessage::<TestSpec>::CreateToken {
-            salt: TOKEN_SALT,
             token_name: TOKEN_NAME.to_string(),
             initial_balance,
             mint_to_address: user_address,
@@ -108,10 +103,6 @@ async fn send_test_create_token_tx(
         ),
     );
 
-    let rpc_port = rpc_address.port();
-    let rest_port = rest_address.port();
-    let client = ApiClient::new(rpc_port, rest_port).await?;
-
     let mut slot_subscription = client
         .ledger
         .subscribe_slots()
@@ -122,6 +113,7 @@ async fn send_test_create_token_tx(
         .sequencer
         .publish_batch_with_serialized_txs(&[tx])
         .await?;
+
     // Wait until the rollup has processed the next slot
     let _slot_number = slot_subscription
         .next()
@@ -130,12 +122,10 @@ async fn send_test_create_token_tx(
         .map(|slot| slot.number)
         .unwrap_or_default();
 
-    let balance_response =
-        BankRpcClient::<TestSpec>::balance_of(&client.rpc, None, user_address, token_id).await?;
-    assert_eq!(
-        initial_balance,
-        balance_response.amount.unwrap_or_default(),
-        "deployer initial balance is not correct"
-    );
+    let balance = client
+        .get_balance::<TestSpec>(&user_address, &token_id, None)
+        .await?;
+    assert_eq!(initial_balance, balance);
+
     Ok(())
 }
