@@ -71,6 +71,9 @@ pub struct Core<S: Spec> {
     pub(crate) campaigns: StateMap<u64, Campaign<S>>,
 
     #[state]
+    pub(crate) campaigns_index: StateVec<u64>,
+
+    #[state]
     pub(crate) campaigns_by_addr: StateMap<S::Address, Vec<u64>>,
 
     #[state]

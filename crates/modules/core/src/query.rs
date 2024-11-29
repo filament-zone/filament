@@ -32,6 +32,25 @@ impl<S: Spec> Core<S> {
         self.campaigns.get(&campaign_id, state)
     }
 
+    pub fn get_campaigns<Accessor: StateAccessor>(
+        &self,
+        state: &mut Accessor,
+    ) -> Result<Vec<Campaign<S>>, <Accessor as StateReader<User>>::Error> {
+        let ids = self
+            .campaigns_index
+            .iter(state)?
+            .collect::<Result<Vec<_>, _>>()?;
+        let mut campaigns = vec![];
+
+        for id in &ids {
+            if let Some(campaign) = self.campaigns.get(id, state)? {
+                campaigns.push(campaign);
+            }
+        }
+
+        Ok(campaigns)
+    }
+
     pub fn get_campaigns_by_addr<Accessor: StateAccessor>(
         &self,
         addr: S::Address,
@@ -209,6 +228,13 @@ impl<S: Spec> Core<S> {
         Ok(campaign.into())
     }
 
+    async fn route_get_campaigns(state: ApiState<Self, S>) -> ApiResult<Vec<Campaign<S>>> {
+        Ok(state
+            .get_campaigns(&mut state.api_state_accessor())
+            .unwrap_infallible()
+            .into())
+    }
+
     async fn route_get_campaigns_by_addr(
         state: ApiState<Self, S>,
         Path(addr): Path<S::Address>,
@@ -242,7 +268,6 @@ impl<S: Spec> HasCustomRestApi for Core<S> {
             .allow_headers(Any);
 
         Router::new()
-            .route("/campaigns/:campaignId", get(Self::route_get_campaign))
             .route(
                 "/campaigns/by_addr/:addr}",
                 get(Self::route_get_campaigns_by_addr),
@@ -251,6 +276,8 @@ impl<S: Spec> HasCustomRestApi for Core<S> {
                 "/campaigns/by_eth_addr/:eth_addr}",
                 get(Self::route_get_campaigns_by_eth_addr),
             )
+            .route("/campaigns/:campaignId", get(Self::route_get_campaign))
+            .route("/campaigns", get(Self::route_get_campaign))
             .layer(cors)
             .with_state(state)
     }
