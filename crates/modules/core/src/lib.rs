@@ -130,13 +130,13 @@ impl<S: Spec> Module for Core<S> {
     ) -> Result<CallResponse, Error> {
         match msg {
             // Campaign
-            call::CallMessage::Init {
+            call::CallMessage::Draft {
                 title,
                 description,
                 criteria,
                 evictions,
             } => {
-                self.init_campaign(
+                self.draft_campaign(
                     title,
                     description,
                     criteria,
@@ -144,6 +144,10 @@ impl<S: Spec> Module for Core<S> {
                     context.sender(),
                     state,
                 )?;
+                Ok(CallResponse::default())
+            },
+            call::CallMessage::Init { campaign_id } => {
+                self.init_campaign(campaign_id, context.sender(), state)?;
                 Ok(CallResponse::default())
             },
             call::CallMessage::ProposeCriteria {

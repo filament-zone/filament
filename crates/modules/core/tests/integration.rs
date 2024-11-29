@@ -59,7 +59,7 @@ struct TestRoles<S: Spec> {
 }
 
 #[test]
-fn init_campaign() {
+fn draft_campaign() {
     let (
         TestRoles {
             campaigner,
@@ -69,11 +69,11 @@ fn init_campaign() {
         mut runner,
     ) = setup();
 
-    // Init should fail if no criteria is provided.
+    // Draft should fail if no criteria is provided.
     {
         let campaigner = campaigner.clone();
         runner.execute_transaction(TransactionTestCase {
-            input: campaigner.create_plain_message::<Core<S>>(CallMessage::Init {
+            input: campaigner.create_plain_message::<Core<S>>(CallMessage::Draft {
                 title: "".to_string(),
                 description: "".to_string(),
                 criteria: vec![],
@@ -92,7 +92,7 @@ fn init_campaign() {
     }
 
     runner.execute_transaction(TransactionTestCase {
-        input: campaigner.create_plain_message::<Core<S>>(CallMessage::Init {
+        input: campaigner.create_plain_message::<Core<S>>(CallMessage::Draft {
             title: "".to_string(),
             description: "".to_string(),
             criteria: generate_test_criteria(),
@@ -103,7 +103,7 @@ fn init_campaign() {
             assert_eq!(result.events.len(), 1);
             assert_eq!(
                 result.events[0],
-                TestCoreRuntimeEvent::Core(Event::CampaignInitialized {
+                TestCoreRuntimeEvent::Core(Event::CampaignDrafted {
                     campaign_id: 1,
                     campaigner: campaigner.address(),
                     evictions: vec![]
@@ -133,6 +133,75 @@ fn init_campaign() {
 }
 
 #[test]
+fn init_criteria() {
+    let (
+        TestRoles {
+            campaign,
+            campaigner,
+            staker,
+            ..
+        },
+        mut runner,
+    ) = setup();
+
+    // Create draft campaign.
+    runner.execute_transaction(TransactionTestCase {
+        input: campaigner.create_plain_message::<Core<S>>(CallMessage::Draft {
+            title: "".to_string(),
+            description: "".to_string(),
+            criteria: generate_test_criteria(),
+            evictions: vec![],
+        }),
+        assert: Box::new(move |result, _| {
+            assert!(result.tx_receipt.is_successful());
+        }),
+    });
+
+    // Init should fail if sender is not campaigner.
+    {
+        runner.execute_transaction(TransactionTestCase {
+            input: staker.create_plain_message::<Core<S>>(CallMessage::Init { campaign_id: 1 }),
+            assert: Box::new(move |result, _state| {
+                assert_eq!(
+                    result.tx_receipt,
+                    TxEffect::Reverted(RevertedTxContents {
+                        gas_used: GasUnit::from([100, 100]),
+                        reason: Error::ModuleError(anyhow!(
+                            "sender '{}' is not the campaigner",
+                            staker.address()
+                        ))
+                    })
+                );
+            }),
+        });
+    }
+
+    runner.execute_transaction(TransactionTestCase {
+        input: campaigner.create_plain_message::<Core<S>>(CallMessage::Init { campaign_id: 1 }),
+        assert: Box::new(move |result, state| {
+            assert!(result.tx_receipt.is_successful());
+            assert_eq!(result.events.len(), 1);
+            assert_eq!(
+                result.events[0],
+                TestCoreRuntimeEvent::Core(Event::CampaignInitialized { campaign_id: 1 })
+            );
+
+            let campaign = {
+                let mut campaign = campaign.clone();
+                campaign.phase = Phase::Criteria;
+                campaign
+            };
+            assert_eq!(
+                Core::<S>::default()
+                    .get_campaign(0, state)
+                    .unwrap_infallible(),
+                Some(campaign)
+            );
+        }),
+    });
+}
+
+#[test]
 fn propose_criteria() {
     let (
         TestRoles {
@@ -143,7 +212,7 @@ fn propose_criteria() {
         mut runner,
     ) = setup();
 
-    // Propose should fail if the proposer not a delegate of the campaign.
+    // Propose should fail if the proposer is not a delegate of the campaign.
     {
         let campaigner = campaigner.clone();
         runner.execute_transaction(TransactionTestCase {
@@ -637,6 +706,7 @@ fn setup() -> (TestRoles<S>, TestRunner<TestCoreRuntime<S, MockDaSpec>, S>) {
 
     let campaign = {
         let mut campaign = generate_test_campaign(campaigner.address());
+        campaign.phase = Phase::Criteria;
         campaign.delegates.clone_from(&delegate_addrs);
         campaign.indexer = Some(indexer.address());
         campaign
@@ -671,7 +741,7 @@ fn setup() -> (TestRoles<S>, TestRunner<TestCoreRuntime<S, MockDaSpec>, S>) {
 fn generate_test_campaign(campaigner: <S as Spec>::Address) -> Campaign<S> {
     Campaign {
         campaigner,
-        phase: Phase::Criteria,
+        phase: Phase::Draft,
 
         title: "".to_string(),
         description: "".to_string(),

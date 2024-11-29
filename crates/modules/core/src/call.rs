@@ -41,7 +41,7 @@ use crate::{
 #[ts(export_to = "../../../../bindings/CallMessage.ts")]
 pub enum CallMessage<S: Spec> {
     // campaign
-    Init {
+    Draft {
         title: String,
         description: String,
 
@@ -49,6 +49,9 @@ pub enum CallMessage<S: Spec> {
 
         #[ts(type = "Array<string>")]
         evictions: Vec<S::Address>,
+    },
+    Init {
+        campaign_id: u64,
     },
     ProposeCriteria {
         campaign_id: u64,
@@ -99,7 +102,7 @@ pub enum CallMessage<S: Spec> {
 }
 
 impl<S: Spec> Core<S> {
-    pub(crate) fn init_campaign(
+    pub(crate) fn draft_campaign(
         &self,
         title: String,
         description: String,
@@ -108,11 +111,9 @@ impl<S: Spec> Core<S> {
         sender: &S::Address,
         state: &mut impl TxState<S>,
     ) -> Result<u64> {
-        tracing::info!(%sender, "Init campaign request");
+        tracing::info!(%sender, "Draft campaign request");
 
-        // TODO(xla): Expect bond and assert bond is locked for sender.
         // TODO(xla): Only accept if sender is a valid campaigner.
-        // TODO(xla): Check that all Coins exist and amounts are payable.
 
         let campaign_id = self
             .next_campaign_id
@@ -139,18 +140,11 @@ impl<S: Spec> Core<S> {
             delegates.retain(|d| !evictions.contains(d));
             delegates
         };
-
-        // TODO(xla): Settle payment in case of evictions.
-        // let mut payments = vec![];
-        // if let Some(ref payment) = payment {
-        //     payments.push(payment.clone());
-        // }
-
         self.campaigns.set(
             &campaign_id,
             &Campaign {
                 campaigner: sender.clone(),
-                phase: Phase::Criteria,
+                phase: Phase::Draft,
 
                 title,
                 description,
@@ -176,16 +170,55 @@ impl<S: Spec> Core<S> {
 
         self.emit_event(
             state,
-            Event::CampaignInitialized {
+            Event::CampaignDrafted {
                 campaign_id,
                 campaigner: sender.clone(),
                 evictions,
             },
         );
 
-        tracing::info!(%campaign_id, "Campaign initialized");
+        tracing::info!(%campaign_id, "Campaign drafted");
 
         Ok(campaign_id)
+    }
+
+    pub(crate) fn init_campaign(
+        &self,
+        campaign_id: u64,
+        sender: &S::Address,
+        state: &mut impl TxState<S>,
+    ) -> Result<()> {
+        tracing::info!(%sender, %campaign_id, "Init Campaign request");
+
+        // TODO(xla): Expect bond and assert bond is locked for sender.
+        // TODO(xla): Check that all Coins exist and amounts are payable.
+
+        let mut campaign = self
+            .campaigns
+            .get(&campaign_id, state)?
+            .ok_or(anyhow!("campaign '{campaign_id}' not found"))?;
+
+        if campaign.campaigner != *sender {
+            bail!("sender '{sender}' is not the campaigner");
+        }
+
+        if campaign.phase != Phase::Draft {
+            bail!(
+                "invalid campaign initialization, campaign '{campaign_id}' is not in draft phase"
+            );
+        }
+
+        // TODO(xla): Settle payment in case of evictions.
+
+        campaign.phase = Phase::Criteria;
+
+        self.campaigns.set(&campaign_id, &campaign, state)?;
+
+        self.emit_event(state, Event::CampaignInitialized { campaign_id });
+
+        tracing::info!(%campaign_id, "Campaign initialized");
+
+        Ok(())
     }
 
     pub(crate) fn propose_criteria(

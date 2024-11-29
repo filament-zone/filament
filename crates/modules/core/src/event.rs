@@ -21,13 +21,16 @@ use crate::{delegate::Eviction, Power, Relayer};
 #[ts(export_to = "../../../../bindings/Event.ts")]
 pub enum Event<S: Spec> {
     // Campaign
-    CampaignInitialized {
+    CampaignDrafted {
         campaign_id: u64,
 
         #[ts(type = "string")]
         campaigner: S::Address,
         #[ts(type = "Array<string>")]
         evictions: Vec<Eviction<S>>,
+    },
+    CampaignInitialized {
+        campaign_id: u64,
     },
     CampaignIndexing {
         campaign_id: u64,
