@@ -169,6 +169,7 @@ impl<S: Spec> Core<S> {
             .get(sender, state)?
             .unwrap_or_default();
         ids.push(campaign_id);
+        self.campaigns_index.push(&campaign_id, state)?;
         self.campaigns_by_addr.set(sender, &ids, state)?;
 
         self.next_campaign_id.set(&(campaign_id + 1), state)?;
