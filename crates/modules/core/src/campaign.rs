@@ -68,6 +68,7 @@ pub struct Campaign<S: Spec> {
 )]
 #[ts(export_to = "../../../../bindings/Phase.ts")]
 pub enum Phase {
+    Draft,
     Init,
     Criteria,
     Publish,

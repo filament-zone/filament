@@ -95,7 +95,7 @@ async fn send_eth_tx(
     let runtime_msg = {
         let msg = RuntimeCall::<TestSpec, MockDaSpec>::Core(filament_hub_core::CallMessage::<
             TestSpec,
-        >::Init {
+        >::Draft {
             title: "".to_string(),
             description: "".to_string(),
             criteria: criteria.clone(),
@@ -155,7 +155,7 @@ async fn send_eth_tx(
         campaign_response,
         Some(Campaign {
             campaigner: user_address,
-            phase: Phase::Criteria,
+            phase: Phase::Draft,
             title: "".to_string(),
             description: "".to_string(),
             criteria,
