@@ -277,7 +277,7 @@ impl<S: Spec> HasCustomRestApi for Core<S> {
                 get(Self::route_get_campaigns_by_eth_addr),
             )
             .route("/campaigns/:campaignId", get(Self::route_get_campaign))
-            .route("/campaigns", get(Self::route_get_campaign))
+            .route("/campaigns", get(Self::route_get_campaigns))
             .layer(cors)
             .with_state(state)
     }
