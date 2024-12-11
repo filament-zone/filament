@@ -156,10 +156,11 @@ pub fn authenticate<S: Spec, D: DispatchCall<Spec = S>, Meter: GasMeter<S::Gas>>
         ))
     })?;
 
-    let credential_id = vk_to_credential_id::<<S::CryptoSpec as CryptoSpec>::Hasher>(&vk);
-    let credentials = Credentials::new(credential_id);
     let address = vk_to_address::<S>(&vk)
         .map_err(|e| AuthenticationError::FatalError(FatalError::Other(e.to_string())))?;
+    let credential_id =
+        hub_addr_to_credential_id::<<S::CryptoSpec as CryptoSpec>::Hasher, S>(&address);
+    let credentials = Credentials::new(credential_id);
 
     Ok((
         AuthenticatedTransactionAndRawHash {
@@ -213,6 +214,18 @@ pub fn addr_to_hub_address<S: Spec>(addr: &str) -> anyhow::Result<S::Address> {
     arr.copy_from_slice(&bytes);
 
     bytes_to_address::<S>(arr)
+}
+
+pub fn hub_addr_to_credential_id<Hasher, S>(addr: &S::Address) -> CredentialId
+where
+    Hasher: sha3::Digest<OutputSize = sha3::digest::consts::U32>,
+    S: Spec,
+{
+    let bytes = addr.as_ref();
+    let mut hasher = Hasher::new();
+    hasher.update(bytes);
+
+    CredentialId(hasher.finalize().into())
 }
 
 pub fn vk_to_address<S: Spec>(vk: &VerifyingKey) -> anyhow::Result<S::Address> {

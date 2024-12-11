@@ -88,3 +88,6 @@ generate-core-schema:
 
 convert-eth-to-hub-address:
 	cargo run -p filament-hub-cli --bin hub-address
+
+reset-hub:
+	rm -rf filament-hub-rollup-data mock_da.sqlite
