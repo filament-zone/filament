@@ -795,6 +795,7 @@ dependencies = [
  "sov-bank",
  "sov-mock-zkvm",
  "sov-modules-api",
+ "sov-nonces",
  "sov-state",
  "tower-http",
  "tracing",

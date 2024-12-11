@@ -16,6 +16,9 @@ use sov_modules_api::{
     TxState,
 };
 
+mod account;
+pub use account::*;
+
 mod call;
 pub use call::*;
 
@@ -106,6 +109,9 @@ pub struct Core<S: Spec> {
 
     #[state]
     pub(crate) powers_index: StateVec<(S::Address, Power)>,
+
+    #[module]
+    pub(crate) nonces: sov_nonces::Nonces<S>,
 }
 
 impl<S: Spec> Module for Core<S> {
