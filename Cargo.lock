@@ -2921,6 +2921,7 @@ dependencies = [
  "sov-mock-zkvm",
  "sov-modules-api",
  "sov-modules-stf-blueprint",
+ "sov-nonces",
  "sov-state",
  "sov-test-utils",
  "tempfile",

@@ -13,6 +13,7 @@ use sov_modules_api::{
         HasCustomRestApi,
     },
     ApiStateAccessor,
+    CryptoSpec,
     Spec,
     StateAccessor,
     StateReader,
@@ -20,7 +21,36 @@ use sov_modules_api::{
 use sov_state::User;
 use tower_http::cors::{Any, CorsLayer};
 
-use crate::{criteria::CriteriaProposal, Campaign, Core, Indexer, Power, Relayer, Segment};
+use crate::{
+    account::Account,
+    criteria::CriteriaProposal,
+    Campaign,
+    Core,
+    Indexer,
+    Power,
+    Relayer,
+    Segment,
+};
+
+// Account queries.
+impl<S: Spec> Core<S> {
+    pub fn get_account_by_eth_addr<Accessor: StateAccessor>(
+        &self,
+        eth_addr: &str,
+        state: &mut Accessor,
+    ) -> Result<Option<Account>, <Accessor as StateReader<User>>::Error> {
+        let addr = filament_hub_eth::addr_to_hub_address::<S>(&eth_addr).unwrap();
+        let credential_id = filament_hub_eth::hub_addr_to_credential_id::<
+            <S::CryptoSpec as CryptoSpec>::Hasher,
+            S,
+        >(&addr);
+        let account = self
+            .nonces
+            .nonce(&credential_id, state)?
+            .map(|nonce| Account { nonce });
+        Ok(account)
+    }
+}
 
 // Campaign queries.
 impl<S: Spec> Core<S> {
@@ -216,6 +246,17 @@ impl<S: Spec> Core<S> {
 
 // Axum routes.
 impl<S: Spec> Core<S> {
+    async fn route_get_account_by_eth_addr(
+        state: ApiState<Self, S>,
+        Path(eth_addr): Path<String>,
+    ) -> ApiResult<Account> {
+        let account = state
+            .get_account_by_eth_addr(&eth_addr, &mut state.api_state_accessor())
+            .unwrap_infallible()
+            .ok_or_else(|| errors::not_found_404("Account", eth_addr))?;
+        Ok(account.into())
+    }
+
     #[allow(clippy::single_call_fn, clippy::unused_async)]
     async fn route_get_campaign(
         state: ApiState<Self, S>,
@@ -268,6 +309,10 @@ impl<S: Spec> HasCustomRestApi for Core<S> {
             .allow_headers(Any);
 
         Router::new()
+            .route(
+                "/accounts/by_eth_addr/:eth_addr",
+                get(Self::route_get_account_by_eth_addr),
+            )
             .route(
                 "/campaigns/by_addr/:addr}",
                 get(Self::route_get_campaigns_by_addr),
