@@ -113,6 +113,7 @@ fn draft_campaign() {
             let expected = {
                 let delegates = delegates.iter().map(|u| u.address()).collect::<Vec<_>>();
                 let mut campaign = generate_test_campaign(campaigner.address());
+                campaign.id = 1;
                 campaign.delegates = delegates;
                 campaign
             };
@@ -740,6 +741,7 @@ fn setup() -> (TestRoles<S>, TestRunner<TestCoreRuntime<S, MockDaSpec>, S>) {
 
 fn generate_test_campaign(campaigner: <S as Spec>::Address) -> Campaign<S> {
     Campaign {
+        id: 0,
         campaigner,
         phase: Phase::Draft,
 
