@@ -117,7 +117,6 @@ async fn send_eth_tx(
 
     let tx: Tx<TestSpec> = Tx {
         signature: signature.to_vec(),
-        verifying_key: signing_key.verifying_key().to_sec1_bytes().into_vec(),
         runtime_msg,
         nonce,
         details: TxDetails {
