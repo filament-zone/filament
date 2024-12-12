@@ -153,6 +153,7 @@ async fn send_eth_tx(
     assert_eq!(
         campaign_response,
         Some(Campaign {
+            id: 0,
             campaigner: user_address,
             phase: Phase::Draft,
             title: "".to_string(),
