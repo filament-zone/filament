@@ -39,7 +39,7 @@ impl<S: Spec> Core<S> {
         eth_addr: &str,
         state: &mut Accessor,
     ) -> Result<Option<Account>, <Accessor as StateReader<User>>::Error> {
-        let addr = filament_hub_eth::addr_to_hub_address::<S>(&eth_addr).unwrap();
+        let addr = filament_hub_eth::addr_to_hub_address::<S>(eth_addr).unwrap();
         let credential_id = filament_hub_eth::hub_addr_to_credential_id::<
             <S::CryptoSpec as CryptoSpec>::Hasher,
             S,
