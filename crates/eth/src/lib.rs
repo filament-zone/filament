@@ -46,7 +46,6 @@ pub const CHAIN_ID: u64 = config_value!("CHAIN_ID");
 )]
 pub struct Tx<S: Spec> {
     pub signature: Vec<u8>,
-    pub verifying_key: Vec<u8>,
     /// The runtime message of the transaction. The message should have been encoded using the
     /// [`crate::EncodeCall`] trait.
     pub runtime_msg: Vec<u8>,

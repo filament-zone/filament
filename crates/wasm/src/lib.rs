@@ -36,23 +36,33 @@ pub fn set_panic_hook() {
 }
 
 #[wasm_bindgen]
-pub fn new_unsigned_tx(runtime_msg: Vec<u8>, chain_id: u64) -> Result<Vec<u8>, JsError> {
-    let unsigned_tx = UnsignedTx::new(runtime_msg, chain_id, PriorityFeeBips::ZERO, 100, 0, None);
+pub fn new_unsigned_tx(
+    runtime_msg: Vec<u8>,
+    chain_id: u64,
+    nonce: u64,
+) -> Result<Vec<u8>, JsError> {
+    let unsigned_tx = UnsignedTx::new(
+        runtime_msg,
+        chain_id,
+        PriorityFeeBips::ZERO,
+        100,
+        nonce,
+        None,
+    );
     serialize_borsh(&unsigned_tx)
 }
 
 #[wasm_bindgen]
 pub fn new_serialized_tx(
     signature: Vec<u8>,
-    verifying_key: Vec<u8>,
     runtime_msg: Vec<u8>,
     chain_id: u64,
+    nonce: u64,
 ) -> Result<Vec<u8>, JsError> {
     let tx = Tx {
         signature,
-        verifying_key,
         runtime_msg,
-        nonce: 0,
+        nonce,
         details: TxDetails {
             chain_id,
             max_priority_fee_bips: PriorityFeeBips::ZERO,
