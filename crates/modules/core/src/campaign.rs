@@ -30,6 +30,8 @@ pub const MAX_EVICTIONS: u64 = 3;
 #[ts(export, concrete(S = DefaultSpec<MockZkVerifier, MockZkVerifier, Zk>))]
 #[ts(export_to = "../../../../bindings/Campaign.ts")]
 pub struct Campaign<S: Spec> {
+    pub id: u64,
+
     #[ts(type = "string")]
     pub campaigner: S::Address,
     pub phase: Phase,
