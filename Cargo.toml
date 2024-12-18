@@ -4,6 +4,7 @@ members   = [
   "crates/cli",
   "crates/config",
   "crates/eth",
+	"crates/eth-oracle",
   "crates/modules/core",
   "crates/provers/risc0",
   "crates/rollup",
@@ -35,7 +36,7 @@ semicolon_if_nothing_returned = "deny"
 #doc_markdown = "warn"
 
 [workspace.lints.rust]
-dead_code         = "deny"
+# dead_code         = "deny"
 non_ascii_idents  = "deny" # Bad for readability and it can also be a security vulnerability
 
 [workspace.dependencies]
