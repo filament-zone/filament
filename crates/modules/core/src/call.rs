@@ -143,6 +143,7 @@ impl<S: Spec> Core<S> {
         self.campaigns.set(
             &campaign_id,
             &Campaign {
+                id: campaign_id,
                 campaigner: sender.clone(),
                 phase: Phase::Draft,
 

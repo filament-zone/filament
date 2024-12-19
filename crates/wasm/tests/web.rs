@@ -30,7 +30,7 @@ const UNSIGNED_TX_SERIALIZED: [u8; 71] = [
 fn test_new_serialized_unsigned_tx() {
     let chain_id: u64 = 0;
 
-    let utx = new_unsigned_tx(RUNTIME_CALL_SERIALIZED.into(), chain_id)
+    let utx = new_unsigned_tx(RUNTIME_CALL_SERIALIZED.into(), chain_id, 0)
         .map_err(JsValue::from)
         .unwrap();
     assert_eq!(utx, UNSIGNED_TX_SERIALIZED);
