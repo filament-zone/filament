@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use std::collections::HashMap;
+
 use sov_modules_api::{
     macros::ModuleRestApi,
     CallResponse,
@@ -57,6 +59,7 @@ pub use segment::Segment;
 
 pub mod voting;
 pub use voting::Power;
+use voting::VoteOption;
 
 #[derive(Clone, ModuleInfo, ModuleRestApi)]
 pub struct Core<S: Spec> {
@@ -81,6 +84,9 @@ pub struct Core<S: Spec> {
 
     #[state]
     pub(crate) criteria_proposals: StateMap<u64, Vec<CriteriaProposal<S>>>,
+
+    #[state]
+    pub(crate) criteria_votes: StateMap<u64, HashMap<String, VoteOption>>,
 
     #[state]
     pub(crate) segments: StateMap<u64, Segment>,
@@ -161,6 +167,13 @@ impl<S: Spec> Module for Core<S> {
                 criteria,
             } => {
                 self.propose_criteria(campaign_id, criteria, context.sender(), state)?;
+                Ok(CallResponse::default())
+            },
+            call::CallMessage::VoteCriteria {
+                campaign_id,
+                option,
+            } => {
+                self.vote_criteria(campaign_id, option, context.sender(), state)?;
                 Ok(CallResponse::default())
             },
             call::CallMessage::ConfirmCriteria {

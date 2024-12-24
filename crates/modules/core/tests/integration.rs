@@ -1,4 +1,7 @@
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{
+    collections::HashMap,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use anyhow::anyhow;
 use filament_hub_core::{
@@ -6,6 +9,7 @@ use filament_hub_core::{
     criteria::{Criteria, CriteriaProposal, Criterion, CriterionCategory},
     crypto::Ed25519Signature,
     segment::{SegmentData, SegmentProof},
+    voting::VoteOption,
     CallMessage,
     Core,
     CoreConfig,
@@ -264,6 +268,72 @@ fn propose_criteria() {
                     proposer: delegates[0].address(),
                     criteria: generate_test_criteria(),
                 })
+            );
+        }),
+    });
+}
+
+#[test]
+fn vote_criteria() {
+    let (
+        TestRoles {
+            campaigner,
+            delegates,
+            ..
+        },
+        mut runner,
+    ) = setup();
+
+    // Vote should fail if the proposer is not a delegate of the campaign.
+    {
+        let campaigner = campaigner.clone();
+        runner.execute_transaction(TransactionTestCase {
+            input: campaigner
+                .clone()
+                .create_plain_message::<Core<S>>(CallMessage::VoteCriteria {
+                    campaign_id: 0,
+                    option: VoteOption::No,
+                }),
+            assert: Box::new(move |result, _state| {
+                assert_eq!(
+                    result.tx_receipt,
+                    TxEffect::Reverted(RevertedTxContents {
+                        gas_used: GasUnit::from([100, 100]),
+                        reason: Error::ModuleError(anyhow!(
+                            "invalid voter, '{}' is not a campaign delegate",
+                            campaigner.address()
+                        ))
+                    })
+                );
+            }),
+        });
+    }
+
+    runner.execute_transaction(TransactionTestCase {
+        input: delegates[0].create_plain_message::<Core<S>>(CallMessage::VoteCriteria {
+            campaign_id: 0,
+            option: VoteOption::No,
+        }),
+        assert: Box::new(move |result, state| {
+            assert!(result.tx_receipt.is_successful());
+            assert_eq!(result.events.len(), 1);
+            assert_eq!(
+                result.events[0],
+                TestCoreRuntimeEvent::Core(Event::CriteriaVoted {
+                    campaign_id: 0,
+                    delegate: delegates[0].address(),
+                    old_option: None,
+                    option: VoteOption::No,
+                })
+            );
+
+            let mut expected = HashMap::new();
+            expected.insert(delegates[0].address().to_string(), VoteOption::No);
+            assert_eq!(
+                Core::<S>::default()
+                    .get_criteria_votes(0, state)
+                    .unwrap_infallible(),
+                expected
             );
         }),
     });
