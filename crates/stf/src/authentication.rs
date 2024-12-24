@@ -25,7 +25,6 @@ impl<S: Spec, Da: DaSpec> TransactionAuthenticator<S> for Runtime<S, Da> {
     type Input = Auth;
     type SequencerStakeMeter = SequencerStakeMeter<S::Gas>;
 
-    #[cfg_attr(all(target_os = "zkvm", feature = "bench"), cycle_tracker)]
     fn authenticate(
         &self,
         input: &Self::Input,
