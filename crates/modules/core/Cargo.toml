@@ -51,5 +51,7 @@ native = [
 	"sov-bank/native",
 	"sov-modules-api/native",
 	"sov-state/native",
-	"sov-modules-stf-blueprint/native"
+	"sov-modules-stf-blueprint/native",
+	"sov-mock-zkvm/native",
+	"sov-nonces/native"
 ]

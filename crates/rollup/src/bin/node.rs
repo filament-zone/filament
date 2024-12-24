@@ -135,6 +135,7 @@ async fn main() {
     drop(guard);
 }
 
+#[allow(clippy::manual_inspect)]
 fn parse_prover_config() -> anyhow::Result<Option<RollupProverConfig>> {
     if let Some(value) = option_env!("SOV_PROVER_MODE") {
         let config = std::str::FromStr::from_str(value).map_err(|error| {
