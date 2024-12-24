@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use jsonrpsee::core::RpcResult;
 use sov_modules_api::{
     macros::rpc_gen,
@@ -24,6 +26,7 @@ use tower_http::cors::{Any, CorsLayer};
 use crate::{
     account::Account,
     criteria::CriteriaProposal,
+    voting::VoteOption,
     Campaign,
     Core,
     Indexer,
@@ -112,6 +115,17 @@ impl<S: Spec> Core<S> {
         }
 
         Ok(proposals.unwrap().get((proposal_id) as usize).cloned())
+    }
+
+    pub fn get_criteria_votes<Accessor: StateAccessor>(
+        &self,
+        campaign_id: u64,
+        state: &mut Accessor,
+    ) -> Result<HashMap<String, VoteOption>, <Accessor as StateReader<User>>::Error> {
+        Ok(self
+            .criteria_votes
+            .get(&campaign_id, state)?
+            .unwrap_or_default())
     }
 
     pub fn get_segment<Accessor: StateAccessor>(
@@ -297,6 +311,16 @@ impl<S: Spec> Core<S> {
             .unwrap_infallible()
             .into())
     }
+
+    async fn route_get_criteria_votes(
+        state: ApiState<Self, S>,
+        Path(campaign_id): Path<u64>,
+    ) -> ApiResult<HashMap<String, VoteOption>> {
+        Ok(state
+            .get_criteria_votes(campaign_id, &mut state.api_state_accessor())
+            .unwrap_infallible()
+            .into())
+    }
 }
 
 impl<S: Spec> HasCustomRestApi for Core<S> {
@@ -320,6 +344,10 @@ impl<S: Spec> HasCustomRestApi for Core<S> {
             .route(
                 "/campaigns/by_eth_addr/:eth_addr}",
                 get(Self::route_get_campaigns_by_eth_addr),
+            )
+            .route(
+                "/campaigns/:campaignId/votes",
+                get(Self::route_get_criteria_votes),
             )
             .route("/campaigns/:campaignId", get(Self::route_get_campaign))
             .route("/campaigns", get(Self::route_get_campaigns))
