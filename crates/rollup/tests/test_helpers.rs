@@ -10,14 +10,17 @@ use sov_kernels::basic::{BasicKernelGenesisConfig, BasicKernelGenesisPaths};
 use sov_mock_da::MockDaConfig;
 use sov_modules_api::{Address, Spec};
 use sov_modules_rollup_blueprint::FullNodeBlueprint;
-use sov_sequencer::FairBatchBuilderConfig;
+use sov_sequencer::{
+    batch_builders::standard::StdBatchBuilderConfig,
+    BatchBuilderConfig,
+    SequencerConfig,
+};
 use sov_stf_runner::{
     processes::RollupProverConfig,
     HttpServerConfig,
     ProofManagerConfig,
     RollupConfig,
     RunnerConfig,
-    SequencerConfig,
     StorageConfig,
 };
 use tokio::sync::oneshot;
@@ -43,14 +46,8 @@ pub async fn start_rollup(
         runner: RunnerConfig {
             genesis_height: 0,
             da_polling_interval_ms: 1000,
-            rpc_config: HttpServerConfig {
-                bind_host: "127.0.0.1".into(),
-                bind_port: 0,
-            },
-            axum_config: HttpServerConfig {
-                bind_host: "127.0.0.1".into(),
-                bind_port: 0,
-            },
+            rpc_config: HttpServerConfig::localhost_on_free_port(),
+            axum_config: HttpServerConfig::localhost_on_free_port(),
             concurrent_sync_tasks: Some(1),
         },
         da: da_config,
@@ -61,11 +58,12 @@ pub async fn start_rollup(
         },
         sequencer: SequencerConfig {
             max_allowed_blocks_behind: 5,
-            batch_builder: FairBatchBuilderConfig {
+            da_address: sequencer_address,
+            batch_builder: BatchBuilderConfig::Standard(StdBatchBuilderConfig {
                 mempool_max_txs_count: None,
                 max_batch_size_bytes: None,
-                sequencer_address,
-            },
+            }),
+            dropped_tx_ttl_secs: 0,
         },
     };
 

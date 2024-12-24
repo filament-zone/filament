@@ -11,7 +11,7 @@ use k256::ecdsa::{
 };
 use sha3::{Digest, Keccak256};
 use sov_modules_api::{
-    capabilities::{AuthenticationError, AuthenticationResult, AuthorizationData, FatalError},
+    capabilities::{AuthenticationError, AuthenticationOutput, AuthorizationData, FatalError},
     macros::config_value,
     transaction::{
         AuthenticatedTransactionAndRawHash,
@@ -32,7 +32,9 @@ use sov_modules_api::{
 use sov_rollup_interface::{crypto::SigVerificationError, TxHash};
 
 /// The chain id of the rollup.
-pub const CHAIN_ID: u64 = config_value!("CHAIN_ID");
+fn config_chain_id() -> u64 {
+    config_value!("CHAIN_ID")
+}
 
 #[derive(
     Clone,
@@ -118,23 +120,23 @@ impl<S: Spec> Tx<S> {
 pub fn authenticate<S: Spec, D: DispatchCall<Spec = S>, Meter: GasMeter<S::Gas>>(
     mut raw_tx: &[u8],
     state: &mut PreExecWorkingSet<S, Meter>,
-) -> AuthenticationResult<S, D::Decodable, AuthorizationData<S>> {
+) -> Result<AuthenticationOutput<S, D::Decodable, AuthorizationData<S>>, AuthenticationError> {
     let raw_tx_hash = MeteredHasher::<
         S::Gas,
         PreExecWorkingSet<S, Meter>,
         <S::CryptoSpec as CryptoSpec>::Hasher,
-    >::digest(raw_tx, state)
+    >::digest::<S>(raw_tx, state)
     .map(TxHash::new)
-    .map_err(|e| AuthenticationError::Invalid(e.to_string()))?;
+    .map_err(|e| AuthenticationError::OutOfGas(e.to_string()))?;
 
     let tx = <Tx<S> as BorshDeserialize>::deserialize(&mut raw_tx).map_err(|e| {
         AuthenticationError::FatalError(FatalError::DeserializationFailed(e.to_string()))
     })?;
 
-    if tx.details.chain_id != CHAIN_ID {
+    if tx.details.chain_id != config_chain_id() {
         return Err(AuthenticationError::FatalError(
             FatalError::InvalidChainId {
-                expected: CHAIN_ID,
+                expected: config_chain_id(),
                 got: tx.details.chain_id,
             },
         ));
@@ -145,7 +147,7 @@ pub fn authenticate<S: Spec, D: DispatchCall<Spec = S>, Meter: GasMeter<S::Gas>>
         | TransactionVerificationError::TransactionDeserializationError(_) => {
             AuthenticationError::FatalError(FatalError::SigVerificationFailed(e.to_string()))
         },
-        TransactionVerificationError::GasError(_) => AuthenticationError::Invalid(e.to_string()),
+        TransactionVerificationError::GasError(_) => AuthenticationError::OutOfGas(e.to_string()),
     })?;
 
     let runtime_call = D::decode_call(&tx.runtime_msg, state).map_err(|e| {

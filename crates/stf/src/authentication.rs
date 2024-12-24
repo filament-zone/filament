@@ -6,7 +6,12 @@ use std::marker::PhantomData;
 use borsh::{BorshDeserialize, BorshSerialize};
 use serde::{Deserialize, Serialize};
 use sov_modules_api::{
-    capabilities::{AuthenticationResult, AuthorizationData, UnregisteredAuthenticationError},
+    capabilities::{
+        AuthenticationError,
+        AuthenticationOutput,
+        AuthorizationData,
+        UnregisteredAuthenticationError,
+    },
     runtime::capabilities::TransactionAuthenticator,
     DaSpec,
     DispatchCall,
@@ -30,7 +35,10 @@ impl<S: Spec, Da: DaSpec> TransactionAuthenticator<S> for Runtime<S, Da> {
         &self,
         input: &Self::Input,
         pre_exec_ws: &mut PreExecWorkingSet<S, Self::SequencerStakeMeter>,
-    ) -> AuthenticationResult<S, Self::Decodable, Self::AuthorizationData> {
+    ) -> Result<
+        AuthenticationOutput<S, Self::Decodable, Self::AuthorizationData>,
+        AuthenticationError,
+    > {
         match input {
             Auth::Mod(tx) => {
                 match filament_hub_eth::authenticate::<S, Self, Self::SequencerStakeMeter>(
@@ -53,10 +61,8 @@ impl<S: Spec, Da: DaSpec> TransactionAuthenticator<S> for Runtime<S, Da> {
         &self,
         raw_tx: &Self::Input,
         pre_exec_ws: &mut PreExecWorkingSet<S, UnlimitedGasMeter<S::Gas>>,
-    ) -> AuthenticationResult<
-        S,
-        Self::Decodable,
-        Self::AuthorizationData,
+    ) -> Result<
+        AuthenticationOutput<S, Self::Decodable, Self::AuthorizationData>,
         UnregisteredAuthenticationError,
     > {
         let Auth::Mod(contents) = raw_tx;
@@ -66,7 +72,15 @@ impl<S: Spec, Da: DaSpec> TransactionAuthenticator<S> for Runtime<S, Da> {
                 S,
                 Runtime<S, Da>,
                 UnlimitedGasMeter<S::Gas>,
-            >(contents, pre_exec_ws)?;
+            >(contents, pre_exec_ws)
+            .map_err(|e| match e {
+                AuthenticationError::FatalError(err) => {
+                    UnregisteredAuthenticationError::FatalError(err)
+                },
+                AuthenticationError::OutOfGas(err) => {
+                    UnregisteredAuthenticationError::OutOfGas(err)
+                },
+            })?;
 
         match &runtime_call {
             RuntimeCall::SequencerRegistry(sov_sequencer_registry::CallMessage::Register {

@@ -46,29 +46,29 @@ filament-hub-rollup   = { path = "./crates/rollup", default-features = false }
 filament-hub-stf      = { path = "./crates/stf" }
 filament-prover-risc0 = { path = "./crates/provers/risc0" }
 
-sov-accounts                  = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-attester-incentives       = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-bank                      = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-capabilities              = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-celestia-adapter          = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-cli                       = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-db                        = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-kernels                   = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-ledger-apis               = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-mock-da                   = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-mock-zkvm                 = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-modules-api               = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-modules-rollup-blueprint  = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-modules-stf-blueprint     = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-nonces                    = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-prover-incentives         = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-risc0-adapter             = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-rollup-interface          = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-sequencer                 = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-sequencer-registry        = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-state                     = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-stf-runner                = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
-sov-test-utils                = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
+sov-accounts                  = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-attester-incentives       = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-bank                      = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-capabilities              = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-celestia-adapter          = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-cli                       = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-db                        = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-kernels                   = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-ledger-apis               = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-mock-da                   = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-mock-zkvm                 = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-modules-api               = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-modules-rollup-blueprint  = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-modules-stf-blueprint     = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-nonces                    = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-prover-incentives         = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-risc0-adapter             = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-rollup-interface          = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-sequencer                 = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-sequencer-registry        = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-state                     = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-stf-runner                = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
+sov-test-utils                = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "bd3981a" }
 
 anyhow                    = { version = "1.0.89",   default-features = false }
 async-trait               = { version = "0.1.81",   default-features = false }
@@ -78,7 +78,7 @@ bech32                    = { version = "0.11",     default-features = false }
 bip32                     = { version = "0.5",      default-features = false }
 bip39                     = { version = "2.1",      default-features = false }
 borsh                     = { version = "1",        default-features = false }
-bytes                     = { version = "1",        default-features = false }
+bytes                     = { version = "1.7.2",    default-features = false }
 clap                      = { version = "4.5.16",   default-features = false }
 console_error_panic_hook  = { version = "0.1.7",    default-features = false }
 futures                   = { version = "0.3",      default-features = false }

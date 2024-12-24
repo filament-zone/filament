@@ -4,6 +4,7 @@
 use anyhow::Error;
 use async_trait::async_trait;
 use filament_hub_stf::Runtime;
+use sov_attester_incentives::BondingProofServiceImpl;
 use sov_db::{ledger_db::LedgerDb, storage_manager::NativeStorageManager};
 use sov_kernels::basic::BasicKernel;
 use sov_mock_da::{storable::service::StorableMockDaService, MockDaSpec};
@@ -27,16 +28,16 @@ use sov_modules_stf_blueprint::{RuntimeEndpoints, StfBlueprint};
 use sov_risc0_adapter::{host::Risc0Host, Risc0Verifier};
 use sov_rollup_interface::{
     execution_mode::{ExecutionMode, Native, Zk},
-    node::da::{DaService, DaServiceWithRetries},
+    node::da::DaServiceWithRetries,
     zk::aggregated_proof::CodeCommitment,
 };
-use sov_sequencer::{FairBatchBuilderConfig, SequencerDb};
+use sov_sequencer::SequencerDb;
 use sov_state::{DefaultStorageSpec, ProverStorage, Storage, ZkStorage};
 use sov_stf_runner::{
     processes::{ParallelProverService, ProverService, RollupProverConfig},
     RollupConfig,
 };
-use tokio::sync::watch::{self};
+use tokio::sync::watch;
 
 /// Rollup with [`MockDaService`].
 #[derive(Default)]
@@ -59,6 +60,7 @@ where
 
 #[async_trait]
 impl FullNodeBlueprint<Native> for MockRollup<Native> {
+    type BondingProofService = BondingProofServiceImpl<Self::Spec, Self::DaSpec, Self::Kernel>;
     type DaService = DaServiceWithRetries<StorableMockDaService>;
     /// Inner Zkvm representing the rollup circuit
     type InnerZkvmHost = Risc0Host<'static>;
@@ -86,6 +88,15 @@ impl FullNodeBlueprint<Native> for MockRollup<Native> {
         ProverStorage<DefaultStorageSpec<<<Self::Spec as Spec>::CryptoSpec as CryptoSpec>::Hasher>>,
     >;
 
+    fn create_bonding_proof_service(
+        &self,
+        attester_address: <Self::Spec as Spec>::Address,
+        storage: tokio::sync::watch::Receiver<<Self::Spec as Spec>::Storage>,
+    ) -> Self::BondingProofService {
+        let runtime = Runtime::<Self::Spec, Self::DaSpec>::default();
+        BondingProofServiceImpl::new(attester_address, runtime.attester_incentives, storage)
+    }
+
     fn get_operating_mode(
         genesis: &<Self::Kernel as Kernel<<Self::Spec as Spec>::Storage>>::GenesisConfig,
     ) -> OperatingMode {
@@ -98,17 +109,13 @@ impl FullNodeBlueprint<Native> for MockRollup<Native> {
         MockCodeCommitment::default()
     }
 
-    fn create_endpoints(
+    async fn create_endpoints(
         &self,
         storage: watch::Receiver<<Self::Spec as Spec>::Storage>,
         ledger_db: &LedgerDb,
         sequencer_db: &SequencerDb,
         da_service: &Self::DaService,
-        rollup_config: &RollupConfig<
-            <Self::Spec as Spec>::Address,
-            <Self::DaService as DaService>::Config,
-            FairBatchBuilderConfig<Self::DaSpec>,
-        >,
+        rollup_config: &RollupConfig<<Self::Spec as Spec>::Address, Self::DaService>,
     ) -> Result<RuntimeEndpoints, Error> {
         sov_modules_rollup_blueprint::register_endpoints::<Self, Native>(
             storage.clone(),
@@ -116,16 +123,14 @@ impl FullNodeBlueprint<Native> for MockRollup<Native> {
             sequencer_db,
             da_service,
             &rollup_config.sequencer,
+            &rollup_config.runner,
         )
+        .await
     }
 
     async fn create_da_service(
         &self,
-        rollup_config: &RollupConfig<
-            <Self::Spec as Spec>::Address,
-            <Self::DaService as DaService>::Config,
-            FairBatchBuilderConfig<Self::DaSpec>,
-        >,
+        rollup_config: &RollupConfig<<Self::Spec as Spec>::Address, Self::DaService>,
     ) -> Self::DaService {
         DaServiceWithRetries::new_fast(
             StorableMockDaService::from_config(rollup_config.da.clone()).await,
@@ -135,11 +140,7 @@ impl FullNodeBlueprint<Native> for MockRollup<Native> {
     async fn create_prover_service(
         &self,
         prover_config: RollupProverConfig,
-        rollup_config: &RollupConfig<
-            <Self::Spec as Spec>::Address,
-            <Self::DaService as DaService>::Config,
-            FairBatchBuilderConfig<Self::DaSpec>,
-        >,
+        rollup_config: &RollupConfig<<Self::Spec as Spec>::Address, Self::DaService>,
         _da_service: &Self::DaService,
     ) -> Self::ProverService {
         let inner_vm = Risc0Host::new(filament_prover_risc0::MOCK_DA_ELF);
@@ -162,11 +163,7 @@ impl FullNodeBlueprint<Native> for MockRollup<Native> {
 
     fn create_storage_manager(
         &self,
-        rollup_config: &RollupConfig<
-            <Self::Spec as Spec>::Address,
-            <Self::DaService as DaService>::Config,
-            FairBatchBuilderConfig<Self::DaSpec>,
-        >,
+        rollup_config: &RollupConfig<<Self::Spec as Spec>::Address, Self::DaService>,
     ) -> Result<Self::StorageManager, Error> {
         NativeStorageManager::new(&rollup_config.storage.path)
     }
