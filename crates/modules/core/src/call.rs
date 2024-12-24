@@ -13,6 +13,7 @@ use crate::{
     criteria::{Criteria, CriteriaProposal},
     delegate::Eviction,
     segment::Segment,
+    voting::VoteOption,
     Core,
     Event,
     Power,
@@ -56,6 +57,10 @@ pub enum CallMessage<S: Spec> {
     ProposeCriteria {
         campaign_id: u64,
         criteria: Criteria,
+    },
+    VoteCriteria {
+        campaign_id: u64,
+        option: VoteOption,
     },
     ConfirmCriteria {
         campaign_id: u64,
@@ -269,6 +274,51 @@ impl<S: Spec> Core<S> {
         );
 
         tracing::info!(%campaign_id, %proposal_id, "Criteria proposed");
+
+        Ok(())
+    }
+
+    pub(crate) fn vote_criteria(
+        &self,
+        campaign_id: u64,
+        option: VoteOption,
+        sender: &S::Address,
+        state: &mut impl TxState<S>,
+    ) -> Result<()> {
+        tracing::info!(%sender, %campaign_id, "Criteria vote request");
+
+        let campaign = self
+            .campaigns
+            .get(&campaign_id, state)?
+            .ok_or(anyhow!("campaign '{campaign_id}' not found"))?;
+
+        if campaign.phase != Phase::Criteria {
+            bail!("invalid criteria vote, campaign '{campaign_id}' is not in criteria phase");
+        }
+
+        if !campaign.delegates.contains(sender) {
+            bail!("invalid voter, '{sender}' is not a campaign delegate");
+        }
+
+        let mut votes = self
+            .criteria_votes
+            .get(&campaign_id, state)?
+            .unwrap_or_default();
+
+        let old_option = votes.insert(sender.to_string(), option.clone());
+
+        self.criteria_votes.set(&campaign_id, &votes, state)?;
+
+        self.emit_event(
+            state,
+            Event::CriteriaVoted {
+                campaign_id,
+                delegate: sender.clone(),
+                old_option: old_option.clone(),
+                option: option.clone(),
+            },
+        );
+        tracing::info!(%campaign_id, ?sender, ?old_option, ?option, "Criteria proposed");
 
         Ok(())
     }
