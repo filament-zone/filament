@@ -160,7 +160,9 @@ async fn send_eth_tx(
             description: "".to_string(),
             criteria,
             evictions: vec![],
-            delegates: vec![],
+            delegates: vec![
+                "sov1el0m5n0m4tjr5mawdglwae3swn7jw69cqqqqqqqqqqqqqqqqqqqq359qtu".parse()?
+            ],
 
             indexer: None,
         }),

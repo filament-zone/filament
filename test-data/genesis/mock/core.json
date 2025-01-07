@@ -1,7 +1,9 @@
 {
   "admin": "sov1dnhqk4mdsj2kwv4xymt8a624xuahfx8906j9usdkx7ensfghndkq8p33f7",
   "campaigns": [],
-  "delegates": [],
+  "delegates": [
+    "sov1el0m5n0m4tjr5mawdglwae3swn7jw69cqqqqqqqqqqqqqqqqqqqq359qtu"
+  ],
   "indexers": [],
   "powers": {},
   "relayers": []
