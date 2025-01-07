@@ -35,6 +35,10 @@
     {
       "credential_id": "0x9769e91a5cbde876ab1b04da61bffeab7cb048d93727e6c5d60654582bcd8a90",
       "address": "sov1q8knz5hufsyjl2nvzmar4lym359acfy3qqqqqqqqqqqqqqqqqqqqd26pxp"
+    },
+    {
+      "credential_id": "0xd311053c451895b7b33efaa12bcbf6889f2a2650d9224a696f3d990840ac5dc0",
+      "address": "sov1el0m5n0m4tjr5mawdglwae3swn7jw69cqqqqqqqqqqqqqqqqqqqq359qtu"
     }
   ]
 }
