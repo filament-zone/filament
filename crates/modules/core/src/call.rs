@@ -13,7 +13,7 @@ use crate::{
     criteria::{Criteria, CriteriaProposal},
     delegate::Eviction,
     segment::Segment,
-    voting::VoteOption,
+    voting::{CriteriaVote, DistributionVote},
     Core,
     Event,
     Power,
@@ -60,7 +60,7 @@ pub enum CallMessage<S: Spec> {
     },
     VoteCriteria {
         campaign_id: u64,
-        option: VoteOption,
+        vote: CriteriaVote,
     },
     ConfirmCriteria {
         campaign_id: u64,
@@ -75,6 +75,10 @@ pub enum CallMessage<S: Spec> {
     PostSegment {
         campaign_id: u64,
         segment: Segment,
+    },
+    VoteDistribution {
+        campaign_id: u64,
+        vote: DistributionVote,
     },
 
     // Indexer
@@ -281,7 +285,7 @@ impl<S: Spec> Core<S> {
     pub(crate) fn vote_criteria(
         &self,
         campaign_id: u64,
-        option: VoteOption,
+        vote: CriteriaVote,
         sender: &S::Address,
         state: &mut impl TxState<S>,
     ) -> Result<()> {
@@ -305,7 +309,7 @@ impl<S: Spec> Core<S> {
             .get(&campaign_id, state)?
             .unwrap_or_default();
 
-        let old_option = votes.insert(sender.to_string(), option.clone());
+        let old_vote = votes.insert(sender.to_string(), vote.clone());
 
         self.criteria_votes.set(&campaign_id, &votes, state)?;
 
@@ -314,11 +318,11 @@ impl<S: Spec> Core<S> {
             Event::CriteriaVoted {
                 campaign_id,
                 delegate: sender.clone(),
-                old_option: old_option.clone(),
-                option: option.clone(),
+                old_vote: old_vote.clone(),
+                vote: vote.clone(),
             },
         );
-        tracing::info!(%campaign_id, ?sender, ?old_option, ?option, "Criteria proposed");
+        tracing::info!(%campaign_id, ?sender, ?old_vote, ?vote, "Criteria proposed");
 
         Ok(())
     }
@@ -357,7 +361,7 @@ impl<S: Spec> Core<S> {
             },
         );
 
-        tracing::info!(%campaign_id, ?proposal_id, "Criteria proposed");
+        tracing::info!(%campaign_id, ?proposal_id, "Criteria voted");
 
         Ok(())
     }
@@ -464,6 +468,53 @@ impl<S: Spec> Core<S> {
         );
 
         tracing::info!(%sender, %campaign_id, "Segment posted");
+
+        Ok(())
+    }
+
+    pub(crate) fn vote_distribution(
+        &self,
+        campaign_id: u64,
+        vote: DistributionVote,
+        sender: &S::Address,
+        state: &mut impl TxState<S>,
+    ) -> Result<()> {
+        tracing::info!(%sender, %campaign_id, "Distribution vote request");
+
+        let campaign = self
+            .campaigns
+            .get(&campaign_id, state)?
+            .ok_or(anyhow!("campaign '{campaign_id}' not found"))?;
+
+        if campaign.phase != Phase::Distribution {
+            bail!(
+                "invalid distribution vote, campaign '{campaign_id}' is not in distribution phase"
+            );
+        }
+
+        if !campaign.delegates.contains(sender) {
+            bail!("invalid voter, '{sender}' is not a campaign delegate");
+        }
+
+        let mut votes = self
+            .distribution_votes
+            .get(&campaign_id, state)?
+            .unwrap_or_default();
+
+        let old_vote = votes.insert(sender.to_string(), vote.clone());
+
+        self.distribution_votes.set(&campaign_id, &votes, state)?;
+
+        self.emit_event(
+            state,
+            Event::DistributionVoted {
+                campaign_id,
+                delegate: sender.clone(),
+                old_vote: old_vote.clone(),
+                vote: vote.clone(),
+            },
+        );
+        tracing::info!(%campaign_id, ?sender, ?old_vote, ?vote, "Distribution voted");
 
         Ok(())
     }

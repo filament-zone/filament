@@ -9,7 +9,7 @@ use filament_hub_core::{
     criteria::{Criteria, CriteriaProposal, Criterion, CriterionCategory},
     crypto::Ed25519Signature,
     segment::{SegmentData, SegmentProof},
-    voting::VoteOption,
+    voting::{CriteriaVote, DistributionVote},
     CallMessage,
     Core,
     CoreConfig,
@@ -108,7 +108,7 @@ fn draft_campaign() {
             assert_eq!(
                 result.events[0],
                 TestCoreRuntimeEvent::Core(Event::CampaignDrafted {
-                    campaign_id: 1,
+                    campaign_id: 2,
                     campaigner: campaigner.address(),
                     evictions: vec![]
                 })
@@ -117,13 +117,13 @@ fn draft_campaign() {
             let expected = {
                 let delegates = delegates.iter().map(|u| u.address()).collect::<Vec<_>>();
                 let mut campaign = generate_test_campaign(campaigner.address());
-                campaign.id = 1;
+                campaign.id = 2;
                 campaign.delegates = delegates;
                 campaign
             };
             assert_eq!(
                 Core::<S>::default()
-                    .get_campaign(1, state)
+                    .get_campaign(2, state)
                     .unwrap_infallible(),
                 Some(expected.clone())
             );
@@ -165,7 +165,7 @@ fn init_criteria() {
     // Init should fail if sender is not campaigner.
     {
         runner.execute_transaction(TransactionTestCase {
-            input: staker.create_plain_message::<Core<S>>(CallMessage::Init { campaign_id: 1 }),
+            input: staker.create_plain_message::<Core<S>>(CallMessage::Init { campaign_id: 2 }),
             assert: Box::new(move |result, _state| {
                 assert_eq!(
                     result.tx_receipt,
@@ -182,23 +182,25 @@ fn init_criteria() {
     }
 
     runner.execute_transaction(TransactionTestCase {
-        input: campaigner.create_plain_message::<Core<S>>(CallMessage::Init { campaign_id: 1 }),
+        input: campaigner.create_plain_message::<Core<S>>(CallMessage::Init { campaign_id: 2 }),
         assert: Box::new(move |result, state| {
             assert!(result.tx_receipt.is_successful());
             assert_eq!(result.events.len(), 1);
             assert_eq!(
                 result.events[0],
-                TestCoreRuntimeEvent::Core(Event::CampaignInitialized { campaign_id: 1 })
+                TestCoreRuntimeEvent::Core(Event::CampaignInitialized { campaign_id: 2 })
             );
 
             let campaign = {
                 let mut campaign = campaign.clone();
+                campaign.id = 2;
+                campaign.indexer = None;
                 campaign.phase = Phase::Criteria;
                 campaign
             };
             assert_eq!(
                 Core::<S>::default()
-                    .get_campaign(0, state)
+                    .get_campaign(2, state)
                     .unwrap_infallible(),
                 Some(campaign)
             );
@@ -292,7 +294,7 @@ fn vote_criteria() {
                 .clone()
                 .create_plain_message::<Core<S>>(CallMessage::VoteCriteria {
                     campaign_id: 0,
-                    option: VoteOption::No,
+                    vote: CriteriaVote::Rejected,
                 }),
             assert: Box::new(move |result, _state| {
                 assert_eq!(
@@ -312,7 +314,7 @@ fn vote_criteria() {
     runner.execute_transaction(TransactionTestCase {
         input: delegates[0].create_plain_message::<Core<S>>(CallMessage::VoteCriteria {
             campaign_id: 0,
-            option: VoteOption::No,
+            vote: CriteriaVote::Rejected,
         }),
         assert: Box::new(move |result, state| {
             assert!(result.tx_receipt.is_successful());
@@ -322,13 +324,13 @@ fn vote_criteria() {
                 TestCoreRuntimeEvent::Core(Event::CriteriaVoted {
                     campaign_id: 0,
                     delegate: delegates[0].address(),
-                    old_option: None,
-                    option: VoteOption::No,
+                    old_vote: None,
+                    vote: CriteriaVote::Rejected,
                 })
             );
 
             let mut expected = HashMap::new();
-            expected.insert(delegates[0].address().to_string(), VoteOption::No);
+            expected.insert(delegates[0].address().to_string(), CriteriaVote::Rejected);
             assert_eq!(
                 Core::<S>::default()
                     .get_criteria_votes(0, state)
@@ -477,6 +479,75 @@ fn post_segment() {
                     .get_segment(0, state)
                     .unwrap_infallible(),
                 Some(segment)
+            );
+        }),
+    });
+}
+
+#[test]
+fn vote_distribution() {
+    let (
+        TestRoles {
+            campaigner,
+            delegates,
+            ..
+        },
+        mut runner,
+    ) = setup();
+
+    // Vote should fail if the proposer is not a delegate of the campaign.
+    {
+        let campaigner = campaigner.clone();
+        runner.execute_transaction(TransactionTestCase {
+            input: campaigner.clone().create_plain_message::<Core<S>>(
+                CallMessage::VoteDistribution {
+                    campaign_id: 1,
+                    vote: DistributionVote::Rejected,
+                },
+            ),
+            assert: Box::new(move |result, _state| {
+                assert_eq!(
+                    result.tx_receipt,
+                    TxEffect::Reverted(RevertedTxContents {
+                        gas_used: GasUnit::from([100, 100]),
+                        reason: Error::ModuleError(anyhow!(
+                            "invalid voter, '{}' is not a campaign delegate",
+                            campaigner.address()
+                        ))
+                    })
+                );
+            }),
+        });
+    }
+
+    runner.execute_transaction(TransactionTestCase {
+        input: delegates[0].create_plain_message::<Core<S>>(CallMessage::VoteDistribution {
+            campaign_id: 1,
+            vote: DistributionVote::Rejected,
+        }),
+        assert: Box::new(move |result, state| {
+            assert!(result.tx_receipt.is_successful());
+            assert_eq!(result.events.len(), 1);
+            assert_eq!(
+                result.events[0],
+                TestCoreRuntimeEvent::Core(Event::DistributionVoted {
+                    campaign_id: 1,
+                    delegate: delegates[0].address(),
+                    old_vote: None,
+                    vote: DistributionVote::Rejected,
+                })
+            );
+
+            let mut expected = HashMap::new();
+            expected.insert(
+                delegates[0].address().to_string(),
+                DistributionVote::Rejected,
+            );
+            assert_eq!(
+                Core::<S>::default()
+                    .get_distribution_votes(1, state)
+                    .unwrap_infallible(),
+                expected
             );
         }),
     });
@@ -782,12 +853,19 @@ fn setup() -> (TestRoles<S>, TestRunner<TestCoreRuntime<S, MockDaSpec>, S>) {
         campaign.indexer = Some(indexer.address());
         campaign
     };
+    let distribution_campaign = {
+        let mut campaign = generate_test_campaign(campaigner.address());
+        campaign.phase = Phase::Distribution;
+        campaign.delegates.clone_from(&delegate_addrs);
+        campaign.indexer = Some(indexer.address());
+        campaign
+    };
 
     let genesis = GenesisConfig::from_minimal_config(
         genesis_config.clone().into(),
         CoreConfig {
             admin: admin.address(),
-            campaigns: vec![campaign.clone()],
+            campaigns: vec![campaign.clone(), distribution_campaign],
             delegates: delegate_addrs,
             eth_addresses: Default::default(),
             indexers: vec![],

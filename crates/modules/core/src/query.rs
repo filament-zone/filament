@@ -27,7 +27,7 @@ use crate::{
     account::Account,
     campaign::Phase,
     criteria::{Criteria, CriteriaProposal},
-    voting::VoteOption,
+    voting::{CriteriaVote, DistributionVote},
     Campaign,
     Core,
     Indexer,
@@ -141,9 +141,20 @@ impl<S: Spec> Core<S> {
         &self,
         campaign_id: u64,
         state: &mut Accessor,
-    ) -> Result<HashMap<String, VoteOption>, <Accessor as StateReader<User>>::Error> {
+    ) -> Result<HashMap<String, CriteriaVote>, <Accessor as StateReader<User>>::Error> {
         Ok(self
             .criteria_votes
+            .get(&campaign_id, state)?
+            .unwrap_or_default())
+    }
+
+    pub fn get_distribution_votes<Accessor: StateAccessor>(
+        &self,
+        campaign_id: u64,
+        state: &mut Accessor,
+    ) -> Result<HashMap<String, DistributionVote>, <Accessor as StateReader<User>>::Error> {
+        Ok(self
+            .distribution_votes
             .get(&campaign_id, state)?
             .unwrap_or_default())
     }
@@ -428,9 +439,19 @@ impl<S: Spec> Core<S> {
     async fn route_get_criteria_votes(
         state: ApiState<Self, S>,
         Path(campaign_id): Path<u64>,
-    ) -> ApiResult<HashMap<String, VoteOption>> {
+    ) -> ApiResult<HashMap<String, CriteriaVote>> {
         Ok(state
             .get_criteria_votes(campaign_id, &mut state.api_state_accessor())
+            .unwrap_infallible()
+            .into())
+    }
+
+    async fn route_get_distribution_votes(
+        state: ApiState<Self, S>,
+        Path(campaign_id): Path<u64>,
+    ) -> ApiResult<HashMap<String, DistributionVote>> {
+        Ok(state
+            .get_distribution_votes(campaign_id, &mut state.api_state_accessor())
             .unwrap_infallible()
             .into())
     }
@@ -459,8 +480,12 @@ impl<S: Spec> HasCustomRestApi for Core<S> {
                 get(Self::route_get_campaigns_by_eth_addr),
             )
             .route(
-                "/campaigns/:campaignId/votes",
+                "/campaigns/:campaignId/criteria/votes",
                 get(Self::route_get_criteria_votes),
+            )
+            .route(
+                "/campaigns/:campaignId/distribution/votes",
+                get(Self::route_get_distribution_votes),
             )
             .route("/campaigns/:campaignId", get(Self::route_get_campaign))
             .route("/campaigns", get(Self::route_get_campaigns))

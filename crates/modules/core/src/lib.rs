@@ -59,7 +59,7 @@ pub use segment::Segment;
 
 pub mod voting;
 pub use voting::Power;
-use voting::VoteOption;
+use voting::{CriteriaVote, DistributionVote};
 
 #[derive(Clone, ModuleInfo, ModuleRestApi)]
 pub struct Core<S: Spec> {
@@ -86,7 +86,10 @@ pub struct Core<S: Spec> {
     pub(crate) criteria_proposals: StateMap<u64, Vec<CriteriaProposal<S>>>,
 
     #[state]
-    pub(crate) criteria_votes: StateMap<u64, HashMap<String, VoteOption>>,
+    pub(crate) criteria_votes: StateMap<u64, HashMap<String, CriteriaVote>>,
+
+    #[state]
+    pub(crate) distribution_votes: StateMap<u64, HashMap<String, DistributionVote>>,
 
     #[state]
     pub(crate) segments: StateMap<u64, Segment>,
@@ -173,11 +176,8 @@ impl<S: Spec> Module for Core<S> {
                 self.propose_criteria(campaign_id, criteria, context.sender(), state)?;
                 Ok(CallResponse::default())
             },
-            call::CallMessage::VoteCriteria {
-                campaign_id,
-                option,
-            } => {
-                self.vote_criteria(campaign_id, option, context.sender(), state)?;
+            call::CallMessage::VoteCriteria { campaign_id, vote } => {
+                self.vote_criteria(campaign_id, vote, context.sender(), state)?;
                 Ok(CallResponse::default())
             },
             call::CallMessage::ConfirmCriteria {
@@ -200,6 +200,10 @@ impl<S: Spec> Module for Core<S> {
                 segment,
             } => {
                 self.post_segment(campaign_id, segment, context.sender(), state)?;
+                Ok(CallResponse::default())
+            },
+            call::CallMessage::VoteDistribution { campaign_id, vote } => {
+                self.vote_distribution(campaign_id, vote, context.sender(), state)?;
                 Ok(CallResponse::default())
             },
 

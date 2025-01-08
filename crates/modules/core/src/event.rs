@@ -1,7 +1,12 @@
 use sov_mock_zkvm::MockZkVerifier;
 use sov_modules_api::{default_spec::DefaultSpec, execution_mode::Zk, Spec};
 
-use crate::{delegate::Eviction, voting::VoteOption, Power, Relayer};
+use crate::{
+    delegate::Eviction,
+    voting::{CriteriaVote, DistributionVote},
+    Power,
+    Relayer,
+};
 
 #[derive(
     Clone,
@@ -47,8 +52,8 @@ pub enum Event<S: Spec> {
         campaign_id: u64,
         #[ts(type = "string")]
         delegate: S::Address,
-        old_option: Option<VoteOption>,
-        option: VoteOption,
+        old_vote: Option<CriteriaVote>,
+        vote: CriteriaVote,
     },
     CriteriaConfirmed {
         campaign_id: u64,
@@ -58,6 +63,13 @@ pub enum Event<S: Spec> {
         campaign_id: u64,
         #[ts(type = "string")]
         indexer: S::Address,
+    },
+    DistributionVoted {
+        campaign_id: u64,
+        #[ts(type = "string")]
+        delegate: S::Address,
+        old_vote: Option<DistributionVote>,
+        vote: DistributionVote,
     },
 
     // Indexer
