@@ -30,7 +30,7 @@ jobs:
   format:
     strategy:
       matrix:
-        os: [ubuntu-22.04-16core]
+        os: [ubuntu-22.04]
         toolchain: [nightly]
 
     name: Format CosmWasm outposts
@@ -60,7 +60,7 @@ jobs:
   lints:
     strategy:
       matrix:
-        os: [ubuntu-22.04-16core]
+        os: [ubuntu-22.04]
         toolchain: [stable]
 
     name: Lint CosmWasm outpost
@@ -100,7 +100,7 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [macos-latest-xlarge, ubuntu-22.04-16core]
+        os: [macos-latest, ubuntu-22.04]
         toolchain: [stable]
 
     name: Test CosmWasm outpost

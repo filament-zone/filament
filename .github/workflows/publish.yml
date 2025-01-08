@@ -50,7 +50,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-22.04-16core]
+        os: [ubuntu-22.04]
         toolchain: ["1.81"]
 
     name: Build and publish Hub npm package

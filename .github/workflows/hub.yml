@@ -50,7 +50,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-22.04-16core]
+        os: [ubuntu-22.04]
         toolchain: ["1.81"]
 
     name: Build Hub
@@ -112,7 +112,7 @@ jobs:
   fmt:
     strategy:
       matrix:
-        os: [ubuntu-22.04-16core]
+        os: [ubuntu-22.04]
         toolchain: [nightly]
 
     name: Format Hub
@@ -148,7 +148,7 @@ jobs:
   lint:
     strategy:
       matrix:
-        os: [ubuntu-22.04-16core]
+        os: [ubuntu-22.04]
         toolchain: ["1.81"]
 
     name: Lint Hub
@@ -209,7 +209,7 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-22.04-16core]
+        os: [ubuntu-22.04]
         toolchain: ["1.81"]
 
     name: Test Hub
@@ -268,7 +268,7 @@ jobs:
   wasm:
     strategy:
       matrix:
-        os: [ubuntu-22.04-16core]
+        os: [ubuntu-22.04]
         toolchain: ["1.81"]
 
     name: WASM
