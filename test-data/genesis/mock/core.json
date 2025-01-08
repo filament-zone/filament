@@ -4,6 +4,11 @@
   "delegates": [
     "sov1el0m5n0m4tjr5mawdglwae3swn7jw69cqqqqqqqqqqqqqqqqqqqq359qtu"
   ],
+  "eth_addresses": {
+    "sov1x2elck0qdwxn03exmr2d9h4355h62uckqqqqqqqqqqqqqqqqqqqqyqvyuk": "0x32b3FC59E06B8d37c726D8d4D2Deb1A52FA57316",
+    "sov1q8knz5hufsyjl2nvzmar4lym359acfy3qqqqqqqqqqqqqqqqqqqqd26pxp": "0x01ed3152fC4C092faA6C16Fa3AFc9B8D0BDC2491",
+    "sov1el0m5n0m4tjr5mawdglwae3swn7jw69cqqqqqqqqqqqqqqqqqqqq359qtu": "0xcfdfBa4dfbaaE43a6Fae6a3eEeE63074FD2768B8"
+  },
   "indexers": [],
   "powers": {},
   "relayers": []

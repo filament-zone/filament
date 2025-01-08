@@ -25,7 +25,8 @@ use tower_http::cors::{Any, CorsLayer};
 
 use crate::{
     account::Account,
-    criteria::CriteriaProposal,
+    campaign::Phase,
+    criteria::{Criteria, CriteriaProposal},
     voting::VoteOption,
     Campaign,
     Core,
@@ -34,6 +35,25 @@ use crate::{
     Relayer,
     Segment,
 };
+
+#[derive(Clone, Debug, Eq, PartialEq, serde::Deserialize, serde::Serialize, ts_rs::TS)]
+#[ts(export_to = "../../../../bindings/CampaignResponse.ts")]
+pub struct CampaignResponse {
+    pub id: u64,
+
+    pub campaigner: String,
+    pub phase: Phase,
+
+    pub title: String,
+    pub description: String,
+
+    pub criteria: Criteria,
+
+    pub evictions: Vec<String>,
+    pub delegates: Vec<String>,
+
+    pub indexer: Option<String>,
+}
 
 // Account queries.
 impl<S: Spec> Core<S> {
@@ -260,6 +280,44 @@ impl<S: Spec> Core<S> {
 
 // Axum routes.
 impl<S: Spec> Core<S> {
+    fn campaign_to_response<Accessor: StateAccessor>(
+        &self,
+        campaign: Campaign<S>,
+        state: &mut Accessor,
+    ) -> anyhow::Result<CampaignResponse> {
+        let mut evictions = vec![];
+        for addr in &campaign.evictions {
+            evictions.push(self.eth_addresses.get(addr, state)?.unwrap());
+        }
+        let mut delegates = vec![];
+        for addr in &campaign.delegates {
+            delegates.push(self.eth_addresses.get(addr, state)?.unwrap());
+        }
+        let mut indexer = None;
+        if campaign.indexer.is_some() {
+            indexer = Some(
+                self.eth_addresses
+                    .get(&campaign.indexer.unwrap(), state)?
+                    .unwrap(),
+            );
+        }
+
+        Ok(CampaignResponse {
+            id: campaign.id,
+            campaigner: self
+                .eth_addresses
+                .get(&campaign.campaigner, state)?
+                .unwrap(),
+            phase: campaign.phase,
+            title: campaign.title,
+            description: campaign.description,
+            criteria: campaign.criteria,
+            evictions,
+            delegates,
+            indexer,
+        })
+    }
+
     async fn route_get_account_by_eth_addr(
         state: ApiState<Self, S>,
         Path(eth_addr): Path<String>,
@@ -275,41 +333,96 @@ impl<S: Spec> Core<S> {
     async fn route_get_campaign(
         state: ApiState<Self, S>,
         Path(campaign_id): Path<u64>,
-    ) -> ApiResult<Campaign<S>> {
+    ) -> ApiResult<CampaignResponse> {
         let campaign = state
             .get_campaign(campaign_id, &mut state.api_state_accessor())
             .unwrap_infallible()
             .ok_or_else(|| errors::not_found_404("Campaign", campaign_id))?;
-        Ok(campaign.into())
+
+        state
+            .campaign_to_response(campaign, &mut state.api_state_accessor())
+            .map(Into::into)
+            .map_err(|err| {
+                errors::internal_server_error_response_500(format!(
+                    "failed to populate campaign response: {}",
+                    err
+                ))
+            })
     }
 
-    async fn route_get_campaigns(state: ApiState<Self, S>) -> ApiResult<Vec<Campaign<S>>> {
-        Ok(state
+    async fn route_get_campaigns(state: ApiState<Self, S>) -> ApiResult<Vec<CampaignResponse>> {
+        let mut campaigns = vec![];
+        for campaign in state
             .get_campaigns(&mut state.api_state_accessor())
             .unwrap_infallible()
-            .into())
+            .into_iter()
+        {
+            campaigns.push(
+                state
+                    .campaign_to_response(campaign, &mut state.api_state_accessor())
+                    .map_err(|err| {
+                        errors::internal_server_error_response_500(format!(
+                            "failed to populate campaign response: {}",
+                            err
+                        ))
+                    })?,
+            );
+        }
+
+        Ok(campaigns.into())
     }
 
     async fn route_get_campaigns_by_addr(
         state: ApiState<Self, S>,
         Path(addr): Path<S::Address>,
-    ) -> ApiResult<Vec<Campaign<S>>> {
-        let campaigns = state
+    ) -> ApiResult<Vec<CampaignResponse>> {
+        let mut campaigns = vec![];
+        for campaign in state
             .get_campaigns_by_addr(addr, &mut state.api_state_accessor())
-            .unwrap_infallible();
+            .unwrap_infallible()
+            .into_iter()
+        {
+            campaigns.push(
+                state
+                    .campaign_to_response(campaign, &mut state.api_state_accessor())
+                    .map_err(|err| {
+                        errors::internal_server_error_response_500(format!(
+                            "failed to populate campaign response: {}",
+                            err
+                        ))
+                    })?,
+            );
+        }
+
         Ok(campaigns.into())
     }
 
     async fn route_get_campaigns_by_eth_addr(
         state: ApiState<Self, S>,
         Path(eth_addr): Path<String>,
-    ) -> ApiResult<Vec<Campaign<S>>> {
+    ) -> ApiResult<Vec<CampaignResponse>> {
         let addr = filament_hub_eth::addr_to_hub_address::<S>(&eth_addr)
             .map_err(|e| errors::bad_request_400("malformed address", e))?;
-        Ok(state
+
+        let mut campaigns = vec![];
+        for campaign in state
             .get_campaigns_by_addr(addr, &mut state.api_state_accessor())
             .unwrap_infallible()
-            .into())
+            .into_iter()
+        {
+            campaigns.push(
+                state
+                    .campaign_to_response(campaign, &mut state.api_state_accessor())
+                    .map_err(|err| {
+                        errors::internal_server_error_response_500(format!(
+                            "failed to populate campaign response: {}",
+                            err
+                        ))
+                    })?,
+            );
+        }
+
+        Ok(campaigns.into())
     }
 
     async fn route_get_criteria_votes(
