@@ -19,7 +19,7 @@ jobs:
       pull-requests: write
     strategy:
       matrix:
-        os: [ubuntu-22.04-16core]
+        os: [ubuntu-22.04]
         toolchain: [stable]
 
     name: Deploy docs
