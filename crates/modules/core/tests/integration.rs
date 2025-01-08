@@ -789,6 +789,7 @@ fn setup() -> (TestRoles<S>, TestRunner<TestCoreRuntime<S, MockDaSpec>, S>) {
             admin: admin.address(),
             campaigns: vec![campaign.clone()],
             delegates: delegate_addrs,
+            eth_addresses: Default::default(),
             indexers: vec![],
             powers: Default::default(),
             relayers: vec![relayer.address()],

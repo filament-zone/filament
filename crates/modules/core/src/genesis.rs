@@ -17,6 +17,7 @@ pub struct CoreConfig<S: Spec> {
 
     pub campaigns: Vec<Campaign<S>>,
     pub delegates: Vec<S::Address>,
+    pub eth_addresses: HashMap<S::Address, String>,
     pub indexers: Vec<Indexer<S>>,
     pub powers: HashMap<S::Address, Power>,
     pub relayers: Vec<Relayer<S>>,
@@ -41,6 +42,10 @@ impl<S: Spec> Core<S> {
 
         for delegate in config.delegates.iter() {
             self.delegates.push(delegate, state)?;
+        }
+
+        for (addr, eth_addr) in &config.eth_addresses {
+            self.eth_addresses.set(addr, eth_addr, state)?;
         }
 
         for Indexer { addr, alias } in config.indexers.iter() {

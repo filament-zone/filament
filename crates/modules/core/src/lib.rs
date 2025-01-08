@@ -116,6 +116,10 @@ pub struct Core<S: Spec> {
     #[state]
     pub(crate) powers_index: StateVec<(S::Address, Power)>,
 
+    // Accounts
+    #[state]
+    pub(crate) eth_addresses: StateMap<S::Address, String>,
+
     #[module]
     pub(crate) nonces: sov_nonces::Nonces<S>,
 }
