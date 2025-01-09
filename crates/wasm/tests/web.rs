@@ -3,7 +3,7 @@
 extern crate wasm_bindgen_test;
 use std::assert_eq;
 
-use filament_hub_wasm::{new_unsigned_tx, serialize_call};
+use filament_hub_wasm::{new_unsigned_tx, serialize_call, tx_hash};
 use wasm_bindgen::JsValue;
 use wasm_bindgen_test::*;
 
@@ -42,4 +42,13 @@ fn test_serialize_call() {
         .map_err(JsValue::from)
         .unwrap();
     assert_eq!(call, RUNTIME_CALL_SERIALIZED);
+}
+
+#[wasm_bindgen_test]
+fn test_tx_hash() {
+    let tx: [u8; 64] = [0u8; 64];
+    assert_eq!(
+        tx_hash(tx.to_vec()),
+        "0xf5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b".to_string()
+    )
 }

@@ -7,6 +7,7 @@ pub use alloc::vec::Vec;
 use borsh::BorshSerialize;
 use filament_hub_stf::runtime::RuntimeCall;
 use serde::de::DeserializeOwned;
+use sha2::{Digest as _, Sha256};
 use sov_mock_da::MockDaSpec;
 use sov_mock_zkvm::MockZkVerifier;
 use sov_modules_api::{
@@ -16,7 +17,7 @@ use sov_modules_api::{
     Spec,
 };
 use sov_risc0_adapter::Risc0Verifier;
-use sov_rollup_interface::zk::CryptoSpec;
+use sov_rollup_interface::{zk::CryptoSpec, TxHash};
 use wasm_bindgen::prelude::*;
 
 pub type ZkSpec = DefaultSpec<Risc0Verifier, MockZkVerifier, Zk>;
@@ -93,4 +94,13 @@ where
 {
     let obj: T = serde_json::from_str(json).map_err(JsError::from)?;
     serialize_borsh(&obj)
+}
+
+#[wasm_bindgen]
+pub fn tx_hash(raw_tx: Vec<u8>) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(raw_tx);
+    let tx_hash = TxHash::new(hasher.finalize().into());
+
+    tx_hash.to_string()
 }

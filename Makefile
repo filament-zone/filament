@@ -28,7 +28,7 @@ install-dev-tools: install-risc0-toolchain
 
 install-risc0-toolchain:
 	cargo install cargo-risczero
-	cargo risczero install --version r0.1.79.0
+	cargo risczero install --version r0.1.81.0
 	@echo "Risc0 toolchain version:"
 	cargo +risc0 --version
 
