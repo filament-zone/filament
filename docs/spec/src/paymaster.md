@@ -1,3 +1,8 @@
+# Introduction
+
+This specification details the Paymaster component of the Filament Hub Protocol,
+which provides a secure and reliable mechanism for handling payments between
+Campaigners and Delegates across Layer 1 and Layer 2.
 # Paymaster
 
 ## **Motivation**
@@ -9,7 +14,7 @@ The Filament Hub Protocol requires payments to be made between Campaigners and D
 1. Campaigner UX
     1. They should be able to pay from their bond, liquid $FILA or aquire discounted $FILA from the treasury window
     2. They should only need to sign a single transaction on the Paymaster
-    3. Reliability: The relayer should be trusted but account for failures. Messages have exact once transmission 
+    3. Reliability: The relayer should be trusted but account for failures. Messages have exact once transmission
 
 ## Actors
 
@@ -97,7 +102,7 @@ sequenceDiagram
 
 ### Filament Hub (Rust)
 
-```rust
+```rust,ignore
 struct RequestForPayment {
     campaign_id: u64,
     phase: Phase,
@@ -176,7 +181,7 @@ struct ProofOfPayment {
 
 ## Implementation of Filament Hub State Transitions (Rust)
 
-```rust
+```rust,ignore
 impl FilamentHub {
     fn calculate_fee(&self, campaign_id: u64, phase: Phase, message: Message) -> RequestForPayment {
         let amount = self.fee_calculator.calculate(campaign_id, phase, message);
@@ -231,7 +236,7 @@ impl FilamentHub {
 
 ## Relayer Logic (Rust)
 
-```rust
+```rust,ignore
 struct Relayer {
     paymaster: Paymaster,
     filament_hub: FilamentHub,
