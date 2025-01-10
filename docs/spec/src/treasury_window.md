@@ -6,7 +6,7 @@ Campaigners need bonded \$FILA to conduct campaigns. Among other functions, bond
 
 The treasury window is a smart contract let’s anyone buy bonded FILA at a discount. Campaigners can send USDC and receive \$FILA controlled exchange rate `EXCHANGE_RATE`. `EXCHANGE_RATE` should be:
 
-```rust
+```rust,ignore
 let EXCHANGE_RATE = TWAP($FILA, "7days") * DISCOUNT;
 ```
 

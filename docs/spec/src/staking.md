@@ -162,7 +162,7 @@ contract FilamentStaking is Ownable {
 
 ### 5.2 Filament Hub
 
-```rust
+```rust,ignore
 use std::collections::{HashMap, VecDeque};
 
 type Address = String;
