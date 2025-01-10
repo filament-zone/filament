@@ -11,7 +11,7 @@ The Filament Hub is responsible for coordinating a decentralized set of actors a
 
 ## Invariants
 
-**Liveness:** Actors participating in the protocol are staked. Campaigner stake the budget, delegates have staked  produce voting power, indexers are staked. Staking is done with $FILA. Actors who do not adhere to the protocol are slashed. Phases of the protocol have a maximum duration and timeouts are used to ensure terminate. A trusted oracle called `Protocol` will execute timeouts.
+**Liveness:** Actors participating in the protocol are staked. Campaigner stake the budget, delegates have staked  produce voting power, indexers are staked. Staking is done with \$FILA. Actors who do not adhere to the protocol are slashed. Phases of the protocol have a maximum duration and timeouts are used to ensure terminate. A trusted oracle called `Protocol` will execute timeouts.
 
 The campaign must terminate with the `Settle` phase. Errors occurring throughout the campaign will always direct to a `Settle` Phase.
 
