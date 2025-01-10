@@ -1,10 +1,10 @@
 # Treasury Window
 
-Campaigners need bonded $FILA to conduct campaigns. Among other functions, bonded FILA provides Sybil resistance where campaigners incur some cost and thus can’t burden the delegate set with spam campaigns. The problem is getting $FILA to conduct the campaign. In cases of low liquidity, buying a reasonable amount of $FILA could incur slippage. In general campaigners should not be exposed to price volatility when purchasing services of the Filament Hub. The treasury window is facility that solves this problem by selling bonded FILA at a reliable price in exchange for USDC.
+Campaigners need bonded \$FILA to conduct campaigns. Among other functions, bonded FILA provides Sybil resistance where campaigners incur some cost and thus can’t burden the delegate set with spam campaigns. The problem is getting \$FILA to conduct the campaign. In cases of low liquidity, buying a reasonable amount of \$FILA could incur slippage. In general campaigners should not be exposed to price volatility when purchasing services of the Filament Hub. The treasury window is facility that solves this problem by selling bonded FILA at a reliable price in exchange for USDC.
 
 ### How Treasury Window Works
 
-The treasury window is a smart contract let’s anyone buy bonded FILA at a discount. Campaigners can send USDC and receive $FILA controlled exchange rate `EXCHANGE_RATE`. `EXCHANGE_RATE` should be:
+The treasury window is a smart contract let’s anyone buy bonded FILA at a discount. Campaigners can send USDC and receive \$FILA controlled exchange rate `EXCHANGE_RATE`. `EXCHANGE_RATE` should be:
 
 ```rust
 let EXCHANGE_RATE = TWAP($FILA, "7days") * DISCOUNT;
