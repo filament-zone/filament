@@ -8,6 +8,7 @@ use filament_hub_core::{
     campaign::{Campaign, Phase},
     criteria::{Criteria, CriteriaProposal, Criterion, CriterionCategory},
     crypto::Ed25519Signature,
+    delegate::Delegate,
     segment::{SegmentData, SegmentProof},
     voting::{CriteriaVote, DistributionVote},
     CallMessage,
@@ -56,7 +57,8 @@ struct TestRoles<S: Spec> {
     admin: TestUser<S>,
     campaign: Campaign<S>,
     campaigner: TestUser<S>,
-    delegates: Vec<TestUser<S>>,
+    delegate_users: Vec<TestUser<S>>,
+    delegates: HashMap<String, u64>,
     indexer: TestUser<S>,
     relayer: TestUser<S>,
     staker: TestUser<S>,
@@ -115,7 +117,6 @@ fn draft_campaign() {
             );
 
             let expected = {
-                let delegates = delegates.iter().map(|u| u.address()).collect::<Vec<_>>();
                 let mut campaign = generate_test_campaign(campaigner.address());
                 campaign.id = 2;
                 campaign.delegates = delegates;
@@ -213,7 +214,7 @@ fn propose_criteria() {
     let (
         TestRoles {
             campaigner,
-            delegates,
+            delegate_users,
             ..
         },
         mut runner,
@@ -245,7 +246,7 @@ fn propose_criteria() {
     }
 
     runner.execute_transaction(TransactionTestCase {
-        input: delegates[0].create_plain_message::<Core<S>>(CallMessage::ProposeCriteria {
+        input: delegate_users[0].create_plain_message::<Core<S>>(CallMessage::ProposeCriteria {
             campaign_id: 0,
             criteria: generate_test_criteria(),
         }),
@@ -256,7 +257,7 @@ fn propose_criteria() {
                 result.events[0],
                 TestCoreRuntimeEvent::Core(Event::CriteriaProposed {
                     campaign_id: 0,
-                    proposer: delegates[0].address(),
+                    proposer: delegate_users[0].address(),
                     proposal_id: 0
                 })
             );
@@ -267,7 +268,7 @@ fn propose_criteria() {
                     .unwrap_infallible(),
                 Some(CriteriaProposal {
                     campaign_id: 0,
-                    proposer: delegates[0].address(),
+                    proposer: delegate_users[0].address(),
                     criteria: generate_test_criteria(),
                 })
             );
@@ -280,7 +281,7 @@ fn vote_criteria() {
     let (
         TestRoles {
             campaigner,
-            delegates,
+            delegate_users,
             ..
         },
         mut runner,
@@ -312,7 +313,7 @@ fn vote_criteria() {
     }
 
     runner.execute_transaction(TransactionTestCase {
-        input: delegates[0].create_plain_message::<Core<S>>(CallMessage::VoteCriteria {
+        input: delegate_users[0].create_plain_message::<Core<S>>(CallMessage::VoteCriteria {
             campaign_id: 0,
             vote: CriteriaVote::Rejected,
         }),
@@ -323,14 +324,17 @@ fn vote_criteria() {
                 result.events[0],
                 TestCoreRuntimeEvent::Core(Event::CriteriaVoted {
                     campaign_id: 0,
-                    delegate: delegates[0].address(),
+                    delegate: delegate_users[0].address(),
                     old_vote: None,
                     vote: CriteriaVote::Rejected,
                 })
             );
 
             let mut expected = HashMap::new();
-            expected.insert(delegates[0].address().to_string(), CriteriaVote::Rejected);
+            expected.insert(
+                delegate_users[0].address().to_string(),
+                CriteriaVote::Rejected,
+            );
             assert_eq!(
                 Core::<S>::default()
                     .get_criteria_votes(0, state)
@@ -489,7 +493,7 @@ fn vote_distribution() {
     let (
         TestRoles {
             campaigner,
-            delegates,
+            delegate_users,
             ..
         },
         mut runner,
@@ -521,7 +525,7 @@ fn vote_distribution() {
     }
 
     runner.execute_transaction(TransactionTestCase {
-        input: delegates[0].create_plain_message::<Core<S>>(CallMessage::VoteDistribution {
+        input: delegate_users[0].create_plain_message::<Core<S>>(CallMessage::VoteDistribution {
             campaign_id: 1,
             vote: DistributionVote::Rejected,
         }),
@@ -532,7 +536,7 @@ fn vote_distribution() {
                 result.events[0],
                 TestCoreRuntimeEvent::Core(Event::DistributionVoted {
                     campaign_id: 1,
-                    delegate: delegates[0].address(),
+                    delegate: delegate_users[0].address(),
                     old_vote: None,
                     vote: DistributionVote::Rejected,
                 })
@@ -540,7 +544,7 @@ fn vote_distribution() {
 
             let mut expected = HashMap::new();
             expected.insert(
-                delegates[0].address().to_string(),
+                delegate_users[0].address().to_string(),
                 DistributionVote::Rejected,
             );
             assert_eq!(
@@ -726,7 +730,7 @@ fn unregister_relayer() {
 fn update_voting_power() {
     let (
         TestRoles {
-            delegates,
+            delegate_users,
             relayer,
             staker,
             ..
@@ -738,7 +742,7 @@ fn update_voting_power() {
     {
         runner.execute_transaction(TransactionTestCase {
             input: staker.create_plain_message::<Core<S>>(CallMessage::UpdateVotingPower {
-                address: delegates[0].address(),
+                address: delegate_users[0].address(),
                 power: 1000,
             }),
             assert: Box::new(move |result, _state| {
@@ -757,7 +761,7 @@ fn update_voting_power() {
     }
 
     {
-        let delegate = delegates[0].address();
+        let delegate = delegate_users[0].address();
         let relayer = relayer.clone();
 
         runner.execute_transaction(TransactionTestCase {
@@ -789,7 +793,7 @@ fn update_voting_power() {
 
     // Update voting power of remaining delegates.
     {
-        let delegate = delegates[1].address();
+        let delegate = delegate_users[1].address();
         let relayer = relayer.clone();
 
         runner.execute_transaction(TransactionTestCase {
@@ -805,7 +809,7 @@ fn update_voting_power() {
 
     // Ensure voting power is ordered from highest to lowest.
     {
-        let delegate = delegates[2].address();
+        let delegate = delegate_users[2].address();
 
         runner.execute_transaction(TransactionTestCase {
             input: relayer.create_plain_message::<Core<S>>(CallMessage::UpdateVotingPower {
@@ -820,9 +824,9 @@ fn update_voting_power() {
                         .get_voting_powers(state)
                         .unwrap_infallible(),
                     vec![
-                        (delegates[1].address(), 10000),
-                        (delegates[2].address(), 8000),
-                        (delegates[0].address(), 1000),
+                        (delegate_users[1].address(), 10000),
+                        (delegate_users[2].address(), 8000),
+                        (delegate_users[0].address(), 1000),
                     ],
                 );
             }),
@@ -839,24 +843,37 @@ fn setup() -> (TestRoles<S>, TestRunner<TestCoreRuntime<S, MockDaSpec>, S>) {
     let indexer = genesis_config.additional_accounts[2].clone();
     let relayer = genesis_config.additional_accounts[3].clone();
     let campaigner = genesis_config.additional_accounts[4].clone();
-    let delegates = vec![
+    let delegate_users = vec![
         genesis_config.additional_accounts[5].clone(),
         genesis_config.additional_accounts[6].clone(),
         genesis_config.additional_accounts[7].clone(),
     ];
-    let delegate_addrs = delegates.iter().map(|u| u.address()).collect::<Vec<_>>();
+    let delegates = {
+        let mut delegates = HashMap::new();
+        delegates.insert(delegate_users[0].address().to_string(), 3_000_000);
+        delegates.insert(delegate_users[1].address().to_string(), 2_000_000);
+        delegates.insert(delegate_users[2].address().to_string(), 1_000_000);
+        delegates
+    };
+    let powers = {
+        let mut powers = HashMap::new();
+        powers.insert(delegate_users[0].address(), 3_000_000);
+        powers.insert(delegate_users[1].address(), 2_000_000);
+        powers.insert(delegate_users[2].address(), 1_000_000);
+        powers
+    };
 
     let campaign = {
         let mut campaign = generate_test_campaign(campaigner.address());
         campaign.phase = Phase::Criteria;
-        campaign.delegates.clone_from(&delegate_addrs);
+        campaign.delegates = delegates.clone();
         campaign.indexer = Some(indexer.address());
         campaign
     };
     let distribution_campaign = {
         let mut campaign = generate_test_campaign(campaigner.address());
         campaign.phase = Phase::Distribution;
-        campaign.delegates.clone_from(&delegate_addrs);
+        campaign.delegates = delegates.clone();
         campaign.indexer = Some(indexer.address());
         campaign
     };
@@ -866,10 +883,16 @@ fn setup() -> (TestRoles<S>, TestRunner<TestCoreRuntime<S, MockDaSpec>, S>) {
         CoreConfig {
             admin: admin.address(),
             campaigns: vec![campaign.clone(), distribution_campaign],
-            delegates: delegate_addrs,
+            delegates: delegate_users
+                .iter()
+                .map(|u| Delegate {
+                    address: u.address(),
+                    alias: "".to_string(),
+                })
+                .collect::<Vec<_>>(),
             eth_addresses: Default::default(),
             indexers: vec![],
-            powers: Default::default(),
+            powers,
             relayers: vec![relayer.address()],
         },
     );
@@ -879,6 +902,7 @@ fn setup() -> (TestRoles<S>, TestRunner<TestCoreRuntime<S, MockDaSpec>, S>) {
             admin,
             campaign,
             campaigner,
+            delegate_users,
             delegates,
             indexer,
             relayer,
@@ -900,7 +924,7 @@ fn generate_test_campaign(campaigner: <S as Spec>::Address) -> Campaign<S> {
         criteria: generate_test_criteria(),
 
         evictions: vec![],
-        delegates: vec![],
+        delegates: HashMap::new(),
 
         indexer: None,
     }

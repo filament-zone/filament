@@ -1,4 +1,4 @@
-use std::{env, net::SocketAddr, str::FromStr as _};
+use std::{collections::HashMap, env, net::SocketAddr, str::FromStr as _};
 
 use anyhow::Context as _;
 use filament_hub_core::{
@@ -149,6 +149,22 @@ async fn send_eth_tx(
         .map(|slot| slot.number)
         .unwrap_or_default();
 
+    let delegates = {
+        let mut delegates = HashMap::new();
+        delegates.insert(
+            "sov1tv02t4kmluerkqxq4ylrtml4zxuh39tcqqqqqqqqqqqqqqqqqqqqpa53ef".to_string(),
+            730_000,
+        );
+        delegates.insert(
+            "sov1yp3q53jysge34kkgm50aztdrjpxqc0mdqqqqqqqqqqqqqqqqqqqq7t4qad".to_string(),
+            512_000,
+        );
+        delegates.insert(
+            "sov1el0m5n0m4tjr5mawdglwae3swn7jw69cqqqqqqqqqqqqqqqqqqqq359qtu".to_string(),
+            1_820_000,
+        );
+        delegates
+    };
     let campaign_response = CoreRpcClient::<TestSpec>::rpc_get_campaign(&client.rpc, 0).await?;
     assert_eq!(
         campaign_response,
@@ -160,9 +176,7 @@ async fn send_eth_tx(
             description: "".to_string(),
             criteria,
             evictions: vec![],
-            delegates: vec![
-                "sov1el0m5n0m4tjr5mawdglwae3swn7jw69cqqqqqqqqqqqqqqqqqqqq359qtu".parse()?
-            ],
+            delegates,
 
             indexer: None,
         }),

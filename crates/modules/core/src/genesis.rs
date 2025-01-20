@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use anyhow::Result;
 use sov_modules_api::{GenesisState, Spec};
 
-use crate::{Campaign, Core, Indexer, Power, Relayer};
+use crate::{delegate::Delegate, Campaign, Core, Indexer, Power, Relayer};
 
 #[cfg_attr(
     feature = "native",
@@ -16,7 +16,7 @@ pub struct CoreConfig<S: Spec> {
     pub admin: S::Address,
 
     pub campaigns: Vec<Campaign<S>>,
-    pub delegates: Vec<S::Address>,
+    pub delegates: Vec<Delegate<S>>,
     pub eth_addresses: HashMap<S::Address, String>,
     pub indexers: Vec<Indexer<S>>,
     pub powers: HashMap<S::Address, Power>,
@@ -41,7 +41,7 @@ impl<S: Spec> Core<S> {
         self.next_campaign_id.set(&id, state)?;
 
         for delegate in config.delegates.iter() {
-            self.delegates.push(delegate, state)?;
+            self.delegates.push(&delegate.address, state)?;
         }
 
         for (addr, eth_addr) in &config.eth_addresses {

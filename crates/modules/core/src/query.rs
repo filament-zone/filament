@@ -50,7 +50,7 @@ pub struct CampaignResponse {
     pub criteria: Criteria,
 
     pub evictions: Vec<String>,
-    pub delegates: Vec<String>,
+    pub delegates: HashMap<String, u64>,
 
     pub indexer: Option<String>,
 }
@@ -300,9 +300,14 @@ impl<S: Spec> Core<S> {
         for addr in &campaign.evictions {
             evictions.push(self.eth_addresses.get(addr, state)?.unwrap());
         }
-        let mut delegates = vec![];
-        for addr in &campaign.delegates {
-            delegates.push(self.eth_addresses.get(addr, state)?.unwrap());
+        let mut delegates = HashMap::new();
+        for (addr, power) in &campaign.delegates {
+            delegates.insert(
+                self.eth_addresses
+                    .get(&(*addr).parse::<S::Address>()?, state)?
+                    .unwrap(),
+                *power,
+            );
         }
         let mut indexer = None;
         if campaign.indexer.is_some() {

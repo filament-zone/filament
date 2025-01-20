@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use anyhow::{anyhow, bail, Result};
 use sov_mock_zkvm::MockZkVerifier;
 use sov_modules_api::{
@@ -145,8 +147,14 @@ impl<S: Spec> Core<S> {
         }
 
         let delegates = {
-            let mut delegates = proposed_delegates.clone();
-            delegates.retain(|d| !evictions.contains(d));
+            let mut elected = proposed_delegates.clone();
+            elected.retain(|d| !evictions.contains(d));
+
+            let mut delegates = HashMap::new();
+            for elect in &elected {
+                let power = self.powers.get(elect, state)?.unwrap_or_default();
+                delegates.insert(elect.to_string(), power);
+            }
             delegates
         };
         self.campaigns.set(
@@ -249,7 +257,7 @@ impl<S: Spec> Core<S> {
             bail!("invalid criteria proposal, campaign '{campaign_id}' is not in criteria phase");
         }
 
-        if !campaign.delegates.contains(sender) {
+        if !campaign.delegates.contains_key(&sender.to_string()) {
             bail!("invalid proposer, '{sender}' is not a campaign delegate");
         }
 
@@ -300,7 +308,7 @@ impl<S: Spec> Core<S> {
             bail!("invalid criteria vote, campaign '{campaign_id}' is not in criteria phase");
         }
 
-        if !campaign.delegates.contains(sender) {
+        if !campaign.delegates.contains_key(&sender.to_string()) {
             bail!("invalid voter, '{sender}' is not a campaign delegate");
         }
 
@@ -492,7 +500,7 @@ impl<S: Spec> Core<S> {
             );
         }
 
-        if !campaign.delegates.contains(sender) {
+        if !campaign.delegates.contains_key(&sender.to_string()) {
             bail!("invalid voter, '{sender}' is not a campaign delegate");
         }
 
