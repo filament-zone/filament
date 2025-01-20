@@ -1,10 +1,9 @@
+use std::collections::HashMap;
+
 use sov_mock_zkvm::MockZkVerifier;
 use sov_modules_api::{default_spec::DefaultSpec, execution_mode::Zk, Spec};
 
-use crate::{
-    criteria::Criteria,
-    delegate::{Delegate, Eviction},
-};
+use crate::{criteria::Criteria, delegate::Eviction};
 
 pub const SEVICTION_COST: u64 = 1;
 pub const MAX_EVICTIONS: u64 = 3;
@@ -44,8 +43,7 @@ pub struct Campaign<S: Spec> {
     #[ts(type = "Array<string>")]
     pub evictions: Vec<Eviction<S>>,
     // TODO(xla): Rework into commitments in follow-up.
-    #[ts(type = "Array<string>")]
-    pub delegates: Vec<Delegate<S>>,
+    pub delegates: HashMap<String, u64>,
 
     #[ts(type = "string | null")]
     pub indexer: Option<S::Address>,

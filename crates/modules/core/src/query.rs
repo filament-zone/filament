@@ -301,8 +301,12 @@ impl<S: Spec> Core<S> {
             evictions.push(self.eth_addresses.get(addr, state)?.unwrap());
         }
         let mut delegates = vec![];
-        for addr in &campaign.delegates {
-            delegates.push(self.eth_addresses.get(addr, state)?.unwrap());
+        for (addr, _) in &campaign.delegates {
+            delegates.push(
+                self.eth_addresses
+                    .get(&(*addr).parse::<S::Address>()?, state)?
+                    .unwrap(),
+            );
         }
         let mut indexer = None;
         if campaign.indexer.is_some() {
