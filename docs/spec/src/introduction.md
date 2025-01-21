@@ -11,9 +11,9 @@ This documentation provides comprehensive technical details for developers looki
 ### 1. Core Components
 The protocol consists of three main components working together to enable secure and efficient token distribution:
 
-- [**Filament Hub**](./core_components.md#filament-hub) - A Layer 2 state machine that coordinates campaigns, processes votes, and manages state transitions
+- [**Filament Hub**](./components.md#filament-hub) - A Layer 2 state machine that coordinates campaigns, processes votes, and manages state transitions
 - [**Outposts**](./core_components.md#outposts) - Smart contracts deployed on various chains that handle token operations and distributions
-- [**Relayer Network**](./core_components.md#relayer-network) - Infrastructure ensuring reliable cross-chain message delivery and state synchronization
+- [**Relayer Network**](./components.md#relayer-network) - Infrastructure ensuring reliable cross-chain message delivery and state synchronization
 
 ### 2. Campaign Protocol
 The [Campaign Protocol](./campaign_protocol.md) defines how campaigns execute through five distinct phases:
