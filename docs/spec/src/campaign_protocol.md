@@ -26,7 +26,7 @@ The Init phase establishes the campaign parameters and elects delegates:
    - Confirms delegate set
 
 2. **Delegate Election**
-   ```rust
+   ```rust,ignore
    #[authorized(Campaigner)]
    fn elect(Budget, Criteria) -> Result<Vec<Delegate>, Error>
 
@@ -47,7 +47,7 @@ The Init phase establishes the campaign parameters and elects delegates:
 The Criteria phase establishes distribution rules through delegate voting:
 
 1. **Voting Process**
-   ```rust
+   ```rust,ignore
    struct Vote {
        delegate: Address,
        power: VotingPower,
@@ -64,7 +64,7 @@ The Criteria phase establishes distribution rules through delegate voting:
    - Slashing for non-participation
 
 3. **Phase Completion**
-   ```rust
+   ```rust,ignore
    #[authorized(Campaigner)]
    fn confirm(
        weights: Vec<f32>,
@@ -81,7 +81,7 @@ The Criteria phase establishes distribution rules through delegate voting:
 The Publish phase collects and validates segment data:
 
 1. **Indexer Submissions**
-   ```rust
+   ```rust,ignore
    struct Segment<Domain> {
        addresses: Vec<Address<Domain>>,
        amounts: Vec<Amount>
@@ -97,7 +97,7 @@ The Publish phase collects and validates segment data:
    - Timeout enforcement
 
 3. **Phase Completion**
-   ```rust
+   ```rust,ignore
    #[authorized(Campaigner)]
    fn confirm(resolution: Resolution) -> Transition<Phase::Distribution>
    ```
@@ -107,7 +107,7 @@ The Publish phase collects and validates segment data:
 The Distribution phase determines final reward allocations:
 
 1. **Distribution Voting**
-   ```rust
+   ```rust,ignore
    struct Distribution {
        addresses: Vec<Address>,
        amounts: Vec<Amount>
@@ -126,11 +126,12 @@ The Distribution phase determines final reward allocations:
    - Timeout handling
 
 3. **Phase Completion**
-   ```rust
+   ```rust,ignore
    #[authorized(Campaigner)]
    fn confirm(
        distribution: Distribution,
        payment: Payment
+
    ) -> Transition<Phase::Settle>
    ```
 
@@ -139,7 +140,7 @@ The Distribution phase determines final reward allocations:
 The Settle phase processes payments and concludes the campaign:
 
 1. **Payment Processing**
-   ```rust
+   ```rust,ignore
    struct Payment {
        recipient: Address,
        amount: Amount,
@@ -176,7 +177,7 @@ stateDiagram-v2
    - All paths lead to Settle
 
 2. **Timeout Handling**
-   ```rust
+   ```rust,ignore
    #[authorized(Protocol)]
    fn timeout(phase: Phase) -> Transition<Phase::Settle>
    ```
