@@ -23,7 +23,7 @@ The Hub maintains several key state types:
        variables: Vec<Variable> // Campaign parameters
    }
    enum Phase {
-      Draft,
+      Draftt
       Init,
       Criteria,
       Publish,
@@ -156,7 +156,7 @@ The Relayer Network ensures reliable message delivery between the Hub and Outpos
 ### Message Passing Protocol
 
 1. **Message Queue Management**
-   ```rust
+   ```rust,ignore
    struct MessageQueue {
        pending: Vec<Message>,
        in_flight: HashMap<MessageId, InFlightMessage>,
@@ -178,7 +178,7 @@ The Relayer Network ensures reliable message delivery between the Hub and Outpos
 ### Synchronization
 
 1. **State Sync**
-   ```rust
+   ```rust,ignore
    struct SyncState {
        last_synced_block: BlockHeight,
        pending_messages: Vec<Message>,
@@ -199,7 +199,7 @@ The Relayer Network ensures reliable message delivery between the Hub and Outpos
    - Slashing conditions
 
 2. **Message Verification**
-   ```rust
+   ```rust,ignore
    trait MessageVerifier {
        fn verify_message(
            message: &Message,
@@ -217,10 +217,9 @@ The Relayer Network ensures reliable message delivery between the Hub and Outpos
 ## Integration Patterns
 
 ### Component Communication
-* What
 
 1. **Hub to Outpost**
-   ```rust
+   ```rust,ignore
    async fn send_to_outpost(
        message: Message,
        outpost: OutpostId
@@ -228,7 +227,7 @@ The Relayer Network ensures reliable message delivery between the Hub and Outpos
    ```
 
 2. **Outpost to Hub**
-   ```rust
+   ```rust,ignore
    async fn send_to_hub(
        message: Message,
        proof: Proof

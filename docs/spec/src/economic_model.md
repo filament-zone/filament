@@ -21,7 +21,7 @@ $FILA is the native token of the Filament network serving multiple purposes:
 $FILUM serves as the computational gas token for the Filament Hub:
 
 1. **Allocation**
-   ```rust
+   ```rust,ignore
    struct FilumAllocation {
        epoch: u64,
        emissions_per_epoch: u64,
@@ -41,7 +41,7 @@ $FILUM serves as the computational gas token for the Filament Hub:
 The Treasury Window provides reliable FILA acquisition for campaigners:
 
 1. **Exchange Mechanism**
-   ```rust
+   ```rust,ignore
    struct TreasuryWindow {
        exchange_rate: f64,  // FILA/USDC rate
        discount: f64,       // Current discount
@@ -50,7 +50,7 @@ The Treasury Window provides reliable FILA acquisition for campaigners:
    ```
 
 2. **Rate Calculation**
-   ```rust
+   ```rust,ignore
    fn calculate_rate() -> f64 {
        let twap = get_fila_twap("7days");
        twap * DISCOUNT_FACTOR
@@ -67,7 +67,7 @@ The Treasury Window provides reliable FILA acquisition for campaigners:
 Campaign bonds ensure campaigner commitment and delegate compensation:
 
 1. **Bond Requirements**
-   ```rust
+   ```rust,ignore
    struct CampaignBond {
        total_bonded: u64,
        watermark: u64,
@@ -90,7 +90,7 @@ Campaign bonds ensure campaigner commitment and delegate compensation:
 Delegates earn commission for campaign participation:
 
 1. **Commission Calculation**
-   ```rust
+   ```rust,ignore
    struct Commission {
        median_reward: u64,
        commission_multiple: f64,
@@ -113,7 +113,7 @@ Delegates earn commission for campaign participation:
 ### Transaction Fees
 
 1. **Gas Costs ($FILUM)**
-   ```rust
+   ```rust,ignore
    struct GasCost {
        base_fee: u64,
        computation_fee: u64,
@@ -129,7 +129,7 @@ Delegates earn commission for campaign participation:
 ### Phase-Specific Fees
 
 1. **Init Phase**
-   ```rust
+   ```rust,ignore
    fn calculate_init_fee(
        num_delegates: u32,
        evictions: u32
@@ -141,7 +141,7 @@ Delegates earn commission for campaign participation:
    ```
 
 2. **Criteria Phase**
-   ```rust
+   ```rust,ignore
    fn calculate_criteria_fee(
        proposal: Proposal,
        outcome: Outcome
@@ -154,7 +154,7 @@ Delegates earn commission for campaign participation:
    ```
 
 3. **Distribution Phase**
-   ```rust
+   ```rust,ignore
    fn calculate_distribution_fee(
        distribution: Distribution,
        outcome: Outcome
@@ -169,7 +169,7 @@ Delegates earn commission for campaign participation:
 The VCG (Vickrey-Clarke-Groves) mechanism optimizes reward distribution:
 
 1. **Objective Function**
-   ```rust
+   ```rust,ignore
    struct Objective {
        metric: EconomicMetric,
        weight: f64,
@@ -178,7 +178,7 @@ The VCG (Vickrey-Clarke-Groves) mechanism optimizes reward distribution:
    ```
 
 2. **Delegate Contribution**
-   ```rust
+   ```rust,ignore
    fn calculate_marginal_contribution(
        delegate: Delegate,
        metric: EconomicMetric
@@ -190,7 +190,7 @@ The VCG (Vickrey-Clarke-Groves) mechanism optimizes reward distribution:
    ```
 
 3. **Reward Allocation**
-   ```rust
+   ```rust,ignore
    fn calculate_vcg_reward(
        contribution: f64,
        median_reward: u64
@@ -216,7 +216,7 @@ The VCG (Vickrey-Clarke-Groves) mechanism optimizes reward distribution:
 ### Slashing Conditions
 
 1. **Timeout Slashing**
-   ```rust
+   ```rust,ignore
    fn calculate_timeout_slash(
        stake: u64,
        severity: SlashSeverity
