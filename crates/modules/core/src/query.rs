@@ -334,6 +334,16 @@ impl<S: Spec> Core<S> {
         })
     }
 
+    fn get_eth_address<Accessor: StateAccessor>(
+        &self,
+        addr: String,
+        state: &mut Accessor,
+    ) -> anyhow::Result<Option<String>> {
+        Ok(self
+            .eth_addresses
+            .get(&addr.parse::<<S as Spec>::Address>()?, state)?)
+    }
+
     async fn route_get_account_by_eth_addr(
         state: ApiState<Self, S>,
         Path(eth_addr): Path<String>,
@@ -445,20 +455,44 @@ impl<S: Spec> Core<S> {
         state: ApiState<Self, S>,
         Path(campaign_id): Path<u64>,
     ) -> ApiResult<HashMap<String, CriteriaVote>> {
-        Ok(state
+        let hub_votes = state
             .get_criteria_votes(campaign_id, &mut state.api_state_accessor())
-            .unwrap_infallible()
-            .into())
+            .unwrap_infallible();
+
+        let mut votes = HashMap::new();
+        for (addr, vote) in hub_votes.into_iter() {
+            votes.insert(
+                state
+                    .get_eth_address(addr, &mut state.api_state_accessor())
+                    .unwrap()
+                    .unwrap(),
+                vote,
+            );
+        }
+
+        Ok(votes.into())
     }
 
     async fn route_get_distribution_votes(
         state: ApiState<Self, S>,
         Path(campaign_id): Path<u64>,
     ) -> ApiResult<HashMap<String, DistributionVote>> {
-        Ok(state
+        let hub_votes = state
             .get_distribution_votes(campaign_id, &mut state.api_state_accessor())
-            .unwrap_infallible()
-            .into())
+            .unwrap_infallible();
+
+        let mut votes = HashMap::new();
+        for (addr, vote) in hub_votes.into_iter() {
+            votes.insert(
+                state
+                    .get_eth_address(addr, &mut state.api_state_accessor())
+                    .unwrap()
+                    .unwrap(),
+                vote,
+            );
+        }
+
+        Ok(votes.into())
     }
 }
 
