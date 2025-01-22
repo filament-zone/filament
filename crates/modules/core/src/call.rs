@@ -396,7 +396,10 @@ impl<S: Spec> Core<S> {
             .get(&campaign_id, state)?
             .ok_or(anyhow!("campaign '{campaign_id}' not found"))?;
 
-        if campaign.indexer.is_none() || *sender != campaign.indexer.clone().unwrap() {
+        // XXX(xla): Remove shortcut for campaigner to index.
+        if (campaign.indexer.is_none() || *sender != campaign.indexer.clone().unwrap())
+            && *sender != campaign.campaigner
+        {
             bail!(
                 "sender '{}' is not the registered indexer '{:?}' for campaign '{}'",
                 sender,
@@ -443,7 +446,10 @@ impl<S: Spec> Core<S> {
             .get(&campaign_id, state)?
             .ok_or(anyhow!("campaign '{campaign_id}' not found"))?;
 
-        if campaign.indexer.is_none() || *sender != campaign.indexer.clone().unwrap() {
+        // XXX(xla): Remove shortcut for campaigner to index.
+        if (campaign.indexer.is_none() || *sender != campaign.indexer.clone().unwrap())
+            && *sender != campaign.campaigner
+        {
             bail!(
                 "sender '{}' is not the registered indexer '{:?}' for campaign '{}'",
                 sender,

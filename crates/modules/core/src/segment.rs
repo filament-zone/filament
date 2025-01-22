@@ -22,7 +22,7 @@ use crate::crypto::Ed25519Signature;
 #[ts(export_to = "../../../../bindings/Segment.ts")]
 pub struct Segment {
     pub data: SegmentData,
-    pub proof: SegmentProof,
+    pub proof: Option<SegmentProof>,
     pub retrieved_at: u128,
 }
 
