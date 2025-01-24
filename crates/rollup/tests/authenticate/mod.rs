@@ -165,7 +165,8 @@ async fn send_eth_tx(
         );
         delegates
     };
-    let campaign_response = CoreRpcClient::<TestSpec>::rpc_get_campaign(&client.rpc, 0).await?;
+    let campaign_response =
+        CoreRpcClient::<TestSpec, MockDaSpec>::rpc_get_campaign(&client.rpc, 0).await?;
     assert_eq!(
         campaign_response,
         Some(Campaign {

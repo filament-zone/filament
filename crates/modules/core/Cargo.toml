@@ -16,6 +16,7 @@ workspace = true
 filament-hub-eth = { workspace = true }
 
 sov-bank        = { workspace = true }
+sov-chain-state = { workspace = true }
 sov-modules-api = { workspace = true }
 sov-mock-zkvm   = { workspace = true }
 sov-nonces      = { workspace = true }

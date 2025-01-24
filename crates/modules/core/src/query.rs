@@ -16,6 +16,7 @@ use sov_modules_api::{
     },
     ApiStateAccessor,
     CryptoSpec,
+    DaSpec,
     Spec,
     StateAccessor,
     StateReader,
@@ -56,7 +57,11 @@ pub struct CampaignResponse {
 }
 
 // Account queries.
-impl<S: Spec> Core<S> {
+impl<S, Da> Core<S, Da>
+where
+    S: Spec,
+    Da: DaSpec,
+{
     pub fn get_account_by_eth_addr<Accessor: StateAccessor>(
         &self,
         eth_addr: &str,
@@ -76,7 +81,11 @@ impl<S: Spec> Core<S> {
 }
 
 // Campaign queries.
-impl<S: Spec> Core<S> {
+impl<S, Da> Core<S, Da>
+where
+    S: Spec,
+    Da: DaSpec,
+{
     pub fn get_campaign<Accessor: StateAccessor>(
         &self,
         campaign_id: u64,
@@ -169,7 +178,11 @@ impl<S: Spec> Core<S> {
 }
 
 // Indexer queries.
-impl<S: Spec> Core<S> {
+impl<S, Da> Core<S, Da>
+where
+    S: Spec,
+    Da: DaSpec,
+{
     pub fn get_indexer<Accessor: StateAccessor>(
         &self,
         addr: S::Address,
@@ -203,7 +216,11 @@ impl<S: Spec> Core<S> {
 }
 
 // Relayer queries.
-impl<S: Spec> Core<S> {
+impl<S, Da> Core<S, Da>
+where
+    S: Spec,
+    Da: DaSpec,
+{
     pub fn get_relayer<Accessor: StateAccessor>(
         &self,
         addr: S::Address,
@@ -220,7 +237,11 @@ impl<S: Spec> Core<S> {
 
 // Voting queries.
 #[allow(clippy::type_complexity)]
-impl<S: Spec> Core<S> {
+impl<S, Da> Core<S, Da>
+where
+    S: Spec,
+    Da: DaSpec,
+{
     pub fn get_voting_power<Accessor: StateAccessor>(
         &self,
         addr: S::Address,
@@ -241,7 +262,11 @@ impl<S: Spec> Core<S> {
 
 // RPC
 #[rpc_gen(client, server, namespace = "core")]
-impl<S: Spec> Core<S> {
+impl<S, Da> Core<S, Da>
+where
+    S: Spec,
+    Da: DaSpec,
+{
     #[rpc_method(name = "getCampaign")]
     pub fn rpc_get_campaign(
         &self,
@@ -290,7 +315,11 @@ impl<S: Spec> Core<S> {
 }
 
 // Axum routes.
-impl<S: Spec> Core<S> {
+impl<S, Da> Core<S, Da>
+where
+    S: Spec,
+    Da: DaSpec,
+{
     fn campaign_to_response<Accessor: StateAccessor>(
         &self,
         campaign: Campaign<S>,
@@ -496,7 +525,11 @@ impl<S: Spec> Core<S> {
     }
 }
 
-impl<S: Spec> HasCustomRestApi for Core<S> {
+impl<S, Da> HasCustomRestApi for Core<S, Da>
+where
+    S: Spec,
+    Da: DaSpec,
+{
     type Spec = S;
 
     fn custom_rest_api(&self, state: ApiState<Self, Self::Spec>) -> Router<()> {

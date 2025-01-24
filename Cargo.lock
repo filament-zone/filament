@@ -2157,6 +2157,7 @@ dependencies = [
  "serde_bytes",
  "serde_json",
  "sov-bank",
+ "sov-chain-state",
  "sov-mock-zkvm",
  "sov-modules-api",
  "sov-modules-stf-blueprint",

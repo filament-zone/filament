@@ -73,7 +73,7 @@ pub struct Runtime<S: Spec, Da: DaSpec> {
     /// The Prover Incentives module.
     pub prover_incentives: sov_prover_incentives::ProverIncentives<S, Da>,
 
-    pub core: filament_hub_core::Core<S>,
+    pub core: filament_hub_core::Core<S, Da>,
 }
 
 impl<S, Da> sov_modules_stf_blueprint::Runtime<S, Da> for Runtime<S, Da>

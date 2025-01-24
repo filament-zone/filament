@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::Result;
-use sov_modules_api::{GenesisState, Spec};
+use sov_modules_api::{DaSpec, GenesisState, Spec};
 
 use crate::{delegate::Delegate, Campaign, Core, Indexer, Power, Relayer};
 
@@ -23,7 +23,11 @@ pub struct CoreConfig<S: Spec> {
     pub relayers: Vec<Relayer<S>>,
 }
 
-impl<S: Spec> Core<S> {
+impl<S, Da> Core<S, Da>
+where
+    S: Spec,
+    Da: DaSpec,
+{
     pub(crate) fn init_module(
         &self,
         config: &<Self as sov_modules_api::Module>::Config,

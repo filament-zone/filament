@@ -6,6 +6,7 @@ use sov_modules_api::{
     macros::ModuleRestApi,
     CallResponse,
     Context,
+    DaSpec,
     Error,
     GenesisState,
     Module,
@@ -62,7 +63,7 @@ pub use voting::Power;
 use voting::{CriteriaVote, DistributionVote};
 
 #[derive(Clone, ModuleInfo, ModuleRestApi)]
-pub struct Core<S: Spec> {
+pub struct Core<S: Spec, Da: DaSpec> {
     #[id]
     pub(crate) id: ModuleId,
 
@@ -125,9 +126,12 @@ pub struct Core<S: Spec> {
 
     #[module]
     pub(crate) nonces: sov_nonces::Nonces<S>,
+
+    #[kernel_module]
+    pub(crate) chain_state: sov_chain_state::ChainState<S, Da>,
 }
 
-impl<S: Spec> Module for Core<S> {
+impl<Da: DaSpec, S: Spec> Module for Core<S, Da> {
     type CallMessage = call::CallMessage<S>;
     type Config = CoreConfig<S>;
     type Event = Event<S>;

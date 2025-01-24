@@ -5,6 +5,7 @@ use sov_mock_zkvm::MockZkVerifier;
 use sov_modules_api::{
     default_spec::DefaultSpec,
     execution_mode::Zk,
+    DaSpec,
     EventEmitter as _,
     Spec,
     TxState,
@@ -112,7 +113,7 @@ pub enum CallMessage<S: Spec> {
     },
 }
 
-impl<S: Spec> Core<S> {
+impl<Da: DaSpec, S: Spec> Core<S, Da> {
     pub(crate) fn draft_campaign(
         &self,
         title: String,
@@ -529,7 +530,7 @@ impl<S: Spec> Core<S> {
 }
 
 // Indexer handlers.
-impl<S: Spec> Core<S> {
+impl<Da: DaSpec, S: Spec> Core<S, Da> {
     pub(crate) fn register_indexer(
         &self,
         indexer: S::Address,
@@ -609,7 +610,7 @@ impl<S: Spec> Core<S> {
 }
 
 // Relayer handlers.
-impl<S: Spec> Core<S> {
+impl<Da: DaSpec, S: Spec> Core<S, Da> {
     pub(crate) fn register_relayer(
         &self,
         relayer: S::Address,
@@ -684,7 +685,7 @@ impl<S: Spec> Core<S> {
 }
 
 // Voting
-impl<S: Spec> Core<S> {
+impl<Da: DaSpec, S: Spec> Core<S, Da> {
     pub(crate) fn update_voting_power(
         &self,
         addr: S::Address,

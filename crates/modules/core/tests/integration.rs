@@ -51,7 +51,7 @@ lazy_static! {
 
 type S = TestSpec;
 
-generate_optimistic_runtime!(TestCoreRuntime <= core: Core<S>);
+generate_optimistic_runtime!(TestCoreRuntime <= core: Core<S, MockDaSpec>);
 
 struct TestRoles<S: Spec> {
     admin: TestUser<S>,
@@ -79,7 +79,7 @@ fn draft_campaign() {
     {
         let campaigner = campaigner.clone();
         runner.execute_transaction(TransactionTestCase {
-            input: campaigner.create_plain_message::<Core<S>>(CallMessage::Draft {
+            input: campaigner.create_plain_message::<Core<S, MockDaSpec>>(CallMessage::Draft {
                 title: "".to_string(),
                 description: "".to_string(),
                 criteria: vec![],
@@ -98,7 +98,7 @@ fn draft_campaign() {
     }
 
     runner.execute_transaction(TransactionTestCase {
-        input: campaigner.create_plain_message::<Core<S>>(CallMessage::Draft {
+        input: campaigner.create_plain_message::<Core<S, MockDaSpec>>(CallMessage::Draft {
             title: "".to_string(),
             description: "".to_string(),
             criteria: generate_test_criteria(),
@@ -123,13 +123,13 @@ fn draft_campaign() {
                 campaign
             };
             assert_eq!(
-                Core::<S>::default()
+                Core::<S, MockDaSpec>::default()
                     .get_campaign(2, state)
                     .unwrap_infallible(),
                 Some(expected.clone())
             );
             assert_eq!(
-                Core::<S>::default()
+                Core::<S, MockDaSpec>::default()
                     .get_campaigns_by_addr(campaigner.address(), state)
                     .unwrap_infallible(),
                 vec![expected]
@@ -152,7 +152,7 @@ fn init_criteria() {
 
     // Create draft campaign.
     runner.execute_transaction(TransactionTestCase {
-        input: campaigner.create_plain_message::<Core<S>>(CallMessage::Draft {
+        input: campaigner.create_plain_message::<Core<S, MockDaSpec>>(CallMessage::Draft {
             title: "".to_string(),
             description: "".to_string(),
             criteria: generate_test_criteria(),
@@ -166,7 +166,8 @@ fn init_criteria() {
     // Init should fail if sender is not campaigner.
     {
         runner.execute_transaction(TransactionTestCase {
-            input: staker.create_plain_message::<Core<S>>(CallMessage::Init { campaign_id: 2 }),
+            input: staker
+                .create_plain_message::<Core<S, MockDaSpec>>(CallMessage::Init { campaign_id: 2 }),
             assert: Box::new(move |result, _state| {
                 assert_eq!(
                     result.tx_receipt,
@@ -183,7 +184,8 @@ fn init_criteria() {
     }
 
     runner.execute_transaction(TransactionTestCase {
-        input: campaigner.create_plain_message::<Core<S>>(CallMessage::Init { campaign_id: 2 }),
+        input: campaigner
+            .create_plain_message::<Core<S, MockDaSpec>>(CallMessage::Init { campaign_id: 2 }),
         assert: Box::new(move |result, state| {
             assert!(result.tx_receipt.is_successful());
             assert_eq!(result.events.len(), 1);
@@ -200,7 +202,7 @@ fn init_criteria() {
                 campaign
             };
             assert_eq!(
-                Core::<S>::default()
+                Core::<S, MockDaSpec>::default()
                     .get_campaign(2, state)
                     .unwrap_infallible(),
                 Some(campaign)
@@ -224,12 +226,12 @@ fn propose_criteria() {
     {
         let campaigner = campaigner.clone();
         runner.execute_transaction(TransactionTestCase {
-            input: campaigner.clone().create_plain_message::<Core<S>>(
-                CallMessage::ProposeCriteria {
+            input: campaigner
+                .clone()
+                .create_plain_message::<Core<S, MockDaSpec>>(CallMessage::ProposeCriteria {
                     campaign_id: 0,
                     criteria: generate_test_criteria(),
-                },
-            ),
+                }),
             assert: Box::new(move |result, _state| {
                 assert_eq!(
                     result.tx_receipt,
@@ -246,10 +248,12 @@ fn propose_criteria() {
     }
 
     runner.execute_transaction(TransactionTestCase {
-        input: delegate_users[0].create_plain_message::<Core<S>>(CallMessage::ProposeCriteria {
-            campaign_id: 0,
-            criteria: generate_test_criteria(),
-        }),
+        input: delegate_users[0].create_plain_message::<Core<S, MockDaSpec>>(
+            CallMessage::ProposeCriteria {
+                campaign_id: 0,
+                criteria: generate_test_criteria(),
+            },
+        ),
         assert: Box::new(move |result, state| {
             assert!(result.tx_receipt.is_successful());
             assert_eq!(result.events.len(), 1);
@@ -263,7 +267,7 @@ fn propose_criteria() {
             );
 
             assert_eq!(
-                Core::<S>::default()
+                Core::<S, MockDaSpec>::default()
                     .get_criteria_proposal(0, 0, state)
                     .unwrap_infallible(),
                 Some(CriteriaProposal {
@@ -293,7 +297,7 @@ fn vote_criteria() {
         runner.execute_transaction(TransactionTestCase {
             input: campaigner
                 .clone()
-                .create_plain_message::<Core<S>>(CallMessage::VoteCriteria {
+                .create_plain_message::<Core<S, MockDaSpec>>(CallMessage::VoteCriteria {
                     campaign_id: 0,
                     vote: CriteriaVote::Rejected,
                 }),
@@ -313,10 +317,12 @@ fn vote_criteria() {
     }
 
     runner.execute_transaction(TransactionTestCase {
-        input: delegate_users[0].create_plain_message::<Core<S>>(CallMessage::VoteCriteria {
-            campaign_id: 0,
-            vote: CriteriaVote::Rejected,
-        }),
+        input: delegate_users[0].create_plain_message::<Core<S, MockDaSpec>>(
+            CallMessage::VoteCriteria {
+                campaign_id: 0,
+                vote: CriteriaVote::Rejected,
+            },
+        ),
         assert: Box::new(move |result, state| {
             assert!(result.tx_receipt.is_successful());
             assert_eq!(result.events.len(), 1);
@@ -336,7 +342,7 @@ fn vote_criteria() {
                 CriteriaVote::Rejected,
             );
             assert_eq!(
-                Core::<S>::default()
+                Core::<S, MockDaSpec>::default()
                     .get_criteria_votes(0, state)
                     .unwrap_infallible(),
                 expected
@@ -360,10 +366,12 @@ fn confirm_criteria() {
     // Confirm should fail if sender is not campaigner.
     {
         runner.execute_transaction(TransactionTestCase {
-            input: staker.create_plain_message::<Core<S>>(CallMessage::ConfirmCriteria {
-                campaign_id: 0,
-                proposal_id: None,
-            }),
+            input: staker.create_plain_message::<Core<S, MockDaSpec>>(
+                CallMessage::ConfirmCriteria {
+                    campaign_id: 0,
+                    proposal_id: None,
+                },
+            ),
             assert: Box::new(move |result, _state| {
                 assert_eq!(
                     result.tx_receipt,
@@ -380,10 +388,12 @@ fn confirm_criteria() {
     }
 
     runner.execute_transaction(TransactionTestCase {
-        input: campaigner.create_plain_message::<Core<S>>(CallMessage::ConfirmCriteria {
-            campaign_id: 0,
-            proposal_id: None,
-        }),
+        input: campaigner.create_plain_message::<Core<S, MockDaSpec>>(
+            CallMessage::ConfirmCriteria {
+                campaign_id: 0,
+                proposal_id: None,
+            },
+        ),
         assert: Box::new(move |result, state| {
             assert!(result.tx_receipt.is_successful());
             assert_eq!(result.events.len(), 1);
@@ -401,7 +411,7 @@ fn confirm_criteria() {
                 campaign
             };
             assert_eq!(
-                Core::<S>::default()
+                Core::<S, MockDaSpec>::default()
                     .get_campaign(0, state)
                     .unwrap_infallible(),
                 Some(campaign)
@@ -425,23 +435,26 @@ fn post_segment() {
 
     // Transition to Publish phase.
     runner.execute_transaction(TransactionTestCase {
-        input: campaigner.create_plain_message::<Core<S>>(CallMessage::ConfirmCriteria {
-            campaign_id: 0,
-            proposal_id: None,
-        }),
+        input: campaigner.create_plain_message::<Core<S, MockDaSpec>>(
+            CallMessage::ConfirmCriteria {
+                campaign_id: 0,
+                proposal_id: None,
+            },
+        ),
         assert: Box::new(move |_, _| {}),
     });
     // Start indexing.
     runner.execute_transaction(TransactionTestCase {
-        input: indexer
-            .create_plain_message::<Core<S>>(CallMessage::IndexCampaign { campaign_id: 0 }),
+        input: indexer.create_plain_message::<Core<S, MockDaSpec>>(CallMessage::IndexCampaign {
+            campaign_id: 0,
+        }),
         assert: Box::new(move |_, _| {}),
     });
 
     // Confirm that only the associated indexer can start indexing for the campaign.
     {
         runner.execute_transaction(TransactionTestCase {
-            input: staker.create_plain_message::<Core<S>>(CallMessage::PostSegment {
+            input: staker.create_plain_message::<Core<S, MockDaSpec>>(CallMessage::PostSegment {
                 campaign_id: 0,
                 segment: generate_test_segment(),
             }),
@@ -463,7 +476,7 @@ fn post_segment() {
 
     let segment = generate_test_segment();
     runner.execute_transaction(TransactionTestCase {
-        input: indexer.create_plain_message::<Core<S>>(CallMessage::PostSegment {
+        input: indexer.create_plain_message::<Core<S, MockDaSpec>>(CallMessage::PostSegment {
             campaign_id: 0,
             segment: segment.clone(),
         }),
@@ -479,7 +492,7 @@ fn post_segment() {
             );
 
             assert_eq!(
-                Core::<S>::default()
+                Core::<S, MockDaSpec>::default()
                     .get_segment(0, state)
                     .unwrap_infallible(),
                 Some(segment)
@@ -503,12 +516,12 @@ fn vote_distribution() {
     {
         let campaigner = campaigner.clone();
         runner.execute_transaction(TransactionTestCase {
-            input: campaigner.clone().create_plain_message::<Core<S>>(
-                CallMessage::VoteDistribution {
+            input: campaigner
+                .clone()
+                .create_plain_message::<Core<S, MockDaSpec>>(CallMessage::VoteDistribution {
                     campaign_id: 1,
                     vote: DistributionVote::Rejected,
-                },
-            ),
+                }),
             assert: Box::new(move |result, _state| {
                 assert_eq!(
                     result.tx_receipt,
@@ -525,10 +538,12 @@ fn vote_distribution() {
     }
 
     runner.execute_transaction(TransactionTestCase {
-        input: delegate_users[0].create_plain_message::<Core<S>>(CallMessage::VoteDistribution {
-            campaign_id: 1,
-            vote: DistributionVote::Rejected,
-        }),
+        input: delegate_users[0].create_plain_message::<Core<S, MockDaSpec>>(
+            CallMessage::VoteDistribution {
+                campaign_id: 1,
+                vote: DistributionVote::Rejected,
+            },
+        ),
         assert: Box::new(move |result, state| {
             assert!(result.tx_receipt.is_successful());
             assert_eq!(result.events.len(), 1);
@@ -548,7 +563,7 @@ fn vote_distribution() {
                 DistributionVote::Rejected,
             );
             assert_eq!(
-                Core::<S>::default()
+                Core::<S, MockDaSpec>::default()
                     .get_distribution_votes(1, state)
                     .unwrap_infallible(),
                 expected
@@ -565,10 +580,12 @@ fn indexer_registration() {
         let admin = admin.clone();
         let indexer = indexer.clone();
         runner.execute_transaction(TransactionTestCase {
-            input: admin.create_plain_message::<Core<S>>(CallMessage::RegisterIndexer {
-                address: indexer.address(),
-                alias: "numia".to_string(),
-            }),
+            input: admin.create_plain_message::<Core<S, MockDaSpec>>(
+                CallMessage::RegisterIndexer {
+                    address: indexer.address(),
+                    alias: "numia".to_string(),
+                },
+            ),
             assert: Box::new(move |result, state| {
                 assert!(result.tx_receipt.is_successful());
                 assert_eq!(result.events.len(), 1);
@@ -582,7 +599,7 @@ fn indexer_registration() {
                 );
 
                 assert_eq!(
-                    Core::<S>::default()
+                    Core::<S, MockDaSpec>::default()
                         .get_indexer(indexer.address(), state)
                         .unwrap_infallible(),
                     Some(Indexer {
@@ -595,7 +612,7 @@ fn indexer_registration() {
     }
 
     runner.execute_transaction(TransactionTestCase {
-        input: admin.create_plain_message::<Core<S>>(CallMessage::UnregisterIndexer {
+        input: admin.create_plain_message::<Core<S, MockDaSpec>>(CallMessage::UnregisterIndexer {
             address: indexer.address(),
         }),
         assert: Box::new(move |result, state| {
@@ -610,7 +627,7 @@ fn indexer_registration() {
             );
 
             assert_eq!(
-                Core::<S>::default()
+                Core::<S, MockDaSpec>::default()
                     .get_indexer(indexer.address(), state)
                     .unwrap_infallible(),
                 None
@@ -627,8 +644,9 @@ fn register_relayer() {
     // Confirm that only the module admin can unregister a relayer..
     {
         runner.execute_transaction(TransactionTestCase {
-            input: staker
-                .create_plain_message::<Core<S>>(CallMessage::RegisterRelayer { address: relayer }),
+            input: staker.create_plain_message::<Core<S, MockDaSpec>>(
+                CallMessage::RegisterRelayer { address: relayer },
+            ),
             assert: Box::new(move |result, _state| {
                 assert_eq!(
                     result.tx_receipt,
@@ -645,8 +663,9 @@ fn register_relayer() {
     }
 
     runner.execute_transaction(TransactionTestCase {
-        input: admin
-            .create_plain_message::<Core<S>>(CallMessage::RegisterRelayer { address: relayer }),
+        input: admin.create_plain_message::<Core<S, MockDaSpec>>(CallMessage::RegisterRelayer {
+            address: relayer,
+        }),
         assert: Box::new(move |result, state| {
             assert!(result.tx_receipt.is_successful());
             assert_eq!(result.events.len(), 1);
@@ -659,7 +678,7 @@ fn register_relayer() {
             );
 
             assert_eq!(
-                Core::<S>::default()
+                Core::<S, MockDaSpec>::default()
                     .get_relayer(relayer, state)
                     .unwrap_infallible(),
                 Some(relayer),
@@ -683,9 +702,11 @@ fn unregister_relayer() {
     // Confirm that only the module admin can unregister a relayer.
     {
         runner.execute_transaction(TransactionTestCase {
-            input: staker.create_plain_message::<Core<S>>(CallMessage::UnregisterIndexer {
-                address: relayer.address(),
-            }),
+            input: staker.create_plain_message::<Core<S, MockDaSpec>>(
+                CallMessage::UnregisterIndexer {
+                    address: relayer.address(),
+                },
+            ),
             assert: Box::new(move |result, _state| {
                 assert_eq!(
                     result.tx_receipt,
@@ -702,7 +723,7 @@ fn unregister_relayer() {
     }
 
     runner.execute_transaction(TransactionTestCase {
-        input: admin.create_plain_message::<Core<S>>(CallMessage::UnregisterRelayer {
+        input: admin.create_plain_message::<Core<S, MockDaSpec>>(CallMessage::UnregisterRelayer {
             address: relayer.address(),
         }),
         assert: Box::new(move |result, state| {
@@ -717,7 +738,7 @@ fn unregister_relayer() {
             );
 
             assert_eq!(
-                Core::<S>::default()
+                Core::<S, MockDaSpec>::default()
                     .get_relayer(relayer.address(), state)
                     .unwrap_infallible(),
                 None
@@ -741,10 +762,12 @@ fn update_voting_power() {
     // Confirm that only a registered relayer can update voting powers.
     {
         runner.execute_transaction(TransactionTestCase {
-            input: staker.create_plain_message::<Core<S>>(CallMessage::UpdateVotingPower {
-                address: delegate_users[0].address(),
-                power: 1000,
-            }),
+            input: staker.create_plain_message::<Core<S, MockDaSpec>>(
+                CallMessage::UpdateVotingPower {
+                    address: delegate_users[0].address(),
+                    power: 1000,
+                },
+            ),
             assert: Box::new(move |result, _state| {
                 assert_eq!(
                     result.tx_receipt,
@@ -765,10 +788,12 @@ fn update_voting_power() {
         let relayer = relayer.clone();
 
         runner.execute_transaction(TransactionTestCase {
-            input: relayer.create_plain_message::<Core<S>>(CallMessage::UpdateVotingPower {
-                address: delegate,
-                power: 1000,
-            }),
+            input: relayer.create_plain_message::<Core<S, MockDaSpec>>(
+                CallMessage::UpdateVotingPower {
+                    address: delegate,
+                    power: 1000,
+                },
+            ),
             assert: Box::new(move |result, state| {
                 assert!(result.tx_receipt.is_successful());
                 assert_eq!(result.events.len(), 1);
@@ -782,7 +807,7 @@ fn update_voting_power() {
                 );
 
                 assert_eq!(
-                    Core::<S>::default()
+                    Core::<S, MockDaSpec>::default()
                         .get_voting_power(delegate, state)
                         .unwrap_infallible(),
                     1000
@@ -797,10 +822,12 @@ fn update_voting_power() {
         let relayer = relayer.clone();
 
         runner.execute_transaction(TransactionTestCase {
-            input: relayer.create_plain_message::<Core<S>>(CallMessage::UpdateVotingPower {
-                address: delegate,
-                power: 10000,
-            }),
+            input: relayer.create_plain_message::<Core<S, MockDaSpec>>(
+                CallMessage::UpdateVotingPower {
+                    address: delegate,
+                    power: 10000,
+                },
+            ),
             assert: Box::new(move |result, _| {
                 assert!(result.tx_receipt.is_successful());
             }),
@@ -812,15 +839,17 @@ fn update_voting_power() {
         let delegate = delegate_users[2].address();
 
         runner.execute_transaction(TransactionTestCase {
-            input: relayer.create_plain_message::<Core<S>>(CallMessage::UpdateVotingPower {
-                address: delegate,
-                power: 8000,
-            }),
+            input: relayer.create_plain_message::<Core<S, MockDaSpec>>(
+                CallMessage::UpdateVotingPower {
+                    address: delegate,
+                    power: 8000,
+                },
+            ),
             assert: Box::new(move |result, state| {
                 assert!(result.tx_receipt.is_successful());
 
                 assert_eq!(
-                    Core::<S>::default()
+                    Core::<S, MockDaSpec>::default()
                         .get_voting_powers(state)
                         .unwrap_infallible(),
                     vec![
