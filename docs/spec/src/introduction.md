@@ -11,6 +11,7 @@ This documentation provides comprehensive technical details for developers looki
 ### 1. Core Components
 The protocol consists of three main components working together to enable secure and efficient token distribution:
 
+- [**Control**](./components.md#control) - Smart contract deployed on L1 manage staking and bonding
 - [**Filament Hub**](./components.md#filament-hub) - A Layer 2 state machine that coordinates campaigns, processes votes, and manages state transitions
 - [**Outposts**](./core_components.md#outposts) - Smart contracts deployed on various chains that handle token operations and distributions
 - [**Relayer Network**](./components.md#relayer-network) - Infrastructure ensuring reliable cross-chain message delivery and state synchronization
