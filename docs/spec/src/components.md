@@ -1,75 +1,11 @@
 # Core Components
+* Summary of the main components that make up the Filament System including Hub, Control, Outpost and Relayers
 
 ## Filament Hub
 
+### Purpose
 The Filament Hub is the central coordination point for the protocol, implemented as a layer 2 state machine optimized for campaign execution. It manages campaign lifecycles, processes delegate votes, and coordinates with outposts through relayers.
-
-### State Machine
-The Hub maintains several key state types:
-
-##### FIXES
-* Stake is managed by the filament hub and synchronzied across the L1
-* What about Segment
-`crates/modules/core/src/campaign.rs`
-
-1. **Campaign State**
-   ```rust,ignore
-   struct Campaign {
-       campaigner: Address,     // Address of the campaigner
-       phase: Phase,            // Current campaign phase
-       budget: Budget,          // Locked campaign budget
-       payments: Vec<Payment>,  // Pending payments
-       delegates: Vec<Delegate>, // Elected delegates
-       variables: Vec<Variable> // Campaign parameters
-   }
-   enum Phase {
-      Draftt
-      Init,
-      Criteria,
-      Publish,
-      Indexing,
-      Distribution,
-      Settle,
-      Settled,
-      Canceled,
-      Rejected,
-  }
-  ```
-```
-
-2. **Stake Management**
-
-• **Core Purpose:**
-  - Enables FILA token holders to participate in campaign governance
-  - Creates economic security through staking and delegation mechanics
-  - Powers voting weight in campaign decision-making
-
-• **Key Components:**
-  - Ethereum Staking Contract: Manages actual FILA token stakes
-  - VotingVault (ERC4626): Handles staking positions and voting power
-  - Delegate Registry: Maintains list of approved delegates
-  - Filament Hub: Coordinates campaign participation and unbonding
-
-• **Delegation System:**
-  - Users stake FILA to approved delegates
-  - Delegates participate in campaign governance
-  - Delegators share in commission rewards from successful campaigns
-  - Voting power is proportional to staked amounts
-
-• **Unbonding Mechanism:**
-  - Stakes locked during active campaign participation
-  - Unbonding requests queued until campaign commitments complete
-  - Protects against stake manipulation during critical periods
-  - Slashing risk remains during unbonding period
-
-• **Economic Incentives:**
-  - Campaign commissions distributed to delegates and their delegators
-  - Slashing penalties for misbehavior or non-participation
-  - Commission split between delegates (fixed %) and delegators (remaining %)
-
-
-### Campaign Management
-The Hub orchestrates campaigns through state transitions:
+  * Describe the prupose of the Filament Hub
 
 1. **Phase Transitions**
    - Enforces phase ordering (Init → Criteria → Publish → Distribution → Settle)
@@ -86,150 +22,115 @@ The Hub orchestrates campaigns through state transitions:
    - Validates proof of payments
    - Confirms settlement
 
+### State
+```rust,ignore
+  enum Phase {
+    Draftt
+    Init,
+    Criteria,
+    Publish,
+    Indexing,
+    Distribution,
+    Settle,
+    Settled,
+    Canceled,
+    Rejected,
+  }
+
+  struct Campaign {
+    campaigner: Address,      // Address of the campaigner
+    phase: Phase,             // Current campaign phase
+    budget: Budget,           // Locked campaign budget
+    payments: Vec<Payment>,   // Pending payments
+    delegates: Vec<Delegate>, // Elected delegates
+    variables: Vec<Variable>, // Campaign parameters
+    segments: Vec<Segment>,    // Segments for the campaign
+    indexer: Address,          // Indexer responsible for producing Segments
+
+    criteria_votes: Vec<Vote>,     // Delegate votes for the criteria phase
+    distribution_votes: Vec<Vote>  // Delegate votes for the distribution phase
+  }
+  type Segment = Vec<(Address, u64)>
+```
+
+### Transaction Types
+* draft_campaign
+* vote_criteria
+* init_campaign
+* propose_criteria
+* vote_criteria
+* confirm_criteria
+* reject_criteria
+* index_campaign (indexer commitment)
+* post_segment (segment)
+
+// per campaign?
+* register_indexer
+* unregister_indexer
+
+// relayer
+register_relayer
+deregister_relayer
+
+### RPC
+The Filament Hub Core API provides REST endpoints for interacting with campaign-related functionality. The primary endpoint `/campaigns/{campaign_id}` allows clients to retrieve detailed information about a specific campaign by providing its unique identifier.
+
+TODO: Link to API Documentation
+
+Currently, the API supports fetching individual campaign details which includes the campaigner's address. The endpoint returns a 200 status code with campaign data on success, or a 404 status code if the specified campaign is not found. This API serves as a fundamental interface for applications to query campaign state from the Filament Hub.
+
+The endpoint returns a Campaign object containing:
+- `id`: A unique identifier for the campaign (uint64)
+- `campaigner`: The address of the campaign creator
+- `phase`: Current state of the campaign (one of: Draft, Init, Criteria, Publish, Indexing, Distribution, Settle, Settled, Canceled, or Rejected)
+- `title`: Campaign name/title
+- `description`: Detailed campaign description
+- `criteria`: Distribution criteria specifications
+- `evictions`: List of evicted delegates
+- `delegates`: List of participating delegates
+- `indexer`: Optional address of the assigned indexer
+
+
+
+
+## Control
+The Filament Control system is the economic backbone of the Filament Hub, managing FILA token staking, delegation, and voting mechanics. At its core, it enables token holders to participate in campaigns through a delegation system that creates economic security while ensuring fair governance. Through a set of smart contracts deployed on Ethereum, the Control system creates the foundation for secure and incentivized participation in the Filament ecosystem.
+
+TODO: Link to source code
+TODO: Link to contract addresses
+
+The system is built around several key components that work together to manage stake and voting power. The Ethereum Staking Contract serves as the primary custody layer for FILA tokens, while the VotingVault, implementing the ERC4626 standard, manages staking positions and their associated voting power. The Delegate Registry maintains a curated list of approved delegates who can participate in campaign governance. These components are coordinated by the Filament Hub to ensure proper campaign participation and stake management.
+
+The delegation mechanism allows FILA holders to stake their tokens to approved delegates, who then participate in campaign governance on behalf of their delegators. This system creates a two-tiered structure where delegates actively shape campaign outcomes while delegators provide the economic backing through their stakes. Stakes are locked during active campaign participation, with an unbonding mechanism that protects against manipulation by queuing withdrawal requests until all campaign commitments are completed. To maintain system security, staked tokens remain subject to slashing penalties during the unbonding period.
+
+The economic model incentivizes participation through a commission system where successful campaign outcomes result in rewards distributed to both delegates and their delegators. Delegates receive a fixed percentage of commissions, with the remaining portion distributed to delegators proportional to their stake. This structure, combined with slashing penalties for misbehavior or non-participation, creates strong economic incentives for positive participation in the Filament ecosystem.
+
+### Relayer
+* Purpose
+* Safety Guarentees
+
+
+2. **Control: Stake Management**
+
+
 ## Outposts
 
 Outposts are smart contracts deployed on various chains that handle token operations and execute distributions. They provide a standardized interface for cross-chain token management.
-
-### Smart Contracts
-
-1. **Token Management**
-   ```solidity
-   interface IOutpost {
-       // Token operations
-       function lockTokens(address token, uint256 amount) external;
-       function unlockTokens(address token, uint256 amount) external;
-
-       // Distribution execution
-       function distribute(
-           address token,
-           address[] calldata recipients,
-           uint256[] calldata amounts
-       ) external;
-
-       // Payment processing
-       function processPayment(bytes calldata proof) external;
-   }
-   ```
-
-2. **Staking Operations**
-   ```solidity
-   interface IStaking {
-       function stake(uint256 amount, address delegate) external;
-       function unstake(uint256 amount) external;
-       function claimRewards() external;
-   }
-   ```
-
-### Cross-chain Communication
-Outposts implement standardized message handling:
-
-1. **Message Types**
-   ```solidity
-   enum MessageType {
-       LOCK_CONFIRMATION,
-       DISTRIBUTION_EXECUTION,
-       PAYMENT_CONFIRMATION
-   }
-
-   struct CrossChainMessage {
-       MessageType msgType;
-       bytes payload;
-       uint256 nonce;
-       address sender;
-   }
-   ```
-
-2. **Proof Validation**
-   ```solidity
-   interface IProofValidator {
-       function validateProof(
-           bytes calldata proof,
-           bytes calldata message
-       ) external returns (bool);
-   }
-   ```
+* What does the Outpost Do?
+* How does it do it
 
 ## Relayer Network
+Outposts implement standardized message handling:
 
 The Relayer Network ensures reliable message delivery between the Hub and Outposts while maintaining cross-chain consistency.
 
-### Message Passing Protocol
 
-1. **Message Queue Management**
-   ```rust,ignore
-   struct MessageQueue {
-       pending: Vec<Message>,
-       in_flight: HashMap<MessageId, InFlightMessage>,
-       confirmed: Vec<MessageId>
-   }
+* Message Passing
+* Synchronization
+* Consistency
 
-   struct InFlightMessage {
-       message: Message,
-       attempts: u32,
-       last_attempt: Timestamp
-   }
-   ```
-
-2. **Delivery Guarantees**
-   - At-least-once delivery
-   - Ordered message processing
-   - Confirmation tracking
-
-### Synchronization
-
-1. **State Sync**
-   ```rust,ignore
-   struct SyncState {
-       last_synced_block: BlockHeight,
-       pending_messages: Vec<Message>,
-       unconfirmed_states: HashMap<StateId, State>
-   }
-   ```
 
 2. **Consistency Checks**
    - Cross-chain state validation
    - Nonce tracking
    - Timeout handling
-
-### Security Model
-
-1. **Relayer Requirements**
-   - Minimum stake
-   - Performance monitoring
-   - Slashing conditions
-
-2. **Message Verification**
-   ```rust,ignore
-   trait MessageVerifier {
-       fn verify_message(
-           message: &Message,
-           proof: &Proof
-       ) -> Result<bool, Error>;
-
-       fn verify_state_transition(
-           from: &State,
-           to: &State,
-           message: &Message
-       ) -> Result<bool, Error>;
-   }
-   ```
-
-## Integration Patterns
-
-### Component Communication
-
-1. **Hub to Outpost**
-   ```rust,ignore
-   async fn send_to_outpost(
-       message: Message,
-       outpost: OutpostId
-   ) -> Result<MessageId, Error>
-   ```
-
-2. **Outpost to Hub**
-   ```rust,ignore
-   async fn send_to_hub(
-       message: Message,
-       proof: Proof
-   ) -> Result<MessageId, Error>
-   ```
