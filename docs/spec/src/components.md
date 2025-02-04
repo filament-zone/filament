@@ -1,5 +1,16 @@
 # Core Components
-TODO: Summary of the main components that make up the Filament System including Hub, Control, Outpost and Relayers
+The Filament protocol consists of four main components working together to enable secure and decentralized token distribution campaigns: the Filament Hub, Control system, Outposts, and Relayer network. Each component plays a critical role in maintaining the protocol's security, coordination, and cross-chain functionality.
+
+## Synopsis
+- **Filament Hub**: A layer 2 state machine that coordinates campaign execution, delegate governance, and cross-chain communication. It manages campaign lifecycles and processes delegate votes to achieve consensus on distribution criteria.
+
+- **Control System**: A set of Ethereum smart contracts managing the economic security through FILA token staking, delegation mechanics, and voting power. It includes the staking contract, voting vault, and delegate registry.
+
+- **Outposts**: Smart contracts deployed on various chains that handle the financial aspects of campaigns, including budget management and reward distribution. Each outpost maintains alignment with the Hub while providing chain-specific distribution mechanics.
+
+- **Relayer Network**: A decentralized network of relayers that bridge communication between the Hub, Control system, and Outposts. Relayers monitor network states, synchronize information, and ensure proper execution of cross-chain operations.
+
+Together, these components create a comprehensive system for executing token distribution campaigns while maintaining security, decentralization, and cross-chain interoperability. The following sections detail each component's architecture, functionality, and interaction with the broader system.
 
 ## Filament Hub
 The Filament Hub serves as the central coordination point for token distribution campaigns, implemented as a specialized layer 2 state machine. Its primary purpose is to orchestrate the interaction between campaigners, delegates, and indexers in a trustless manner, ensuring that token distributions follow agreed-upon criteria while maintaining economic security through the bond mechanism. The Hub manages campaign lifecycles, processes delegate votes to achieve consensus, and coordinates with outposts through a network of relayers.
@@ -110,13 +121,42 @@ pub struct Campaign {
 
 The Outpost serves as a critical component in the Filament ecosystem by providing secure and verifiable token distribution mechanics on the Neutron blockchain while maintaining alignment with the Hub's campaign coordination.
 
-This implementation showcases how outposts can be built on different chains while maintaining the core campaign execution principles defined by the Filament Hub.
-
 ## Relayer Network
-Outposts implement standardized message handling:
+The Filament Relayer serves as a bridge between the Ethereum network and the Filament Hub, facilitating cross-chain communication and state synchronization. It monitors both networks and ensures proper coordination of campaign-related activities.
 
-The Relayer Network ensures reliable message delivery between the Hub and Outposts while maintaining cross-chain consistency.
+## Core Components
 
-* Message Passing
-* Synchronization
-* Consistency
+### 1. Network Monitors
+- **Block Watcher**: Monitors Ethereum blocks for relevant events and state changes
+- **Slot Watcher**: Tracks Filament Hub slots for campaign progression
+- **Account Watcher**: Maintains synchronized state of accounts across chains
+
+### 2. Contract Interfaces
+- **FilamentToken**: Interacts with the FILA token contract on Ethereum
+- **DelegateRegistry**: Manages delegate registration and validation
+- **Hub Interface**: Communicates with the Filament Hub for campaign coordination
+
+### 3. Event Handling
+The relayer processes various events including:
+- Campaign initialization and progression
+- Delegate registration and updates
+- Voting power changes
+- Segment posting and validation
+
+## Key Responsibilities
+
+1. **State Synchronization**
+   - Monitors delegate status on Ethereum
+   - Updates voting power in the Hub based on staked positions
+
+2. **Cross-Chain Communication**
+   - Relays proofs of payment between chains
+   - Handles delegate registration across networks
+   - Ensures consistent state between Ethereum and the Hub
+
+3. **Security & Validation**
+   - Verifies transaction signatures
+   - Ensures proper authorization for operations
+   - Maintains atomic operations across chains
+
+The relayer is crucial for maintaining the trustless bridge between Ethereum's security and the Filament Hub's campaign execution capabilities.
