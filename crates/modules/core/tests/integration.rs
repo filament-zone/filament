@@ -944,7 +944,9 @@ fn generate_test_segment() -> Segment {
         data: SegmentData::Plain {
             allocations: vec![],
         },
-        proof: SegmentProof::Ed25519Signature(Ed25519Signature { pk: [0; 32] }),
+        proof: Some(SegmentProof::Ed25519Signature(Ed25519Signature {
+            pk: [0; 32],
+        })),
         retrieved_at: SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
