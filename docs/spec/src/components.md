@@ -1,7 +1,6 @@
 # Core Components
 The Filament protocol consists of four main components working together to enable secure and decentralized token distribution campaigns: the Filament Hub, Control system, Outposts, and Relayer network. Each component plays a critical role in maintaining the protocol's security, coordination, and cross-chain functionality.
 
-## Synopsis
 - [**Filament Hub**](./components/hub.md): A layer 2 state machine that coordinates campaign execution, delegate governance, and cross-chain communication. It manages campaign lifecycles and processes delegate votes to achieve consensus on distribution criteria.
 
 - [**Control System**](./components/control.md): A set of Ethereum smart contracts managing the economic security through FILA token staking, delegation mechanics, and voting power. It includes the staking contract, voting vault, and delegate registry.
