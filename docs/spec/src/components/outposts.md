@@ -13,7 +13,7 @@ The contract manages campaigns through several states:
 ## Key Features
 
 ### Campaign Management
-```rust
+```rust,ignore
 pub struct Campaign {
     pub admin: Addr,
     pub status: CampaignStatus,
