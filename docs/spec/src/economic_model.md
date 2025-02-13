@@ -235,7 +235,7 @@ The VCG (Vickrey-Clarke-Groves) mechanism optimizes reward distribution:
    - Coordination attacks
 
 ### Incentive Alignment
-
+TODO: This should be a summary in the top level economics page
 1. **Campaigner Incentives**
    - Bond requirement ensures commitment
    - Fee structure encourages completion
