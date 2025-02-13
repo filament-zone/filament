@@ -7,6 +7,7 @@
     - [Outposts](./components/outposts.md)
     - [Relayers](./components/relayers.md)
     - [RPC](./components/rpc.md)
-- [Campaign Protocol](./campaign_protocol.md)
+- [Campaign Protocol v0](./campaign_protocol_v0.md)
+- [Campaign Protocol v1](./campaign_protocol_v1.md)
 - [Economic Model](./economic_model.md)
 - [Implementation Guide](./implementation_guide.md)
