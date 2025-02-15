@@ -45,14 +45,15 @@ enum Phase {
     Distribution, // Segments are available.
     // Settle,  // (Not Implemented) Final phase for distribution and cleanup
 }
-
 struct Criteria {
-   // ... (Structure defined elsewhere, likely a set of Criterion)
+    criteria: Vec<Criterion>,
 }
 
-struct Criterion{
- // ... (Place holder)
+struct Criterion {
+    dataset_id: String, // e.g., "historical_transactions", "token_balances"
+    parameters: HashMap<String, String>, // e.g., {"min_balance": "100", "token_address": "0x..."}
 }
+
 struct Eviction<S: Spec> {
 	addr: S::Address
 }
