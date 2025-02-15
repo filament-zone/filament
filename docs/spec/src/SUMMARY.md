@@ -9,5 +9,6 @@
     - [RPC](./components/rpc.md)
 - [Campaign Protocol v0](./campaign_protocol_v0.md)
 - [Campaign Protocol v1](./campaign_protocol_v1.md)
-- [Economic Model](./economic_model.md)
+- [Economic Model](./economics.md)
+- [Participants](./participants.md)
 - [Implementation Guide](./implementation_guide.md)

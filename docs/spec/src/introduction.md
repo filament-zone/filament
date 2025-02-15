@@ -11,13 +11,13 @@ This documentation provides comprehensive technical details for developers looki
 ### 1. Core Components
 The protocol consists of three main components working together to enable secure and efficient token distribution:
 
-- [**Control**](./components.md#control) - Smart contract deployed on L1 manage staking and bonding
-- [**Filament Hub**](./components.md#filament-hub) - A Layer 2 state machine that coordinates campaigns, processes votes, and manages state transitions
-- [**Outposts**](./core_components.md#outposts) - Smart contracts deployed on various chains that handle token operations and distributions
-- [**Relayer Network**](./components.md#relayer-network) - Infrastructure ensuring reliable cross-chain message delivery and state synchronization
+- [**Control**](./components/control.md) - Smart contract deployed on L1 manage staking and bonding
+- [**Filament Hub**](./components/hub.md) - A Layer 2 state machine that coordinates campaigns, processes votes, and manages state transitions
+- [**Outposts**](./components/outposts.md) - Smart contracts deployed on various chains that handle token operations and distributions
+- [**Relayer**](./components/relayers.md) - Infrastructure ensuring reliable cross-chain message delivery and state synchronization
 
 ### 2. Campaign Protocol
-The [Campaign Protocol](./campaign_protocol.md) defines how campaigns execute through five distinct phases:
+The [Campaign Protocol](./campaign_protocol_v0.md) defines how campaigns execute through five distinct phases:
 
 1. **Init** - Campaign setup and delegate election
 2. **Criteria** - Collaborative development of distribution criteria
@@ -25,8 +25,11 @@ The [Campaign Protocol](./campaign_protocol.md) defines how campaigns execute th
 4. **Distribution** - Reward allocation decisions
 5. **Settle** - Final distribution and campaign completion
 
-### 3. Economic Model
-The [Economic Model](./economic_model.md) describes the token economics and incentive mechanisms:
+The next phase of the protocol with better guarentees is defined in
+[Campaign Protocol v1](./campaign_protocol_v1.md)
+
+### 3. Economics
+The [Economics](./economics.md) describes the token economics and incentive mechanisms:
 
 - **$FILA Token** - Native network token used for staking and bonds
 - **$FILUM** - Computational gas token for the Filament Hub
@@ -42,12 +45,12 @@ Practical guidance for developers:
 - [**Running a Relayer**](./implementation_guide.md#running-a-relayer)
 - [**Security Considerations**](./implementation_guide.md#security-considerations)
 
-### 5. Network Participation
+### 5. Participants
 Guides for different network roles:
 
-- [**Delegates**](./network_participation.md#delegates) - Staking, voting, and earning commission
-- [**Campaigners**](./network_participation.md#campaigners) - Creating and managing campaigns
-- [**Indexers**](./network_participation.md#indexers) - Providing and validating data
+- [**Delegates**](./participants.md#delegates) - Staking, voting, and earning commission
+- [**Campaigners**](./participants.md#campaigners) - Creating and managing campaigns
+- [**Indexers**](./participants.md#indexers) - Providing and validating data
 
 ## Key Concepts
 
@@ -70,18 +73,14 @@ Filament operates across multiple chains through:
 
 ## Getting Started
 
-1. Review the [Core Components](./core_components.md) documentation to understand the system architecture
-2. Study the [Campaign Protocol](./campaign_protocol.md) to learn how campaigns execute
-3. Understand the [Economic Model](./economic_model.md) for incentive mechanisms
+1. Review the [Core Components](./components.md) documentation to understand the system architecture
+2. Study the [Campaign Protocol](./campaign_protocol_v0.md) to learn how campaigns execute
+3. Understand the [Economic Model](./economics.md) for incentive mechanisms
 4. Follow the [Implementation Guide](./implementation_guide.md) for practical development
-5. Explore [Playbooks](./playbooks.md) for campaign creation examples
 
 ## Additional Resources
 
-- [GitHub Repository](https://github.com/filament.zone)
-- [API Documentation](./api_reference.md)
-- [Telegram](https://forum.filament.network)
-- [Security Policy](./security.md)
+- [GitHub Repository](https://github.com/filament-zone)
 
 ## Support
 
