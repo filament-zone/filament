@@ -47,7 +47,7 @@ The VCG mechanism rewards Delegates based on their *marginal contribution* to th
 1.  **`V_G` (with all Delegates):** Calculate the economic metric achieved with *all* Delegates' votes included.
 2.  **`V_G(-d)` (without Delegate `d`):**  For each Delegate `d`, recalculate the economic metric *as if that Delegate had not participated*.  This means removing their votes and re-running the criteria selection and distribution calculation.
 3.  **Marginal Contribution (`ΔV_G(d)`)**: The difference between the two:
-    `ΔV_G(d) = V_G - V_G(-d)`
+    `\deltaV_G(d) = V_G - V_G(-d)`
 
 This `ΔV_G(d)` value represents the *impact* of Delegate `d`'s votes on the overall economic outcome. If their votes led to a *better* outcome (higher `V_G`), their marginal contribution is positive. If their votes led to a *worse* outcome, their marginal contribution is negative.
 
@@ -55,7 +55,7 @@ This `ΔV_G(d)` value represents the *impact* of Delegate `d`'s votes on the ove
 
 The VCG payment to a Delegate is based on their marginal contribution.  The formula is conceptually:
 
-```
+```ignore
 Payment(d) = ΔV_G(d) + h(other_delegates)
 ```
 

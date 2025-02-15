@@ -20,7 +20,7 @@ The primary purpose of Campaign Bonds is to *guarantee* a minimum payment to Del
 
 1.  **Bond Calculation:** Before a campaign starts, the required bond amount is calculated:
 
-    ```
+    ```rust,ignore
     required_bond = NUM_DELEGATES * MIN_DELEGATE_PAYMENT
     ```
 
