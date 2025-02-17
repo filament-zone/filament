@@ -23,7 +23,7 @@ FILA is the native token of the Filament network. It serves multiple critical ro
 *   **Governance:**  FILA may be used for governance of the Filament protocol itself (details to be determined).
 * **Medium of Exchange**: Payment for Indexers and Delegates services.
 
-[Learn more about the FILA Token](./economics/fila_token.md)
+[Learn more about the FILA Token](./economics/fila.md)
 
 ### 2. $FILUM (Gas Token)
 
