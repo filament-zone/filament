@@ -1,7 +1,8 @@
-# Campaign Protocol
+# Campaign Protocol V1
 
 The Campaign Protocol defines how Campaigners, Delegates, and Indexers collaborate to execute campaigns through a series of well-defined phases. Each phase has specific rules, requirements, and state transitions that ensure secure and predictable campaign execution.
 
+The current campaign protocol v0 omits many economic guarentees. Learn more about the [Campaign Protocol V0](./campaign_protocol_v0.md)
 ## Campaign Lifecycle
 
 A campaign progresses through five distinct phases:
@@ -267,10 +268,10 @@ Each phase must complete successfully or timeout before moving to the next phase
 
 **V. Example Scenario**
 
-Let's say a project called "AwesomeFi" wants to distribute their token, $AWESOME, to users who have provided liquidity to their Uniswap V3 pool.
+Let's say a project called "AwesomeFi" wants to distribute their token, \$AWESOME, to users who have provided liquidity to their Uniswap V3 pool.
 
-1.  **Init:** AwesomeFi creates a campaign on the Filament Hub, specifying a budget of 1 million $AWESOME tokens.  They propose some initial criteria (e.g., "users who have provided at least $1000 of liquidity"). A set of Delegates is selected.
-2.  **Criteria:** The Delegates refine the criteria.  They might add criteria like "users who have provided liquidity for at least 3 months" or "users who have also staked $AWESOME in our governance contract."  They vote on these criteria, and the winning set of criteria is confirmed by AwesomeFi.
+1.  **Init:** AwesomeFi creates a campaign on the Filament Hub, specifying a budget of 1 million \$AWESOME tokens.  They propose some initial criteria (e.g., "users who have provided at least \$1000 of liquidity"). A set of Delegates is selected.
+2.  **Criteria:** The Delegates refine the criteria.  They might add criteria like "users who have provided liquidity for at least 3 months" or "users who have also staked \$AWESOME in our governance contract."  They vote on these criteria, and the winning set of criteria is confirmed by AwesomeFi.
 3.  **Publish:**  Indexers gather data about Uniswap V3 liquidity providers and submit `Segments` to the Filament Hub.
 4.  **Distribution:**  The Protocol calculates a proposed distribution based on the confirmed criteria and segments.  Delegates vote on this distribution, and AwesomeFi confirms it.
 5.  **Settle:**  The 1 million $AWESOME tokens are distributed to the eligible users via an Outpost contract on Ethereum.  Delegates and Indexers receive their payments.
