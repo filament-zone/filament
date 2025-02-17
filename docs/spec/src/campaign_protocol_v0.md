@@ -14,6 +14,8 @@ The v1 protocol will include:
 *   **Full Relayer Functionality:**  Synchronizing state and confirming payments.
 *   **Slashing**: Implementing a mechanism to penalize bad actors (Timeouts).
 
+Learn more about the [Campaign Protocol V1](./campaign_protocol_v1.md)
+
 ## II. Actors
 
 *   **Campaigner:** The entity initiating and funding the campaign.

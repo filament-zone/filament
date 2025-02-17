@@ -31,26 +31,11 @@ The next phase of the protocol with better guarentees is defined in
 ### 3. Economics
 The [Economics](./economics.md) describes the token economics and incentive mechanisms:
 
-- **$FILA Token** - Native network token used for staking and bonds
-- **$FILUM** - Computational gas token for the Filament Hub
+- **\$FILA Token** - Native network token used for staking and bonds
+- **\$FILUM** - Computational gas token for the Filament Hub
 - **Campaign Bonds** - Security deposits ensuring campaign completion
 - **Commission Structure** - Reward system for delegate participation
 - **Treasury Window** - Facility for reliable FILA acquisition
-
-### 4. Implementation Guide
-Practical guidance for developers:
-
-- [**Development Setup**](./implementation_guide.md#development-setup)
-- [**Smart Contract Integration**](./implementation_guide.md#smart-contract-integration)
-- [**Running a Relayer**](./implementation_guide.md#running-a-relayer)
-- [**Security Considerations**](./implementation_guide.md#security-considerations)
-
-### 5. Participants
-Guides for different network roles:
-
-- [**Delegates**](./participants.md#delegates) - Staking, voting, and earning commission
-- [**Campaigners**](./participants.md#campaigners) - Creating and managing campaigns
-- [**Indexers**](./participants.md#indexers) - Providing and validating data
 
 ## Key Concepts
 
@@ -76,7 +61,6 @@ Filament operates across multiple chains through:
 1. Review the [Core Components](./components.md) documentation to understand the system architecture
 2. Study the [Campaign Protocol](./campaign_protocol_v0.md) to learn how campaigns execute
 3. Understand the [Economic Model](./economics.md) for incentive mechanisms
-4. Follow the [Implementation Guide](./implementation_guide.md) for practical development
 
 ## Additional Resources
 
