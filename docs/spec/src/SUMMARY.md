@@ -16,5 +16,3 @@
     - [Commission Structure](./economics/commission_structure.md)
     - [Campaign Bonds](./economics/campaign_bonds.md)
     - [Treasury Window](./economics/treasury_window.md)
-- [Participants](./participants.md)
-- [Implementation Guide](./implementation_guide.md)
