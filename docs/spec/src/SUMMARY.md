@@ -6,6 +6,7 @@
     - [Control System](./components/control.md)
     - [Outposts](./components/outposts.md)
     - [Relayers](./components/relayers.md)
+    - [Paymster](./components/paymaster.md)
     - [RPC](./components/rpc.md)
 - [Campaign Protocol v0](./campaign_protocol_v0.md)
 - [Campaign Protocol v1](./campaign_protocol_v1.md)
