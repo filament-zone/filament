@@ -1,0 +1,65 @@
+[package]
+name = "eth-oracle"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+# filament-hub-stf       = { workspace = true }
+filament-hub-core      = { workspace = true, features = [ "native" ] }
+
+# sov-accounts                  = { workspace = true }
+# sov-bank                      = { workspace = true }
+# sov-capabilities              = { workspace = true }
+sov-cli                       = { workspace = true }
+# sov-db                        = { workspace = true }
+# sov-ledger-apis               = { workspace = true }
+sov-ledger-json-client        = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
+sov-sequencer-json-client        = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
+sov-mock-zkvm                 = { workspace = true, features = [ "native" ] }
+sov-modules-api               = { workspace = true }
+# sov-modules-rollup-blueprint  = { workspace = true }
+# sov-modules-stf-blueprint     = { workspace = true }
+# sov-nonces                    = { workspace = true }
+# sov-prover-incentives         = { workspace = true }
+sov-risc0-adapter             = { workspace = true, features = [ "native" ] }
+# sov-rest-utils                = { workspace = true }
+sov-rest-utils        = { git = "ssh://git@github.com/filament-zone/sovereign-sdk-wip.git", rev = "7e77f59" }
+# sov-rollup-interface          = { workspace = true }
+# sov-sequencer                 = { workspace = true }
+# sov-sequencer-registry        = { workspace = true }
+# sov-state                     = { workspace = true }
+# sov-stf-runner                = { workspace = true }
+
+
+# filament-hub-config   = { workspace = true }
+# filament-hub-core     = { workspace = true }
+# filament-hub-eth      = { workspace = true }
+# filament-hub-rollup   = { workspace = true }
+# filament-hub-stf      = { workspace = true }
+# filament-prover-risc0 = { workspace = true }
+
+
+# alloy              = { version = "0.3", features = [ "full", "node-bindings", "serde", "rpc" ] }
+alloy              = { version = "0.3", features = [ "full", "node-bindings", "rpc" ] }
+argh               = { version = "0.1.12" }
+borsh              = { workspace = true, default-features = false }
+eyre               = { version = "0.6", features = [ "auto-install" ] }
+jsonrpsee          = { workspace = true, features = [ "ws-client", "http-client" ] }
+futures            = { version = "0.3", default-features = false, features = ["async-await", "std"] }
+futures-util       = { version = "0.3.30"}
+hex                = { workspace = true }
+reqwest            = { version = "0.12.9", default-features = false, features = [ "default-tls", "json", "rustls-tls", "stream" ] }
+serde              = { workspace = true }
+serde_json         = { workspace = true }
+tokio              = { workspace = true,  default-features = false, features = [ "macros", "rt-multi-thread", "sync", "time" ] }
+tracing            = { version = "0.1",  default-features = false, features = [ "release_max_level_debug" ] }
+tracing-subscriber = { version = "0.3",  default-features = false, features = [ "env-filter", "fmt" ] }
+
+[lints]
+workspace = true
