@@ -2,27 +2,27 @@ use crate::cli::CliCommand;
 use crate::config::Config;
 use crate::database::DatabaseTrait;
 use crate::error::Error;
-use crate::ethereum::{DelegateSetChangedEvent, EthereumClient, EthereumClientTrait};
-use crate::hub::HubClientTrait;
+use crate::ethereum::{CloneableEthereumClient, DelegateSetChangedEvent};
+use crate::hub::CloneableHubClient;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
-use tracing::{error, info, warn};
+use tracing::{error, info};
 
 pub struct Relayer {
     pub config: Config,
-    pub ethereum_client: Arc<dyn EthereumClientTrait>, // Use Arc
-    pub hub_client: Arc<dyn HubClientTrait>,           // Use Arc
-    pub database: Arc<dyn DatabaseTrait>,              // Use Arc
+    pub ethereum_client: Box<dyn CloneableEthereumClient>, // Change to Box
+    pub hub_client: Box<dyn CloneableHubClient>,           // Change to Box
+    pub database: Arc<dyn DatabaseTrait>,                  // Change to Box
 }
 
 impl Relayer {
     pub fn new(
         config: Config,
-        ethereum_client: Arc<dyn EthereumClientTrait>, // Use Arc
-        hub_client: Arc<dyn HubClientTrait>,           // Use Arc
-        database: Arc<dyn DatabaseTrait>,              // Use Arc
+        ethereum_client: Box<dyn CloneableEthereumClient>, // Change to Box
+        hub_client: Box<dyn CloneableHubClient>,           // Change to Box
+        database: Arc<dyn DatabaseTrait>,                  // Change to Box
     ) -> Self {
         Self {
             config,
@@ -56,12 +56,10 @@ impl Relayer {
         let (tx_sender, tx_receiver) = channel();
 
         // Clone or create new instances of clients and database for each thread
-        //
-        //
-        let ethereum_client_clone = Arc::clone(&self.ethereum_client);
-        let hub_client_clone = Arc::clone(&self.hub_client);
-        let process_database_clone = Arc::clone(&self.database);
-        let send_database_clone = Arc::clone(&self.database);
+        let ethereum_client_clone = self.ethereum_client.clone_box();
+        let hub_client_clone = self.hub_client.clone_box();
+        let process_database_clone = self.database.clone();
+        let send_database_clone = self.database.clone();
         let config_clone = self.config.clone();
 
         // Polling Thread

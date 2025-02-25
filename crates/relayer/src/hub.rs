@@ -7,11 +7,12 @@ use std::sync::Arc;
 //use reqwest::Client;
 use serde::{Deserialize, Serialize};
 // Struct for the JSON payload to the /sequencer/batches endpoint
+
+/*
 #[derive(Serialize, Debug)]
 struct SendTxRequest {
     transactions: Vec<String>, // Base64 encoded transactions
 }
-
 // Struct to deserialize the response (adapt as needed based on actual Hub response)
 #[derive(Deserialize, Debug)]
 pub struct SendTxResponse {
@@ -19,6 +20,7 @@ pub struct SendTxResponse {
                      // Add other fields as needed (e.g., success/failure status, error messages)
 }
 
+*/
 #[async_trait]
 pub trait HubClientTrait: Send + Sync {
     async fn update_voting_power(&self, addr: String, power: u64) -> Result<String, Error>;
@@ -29,6 +31,18 @@ pub trait HubClientTrait: Send + Sync {
         retries: u32,
         delay_seconds: u64,
     ) -> Result<(), Error>;
+}
+pub trait CloneableHubClient: HubClientTrait {
+    fn clone_box(&self) -> Box<dyn HubClientTrait>;
+}
+
+impl<T> CloneableHubClient for T
+where
+    T: 'static + HubClientTrait + Clone,
+{
+    fn clone_box(&self) -> Box<dyn HubClientTrait> {
+        Box::new(self.clone())
+    }
 }
 
 #[derive(Debug, Clone)]

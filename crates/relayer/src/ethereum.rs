@@ -1,7 +1,7 @@
 use crate::error::Error;
 use async_trait::async_trait; // Import async_trait here
 use std::str::FromStr;
-use web3::types::{BlockNumber, FilterBuilder, Log, H160, H256, U256, U64};
+use web3::types::{BlockNumber, FilterBuilder, Log, H160, H256, U64};
 use web3::{Transport, Web3};
 
 #[derive(Debug, Clone)]
@@ -10,7 +10,18 @@ pub struct DelegateSetChangedEvent {
     pub block_number: u64,
     pub transaction_hash: H256,
 }
+pub trait CloneableEthereumClient: EthereumClientTrait {
+    fn clone_box(&self) -> Box<dyn EthereumClientTrait>;
+}
 
+impl<T> CloneableEthereumClient for T
+where
+    T: 'static + EthereumClientTrait + Clone,
+{
+    fn clone_box(&self) -> Box<dyn EthereumClientTrait> {
+        Box::new(self.clone())
+    }
+}
 // Define the trait
 #[async_trait]
 pub trait EthereumClientTrait: Send + Sync {

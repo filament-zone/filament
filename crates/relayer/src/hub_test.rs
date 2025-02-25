@@ -11,7 +11,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_update_voting_power_success() {
-        let mut client = setup_mock_client();
+        let client = setup_mock_client();
 
         let address = "0x0000000000000000000000000000000000000001".to_string();
         let power = 100;
