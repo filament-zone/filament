@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::database::Database;
+    use crate::database::{Database, DatabaseTrait};
     use crate::error::Error;
     use std::collections::HashMap;
     use std::str::FromStr;

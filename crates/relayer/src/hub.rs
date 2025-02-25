@@ -1,43 +1,52 @@
+#![allow(unused_variables)]
 use crate::error::Error;
-use base64::{engine::general_purpose, Engine as _};
-use reqwest::Client;
+use async_trait::async_trait;
+use std::sync::Arc;
+// use base64::{engine::general_purpose, Engine as _};
+// use filament_hub_core::CallMessage; // Import the CallMessage enum
+//use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use tracing::info;
 // Struct for the JSON payload to the /sequencer/batches endpoint
-//
-/*
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 struct SendTxRequest {
     transactions: Vec<String>, // Base64 encoded transactions
 }
+
 // Struct to deserialize the response (adapt as needed based on actual Hub response)
 #[derive(Deserialize, Debug)]
 pub struct SendTxResponse {
-    _tx_hash: String, // Example - adjust based on the actual response
+    tx_hash: String, // Example - adjust based on the actual response
                      // Add other fields as needed (e.g., success/failure status, error messages)
 }
-*/
+
+#[async_trait]
+pub trait HubClientTrait: Send + Sync {
+    async fn update_voting_power(&self, addr: String, power: u64) -> Result<String, Error>;
+    async fn get_tx_status(&self, tx_hash: &str) -> Result<Option<serde_json::Value>, Error>;
+    async fn await_transaction_confirmation(
+        &self,
+        tx_hash: &String,
+        retries: u32,
+        delay_seconds: u64,
+    ) -> Result<(), Error>;
+}
+
 #[derive(Debug, Clone)]
 /// [`HubClient`] is a struct that provides methods for interacting with the Filament Hub.
 pub struct HubClient {
-    pub client: reqwest::Client,
+    pub client: Arc<reqwest::Client>,
     pub hub_url: String,
     // pub hub_address: Address, // If you need the Hub's address
 }
-impl HubClient {
-    pub fn new(hub_url: String) -> Self {
-        let client = reqwest::Client::new();
 
-        Self { client, hub_url }
-    }
-
-    pub async fn update_voting_power(
+#[async_trait]
+impl HubClientTrait for HubClient {
+    async fn update_voting_power(
         &self,
         addr: String, // Or your Address type
         power: u64,
     ) -> Result<String, Error> {
-        Err(Error::HubError("tx not implemented".to_string()))
+        Err(Error::Other("Not implemented".to_string()))
         /*
         // 1. Construct the CallMessage
         let call_message = CallMessage::UpdateVotingPower {
@@ -85,7 +94,7 @@ impl HubClient {
          */
     }
 
-    pub async fn get_tx_status(&self, tx_hash: &str) -> Result<Option<serde_json::Value>, Error> {
+    async fn get_tx_status(&self, tx_hash: &str) -> Result<Option<serde_json::Value>, Error> {
         let url = format!("{}/ledger/txs/{}", self.hub_url, tx_hash);
         let resp = self.client.get(&url).send().await?;
 
@@ -103,7 +112,7 @@ impl HubClient {
     }
 
     // Await confirmation from the hub
-    pub async fn await_transaction_confirmation(
+    async fn await_transaction_confirmation(
         &self,
         tx_hash: &String,
         retries: u32,
@@ -139,5 +148,13 @@ impl HubClient {
                 Err(e) => return Err(Error::HubError(format!("Error retrieving tx: {}", e))),
             }
         }
+    }
+}
+
+impl HubClient {
+    pub fn new(hub_url: String) -> Self {
+        let client = Arc::new(reqwest::Client::new());
+
+        Self { client, hub_url }
     }
 }

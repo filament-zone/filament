@@ -1,10 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::common::MockHubClient;
     use crate::error::Error;
-    use crate::hub::HubClient;
-    use crate::tests::common::MockHubClient;
-    use std::str::FromStr;
+    use crate::hub::HubClientTrait;
 
     // Helper function to set up a mock HubClient
     fn setup_mock_client() -> MockHubClient {

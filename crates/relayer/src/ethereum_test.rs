@@ -1,13 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::common::{create_delegate_set_changed_event, MockEthereumClient};
     use crate::error::Error;
-    use crate::ethereum::{DelegateSetChangedEvent, EthereumClient};
-    use crate::tests::common::create_delegate_set_changed_event;
-    use crate::tests::common::MockEthereumClient;
-    use async_trait::async_trait;
-    use std::str::FromStr;
-    use web3::types::{H160, U64};
+    use crate::ethereum::{DelegateSetChangedEvent, EthereumClientTrait};
 
     // Helper function to create a mock EthereumClient
     fn setup_mock_client(

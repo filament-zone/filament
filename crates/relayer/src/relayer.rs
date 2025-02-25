@@ -1,29 +1,28 @@
 use crate::cli::CliCommand;
 use crate::config::Config;
-use crate::database::Database;
+use crate::database::DatabaseTrait;
 use crate::error::Error;
-use crate::ethereum::{DelegateSetChangedEvent, EthereumClient};
-use crate::hub::HubClient;
+use crate::ethereum::{DelegateSetChangedEvent, EthereumClient, EthereumClientTrait};
+use crate::hub::HubClientTrait;
 use std::sync::mpsc::{channel, Receiver, Sender};
+use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 use tracing::{error, info, warn};
-use web3::transports::Http;
-use web3::Web3;
 
 pub struct Relayer {
     pub config: Config,
-    pub ethereum_client: EthereumClient<Http>,
-    pub hub_client: HubClient,
-    pub database: Database,
+    pub ethereum_client: Arc<dyn EthereumClientTrait>, // Use Arc
+    pub hub_client: Arc<dyn HubClientTrait>,           // Use Arc
+    pub database: Arc<dyn DatabaseTrait>,              // Use Arc
 }
 
 impl Relayer {
     pub fn new(
         config: Config,
-        ethereum_client: EthereumClient<Http>,
-        hub_client: HubClient,
-        database: Database,
+        ethereum_client: Arc<dyn EthereumClientTrait>, // Use Arc
+        hub_client: Arc<dyn HubClientTrait>,           // Use Arc
+        database: Arc<dyn DatabaseTrait>,              // Use Arc
     ) -> Self {
         Self {
             config,
@@ -57,10 +56,12 @@ impl Relayer {
         let (tx_sender, tx_receiver) = channel();
 
         // Clone or create new instances of clients and database for each thread
-        let ethereum_client_clone = self.ethereum_client.clone();
-        let hub_client_clone = self.hub_client.clone();
-        let process_database_clone = self.database.clone();
-        let send_database_clone = self.database.clone();
+        //
+        //
+        let ethereum_client_clone = Arc::clone(&self.ethereum_client);
+        let hub_client_clone = Arc::clone(&self.hub_client);
+        let process_database_clone = Arc::clone(&self.database);
+        let send_database_clone = Arc::clone(&self.database);
         let config_clone = self.config.clone();
 
         // Polling Thread
