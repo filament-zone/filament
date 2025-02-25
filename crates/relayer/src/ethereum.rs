@@ -10,6 +10,7 @@ pub struct DelegateSetChangedEvent {
     pub block_number: u64,
     pub transaction_hash: H256,
 }
+
 pub trait CloneableEthereumClient: EthereumClientTrait {
     fn clone_box(&self) -> Box<dyn EthereumClientTrait>;
 }
@@ -22,10 +23,9 @@ where
         Box::new(self.clone())
     }
 }
-// Define the trait
+
 #[async_trait]
 pub trait EthereumClientTrait: Send + Sync {
-    // Add Send + Sync + Clone
     async fn get_latest_block_number(&self) -> Result<u64, Error>;
     async fn get_all_logs(&self, from_block: U64, to_block: U64) -> Result<Vec<Log>, Error>;
     async fn get_delegate_set_changed_events(

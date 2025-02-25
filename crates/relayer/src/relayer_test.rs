@@ -35,7 +35,7 @@ mod tests {
     fn test_relayer_process_events() -> Result<(), Error> {
         let config = create_test_config();
         let mut mock_hub_client = MockHubClient::default(); // Create the MOCK
-        let delegate = H160::from_str("0x0000000000000000000000000000000000000001").unwrap();
+        let _delegate = H160::from_str("0x0000000000000000000000000000000000000001").unwrap();
 
         // *** SET UP MOCK BEHAVIOR ***
         // We *do* access sent_transactions here, because this is the CONCRETE mock,

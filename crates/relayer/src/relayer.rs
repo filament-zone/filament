@@ -12,17 +12,17 @@ use tracing::{error, info};
 
 pub struct Relayer {
     pub config: Config,
-    pub ethereum_client: Box<dyn CloneableEthereumClient>, // Change to Box
-    pub hub_client: Box<dyn CloneableHubClient>,           // Change to Box
-    pub database: Arc<dyn DatabaseTrait>,                  // Change to Box
+    pub ethereum_client: Box<dyn CloneableEthereumClient>,
+    pub hub_client: Box<dyn CloneableHubClient>,
+    pub database: Arc<dyn DatabaseTrait>,
 }
 
 impl Relayer {
     pub fn new(
         config: Config,
-        ethereum_client: Box<dyn CloneableEthereumClient>, // Change to Box
-        hub_client: Box<dyn CloneableHubClient>,           // Change to Box
-        database: Arc<dyn DatabaseTrait>,                  // Change to Box
+        ethereum_client: Box<dyn CloneableEthereumClient>,
+        hub_client: Box<dyn CloneableHubClient>,
+        database: Arc<dyn DatabaseTrait>,
     ) -> Self {
         Self {
             config,
@@ -168,7 +168,7 @@ impl Relayer {
             let _enter = rt.enter();
             // TODO(shelbyd): Use try_iter to process the current queue
             // https://doc.rust-lang.org/std/sync/mpsc/struct.Receiver.html#method.try_iter
-            while let Ok((delegate, power, block_number, transaction_hash)) = tx_receiver.recv() {
+            while let Ok((delegate, power, block_number, _transaction_hash)) = tx_receiver.recv() {
                 //	info!("Sending transaction to update power for delegate: {:?}", delegate);
                 rt.block_on(async {
 			// Send the transaction to the Hub

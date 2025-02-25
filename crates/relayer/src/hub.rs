@@ -1,18 +1,10 @@
 #![allow(unused_variables)]
 use crate::error::Error;
 use async_trait::async_trait;
+use serde::Deserialize;
 use std::sync::Arc;
-// use base64::{engine::general_purpose, Engine as _};
-// use filament_hub_core::CallMessage; // Import the CallMessage enum
-//use reqwest::Client;
-use serde::{Deserialize, Serialize};
 // Struct for the JSON payload to the /sequencer/batches endpoint
 
-/*
-#[derive(Serialize, Debug)]
-struct SendTxRequest {
-    transactions: Vec<String>, // Base64 encoded transactions
-}
 // Struct to deserialize the response (adapt as needed based on actual Hub response)
 #[derive(Deserialize, Debug)]
 pub struct SendTxResponse {
@@ -20,7 +12,6 @@ pub struct SendTxResponse {
                      // Add other fields as needed (e.g., success/failure status, error messages)
 }
 
-*/
 #[async_trait]
 pub trait HubClientTrait: Send + Sync {
     async fn update_voting_power(&self, addr: String, power: u64) -> Result<String, Error>;
@@ -50,7 +41,6 @@ where
 pub struct HubClient {
     pub client: Arc<reqwest::Client>,
     pub hub_url: String,
-    // pub hub_address: Address, // If you need the Hub's address
 }
 
 #[async_trait]
@@ -60,30 +50,21 @@ impl HubClientTrait for HubClient {
         addr: String, // Or your Address type
         power: u64,
     ) -> Result<String, Error> {
-        Err(Error::Other("Not implemented".to_string()))
-        /*
-        // 1. Construct the CallMessage
-        let call_message = CallMessage::UpdateVotingPower {
-            address: addr.clone().into(), // Convert to the appropriate Address type
-            power,
-        };
+        let request_body = serde_json::json!({
+            "jsonrpc": "2.0",
+            "method": "core_updateVotingPower", // The RPC method name
+            "params": {
+                "address": addr,
+                "power": power
+            },
+            "id": 1
+        });
+        tracing::info!("Sending tx: {:?}", request_body);
 
-        // 2. Serialize the CallMessage (using, for example, borsh)
-        let serialized_tx = borsh::to_vec(&call_message)?; // Or use your preferred serialization
-
-        // 3. Base64 encode the serialized transaction
-        let base64_tx = general_purpose::STANDARD.encode(&serialized_tx);
-
-        // 4. Create the request payload
-        let request_body = SendTxRequest {
-            transactions: vec![base64_tx],
-        };
-        info!("Sending tx: {:?}", request_body);
         // 5. Send the POST request
-
         let response = self
             .client
-            .post(&format!("{}{}", self.hub_url, "/sequencer/batches")) // Assuming hub_url is stored
+            .post(&format!("{}{}", self.hub_url, "/sequencer/batches")) // Assuming this is correct
             .json(&request_body)
             .send()
             .await?;
@@ -94,7 +75,7 @@ impl HubClientTrait for HubClient {
             let response_data: SendTxResponse = response.json().await?;
             //   Do something with response_data.tx_hash (e.g., log it, use it for polling)
             tracing::info!(%addr, %power, tx_hash = %response_data.tx_hash, "Transaction submitted to Hub");
-            // TODO(xla): Await confirmation before returning.
+
             Ok(response_data.tx_hash)
         } else {
             let err = response.text().await?;
@@ -105,7 +86,6 @@ impl HubClientTrait for HubClient {
                 err
             ))) // Use a custom error variant
         }
-         */
     }
 
     async fn get_tx_status(&self, tx_hash: &str) -> Result<Option<serde_json::Value>, Error> {
